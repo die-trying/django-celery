@@ -8,6 +8,9 @@ from django.contrib.contenttypes.models import ContentType
 
 
 class ActiveSubscription(models.Model):
+    """
+    Represent a single bought subscription
+    """
     ENABLED = (
         (0, 'Inactive'),
         (1, 'Active'),
@@ -24,6 +27,10 @@ class ActiveSubscription(models.Model):
     product = GenericForeignKey('product_type', 'product_id')
 
     def save(self, *args, **kwargs):
+        """
+        When creating new subscription, we should make lessons in it available
+        to the customer
+        """
         super(ActiveSubscription, self).save(*args, **kwargs)
 
         for lesson_type in self.product.LESSONS:
