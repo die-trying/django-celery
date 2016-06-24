@@ -1,0 +1,55 @@
+- model: products.ordinarylesson
+  pk: 1
+  fields: {name: First curated lesson, internal_name: Curated lesson 1/4, duration: '00:30:00',
+    description: Hi there! This is a first curated lesson}
+- model: products.ordinarylesson
+  pk: 2
+  fields: {name: Curated lesson, internal_name: Curated lesson 2/4, duration: '00:30:00',
+    description: The second curated lesson}
+- model: products.ordinarylesson
+  pk: 3
+  fields: {name: Curated lesson, internal_name: Curated lesson 3/4, duration: '00:45:00',
+    description: The third curated lesson}
+- model: products.ordinarylesson
+  pk: 4
+  fields: {name: Curated lesson, internal_name: Curated lesson 4/4, duration: '00:25:00',
+    description: THe last Curated lesson}
+- model: products.lessonwithnative
+  pk: 1
+  fields: {name: Native speaker lesson, internal_name: Native speaker lesson 1/2,
+    duration: '00:30:00', description: "Hi there!\r\n\r\nThis is a your first curated
+      **lesson**"}
+- model: products.lessonwithnative
+  pk: 2
+  fields: {name: Native speaker lesson, internal_name: Native speaker lesson 2/2,
+    duration: '00:30:00', description: This is your second lesson with a native speaker}
+- model: products.product1
+  pk: 1
+  fields:
+    active: 1
+    cost_currency: USD
+    name: Subscription 1
+    cost: '152.00'
+    internal_name: The very first subscription
+    duration: 42 00:00:00
+    ordinary_lessons: [1, 2, 3, 4]
+    lessons_with_native: [1, 2]
+- model: auth.user
+  pk: 1
+  fields:
+    password: pbkdf2_sha256$24000$ri9yLfnl0Uhj$gd5V+zlABd6OsekQucih3RbyLlI73dF0gLJAAIkLpdI=
+    last_login: 2016-06-24 08:50:47.965230
+    is_superuser: true
+    username: admin
+    first_name: ''
+    last_name: ''
+    email: f@f213.in
+    is_staff: true
+    is_active: true
+    date_joined: 2016-06-23 13:58:08.522407
+    groups: []
+    user_permissions: []
+- model: crm.customer
+  pk: 1
+  fields: {user: 1, first_name: Fedor, middle_name: '', last_name: Borshev, email: f@f213.in,
+    date_arrived: ! '2016-06-23 13:59:30', country: RU, starting_level: A1, current_level: A2}
