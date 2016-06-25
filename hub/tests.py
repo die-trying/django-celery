@@ -1,11 +1,10 @@
 from django.test import TestCase
 
-
-# Create your tests here.
+from elk.utils.reflection import find_ancestors
 
 from crm.models import Customer
-from products.models import Product1
 from hub.models import ActiveSubscription, Class
+import products.models
 
 
 class BuySubscriptionTestCase(TestCase):
@@ -25,7 +24,7 @@ class BuySubscriptionTestCase(TestCase):
                 cnt += getattr(product, lesson_type).all().count()
             return cnt
 
-        product = Product1.objects.get(pk=self.TEST_PRODUCT_ID)
+        product = products.models.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
 
         s = ActiveSubscription(
             customer=Customer.objects.get(pk=self.TEST_CUSTOMER_ID),
@@ -39,10 +38,10 @@ class BuySubscriptionTestCase(TestCase):
 
         self.assertEqual(active_lessons_count, active_lessons_in_product_count, 'When buying a subscription should add all of its available lessons')  # two lessons with natives and four with curators
 
-    testBuySingleSubscriptionSecondTime = testBuySingleSubscription
+    testBuySingleSubscriptionSecondTime = testBuySingleSubscription  # let's test for the second time :-)
 
     def testDisablingSubscription(self):
-        product = Product1.objects.get(pk=self.TEST_PRODUCT_ID)
+        product = products.models.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
 
         s = ActiveSubscription(
             customer=Customer.objects.get(pk=self.TEST_CUSTOMER_ID),
@@ -59,3 +58,25 @@ class BuySubscriptionTestCase(TestCase):
         s.save()
         for lesson in s.classes.all():
             self.assertEqual(lesson.active, 0, 'Every lesson in subscription should become inactive now')
+
+
+class BuySingleLessonTestCase(TestCase):
+    fixtures = ('crm.yaml',)
+
+    TEST_CUSTOMER_ID = 1
+
+    def testSingleLesson(self):
+        """
+        Let's but ten lessons at a time
+        """
+        for lesson_type in find_ancestors(products.models, products.models.Lesson):
+            already_bot_lessons = []
+            for i in range(0, 10):
+                s = Class(
+                    customer=Customer.objects.get(pk=self.TEST_CUSTOMER_ID),
+                    lesson=lesson_type.get_default()  # this should be defined in every lesson
+                )
+                s.save()
+                self.assertTrue(s.pk)
+                self.assertNotIn(s.pk, already_bot_lessons)
+                already_bot_lessons.append(s.pk)

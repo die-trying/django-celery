@@ -1,10 +1,11 @@
 from django.db import models
-from crm.models import Customer
 
 from djmoney.models.fields import MoneyField
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+
+from crm.models import Customer
 
 
 class ActiveSubscription(models.Model):

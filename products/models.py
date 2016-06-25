@@ -1,11 +1,11 @@
-from django.db import models
-
-from django_markdown.models import MarkdownField
-from djmoney.models.fields import MoneyField
-
+from abc import abstractmethod
 from datetime import timedelta
 
+from django.db import models
+from django_markdown.models import MarkdownField
+from djmoney.models.fields import MoneyField
 from django.contrib.contenttypes.fields import GenericRelation
+
 from hub.models import ActiveSubscription
 
 # Create your models here.
@@ -21,16 +21,24 @@ class Lesson(models.Model):
     def __str__(self):
         return self.internal_name
 
+    @staticmethod
+    @abstractmethod
+    def get_default():
+        raise NotImplementedError('Every lesson should implement `get_default()` static method for buing a single lesson')
+
     class Meta:
         abstract = True
 
 
 class OrdinaryLesson(Lesson):
-    pass
+
+    def get_default():
+        return OrdinaryLesson.objects.get(pk=500)
 
 
 class LessonWithNative(Lesson):
-    pass
+    def get_default():
+        return LessonWithNative.objects.get(pk=500)
 
 
 class Product(models.Model):
