@@ -15,10 +15,10 @@ DEBUG = env('DEBUG')    # False if not in os.environ
 
 DATABASES = {
     'default': env.db(),    # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
-    'extra': env.db('SQLITE_URL', default='sqlite:////tmp/my-tmp-sqlite.db')
 }
 
 INSTALLED_APPS = [
+    'elk',
     'crm',
     'products',
     'hub',
@@ -67,9 +67,8 @@ WSGI_APPLICATION = 'elk.wsgi.application'
 
 public_root = root.path('public/')
 
-MEDIA_ROOT = public_root('media')
 MEDIA_URL = 'media/'
-STATIC_ROOT = public_root('static')
+
 STATIC_URL = '/static/'
 
 SECRET_KEY = env('SECRET_KEY')  # Raises ImproperlyConfigured exception if SECRET_KEY not in os.environ

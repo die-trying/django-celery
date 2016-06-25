@@ -1,0 +1,7 @@
+{
+  "name": "elk-back-office",
+  "dependencies": {
+    "Likely": "ilyabirman-likely#~2.0.8",
+    "bootstrap": "^3.3.6"
+  }
+}

@@ -91,3 +91,10 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+
+# frontend
+
+elk/static/vendor
+
+node_modules/
