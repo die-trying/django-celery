@@ -32,7 +32,7 @@ class ActiveSubscription(models.Model):
             is_new = False
 
         if not is_new:  # check, if we should enable\disable lessons
-            self.__update_active_lessons()
+            self.__update_classes()
 
         super(ActiveSubscription, self).save(*args, **kwargs)
 
@@ -46,7 +46,7 @@ class ActiveSubscription(models.Model):
         """
         for lesson_type in self.product.LESSONS:
             for lesson in getattr(self.product, lesson_type).all():
-                bought_lesson = ActiveLesson(
+                bought_lesson = Class(
                     lesson=lesson,
                     subscription=self,
                     customer=self.customer,
@@ -54,19 +54,19 @@ class ActiveSubscription(models.Model):
                 )
                 bought_lesson.save()
 
-    def __update_active_lessons(self):
+    def __update_classes(self):
         """
         When the subscription is disabled for any reasons, all lessons
         assosciated to it, should be disabled too.
         """
         orig = ActiveSubscription.objects.get(pk=self.pk)
         if orig.active != self.active:
-            for lesson in self.activelesson_set.all():
+            for lesson in self.classes.all():
                 lesson.active = self.active
                 lesson.save()
 
 
-class ActiveLesson(models.Model):
+class Class(models.Model):
     BUY_SOURCES = (
         (0, 'Single'),
         (1, 'Subscription')
@@ -88,7 +88,7 @@ class ActiveLesson(models.Model):
     lesson_id = models.PositiveIntegerField()
     lesson = GenericForeignKey('lesson_type', 'lesson_id')
 
-    subscription = models.ForeignKey(ActiveSubscription, on_delete=models.CASCADE, null=True)
+    subscription = models.ForeignKey(ActiveSubscription, on_delete=models.CASCADE, null=True, related_name='classes')
 
     def __str__(self):
         if self.subscription:
