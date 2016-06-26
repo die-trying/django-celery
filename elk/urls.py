@@ -18,7 +18,13 @@ from django.views.generic import TemplateView
 from django.contrib import admin
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url('^markdown/', include('django_markdown.urls')),
     url(r'^$', TemplateView.as_view(template_name='index.html')),
+
+    url(r'^acc/', include('acc.urls')),
+    url(r'^secret.html$', TemplateView.as_view(template_name='secret.html'), name='secret.html'),
+
+    url(r'^admin/', admin.site.urls),
+    url(r'^markdown/', include('django_markdown.urls')),
+    url('', include('social.apps.django_app.urls', namespace='social'))
+
 ]

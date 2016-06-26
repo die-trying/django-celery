@@ -22,9 +22,12 @@ INSTALLED_APPS = [
     'crm',
     'products',
     'hub',
+    'acc',
 
     'django_countries',
     'django_markdown',
+
+    'social.apps.django_app.default',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -58,10 +61,18 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
+                'social.apps.django_app.context_processors.backends',
+                'social.apps.django_app.context_processors.login_redirect',
             ],
         },
     },
 ]
+
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 WSGI_APPLICATION = 'elk.wsgi.application'
 
