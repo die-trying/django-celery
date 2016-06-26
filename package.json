@@ -1,0 +1,29 @@
+{
+  "name": "elk",
+  "version": "1.0.0",
+  "private": "true",
+  "description": "",
+  "main": "Gulpfile.js",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-load-plugins": "^1.2.4",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-stylus": "^2.5.0",
+    "stylus": "^0.54.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/f213/elk-back-office.git"
+  },
+  "author": "Fedor Borshev <f@f213.in> (http://f213.in/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/f213/elk-back-office/issues"
+  },
+  "homepage": "https://github.com/f213/elk-back-office#readme"
+}

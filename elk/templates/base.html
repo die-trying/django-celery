@@ -1,3 +1,4 @@
+{% load static from staticfiles %}
 <!DOCTYPE html>
 <html>
     <head>
@@ -7,10 +8,12 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <link rel="stylesheet" href="/static/vendor/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="{% static 'vendor/bootstrap/dist/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/elk.css' %}">
+
     </head>
     <body>
-        <div class=".container">
+        <div class="container">
             {% block navbar %}
             {% endblock %}
             {% block content %}

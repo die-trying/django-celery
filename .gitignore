@@ -96,5 +96,6 @@ ENV/
 # frontend
 
 elk/static/vendor
+elk/static/css
 
 node_modules/
