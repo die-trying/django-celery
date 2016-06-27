@@ -81,6 +81,7 @@ public_root = root.path('public/')
 MEDIA_URL = 'media/'
 
 STATIC_URL = '/static/'
+STATIC_ROOT = env('STATIC_ROOT')
 
 SECRET_KEY = env('SECRET_KEY')  # Raises ImproperlyConfigured exception if SECRET_KEY not in os.environ
 
