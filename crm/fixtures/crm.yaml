@@ -54,8 +54,8 @@
     last_login: 2016-06-24 08:50:47.965230
     is_superuser: true
     username: admin
-    first_name: ''
-    last_name: ''
+    first_name: 'Fedor'
+    last_name: 'Borshev'
     email: f@f213.in
     is_staff: true
     is_active: true
@@ -64,5 +64,12 @@
     user_permissions: []
 - model: crm.customer
   pk: 1
-  fields: {user: 1, first_name: Fedor, middle_name: '', last_name: Borshev, email: f@f213.in,
+  fields: {user: 1,
     date_arrived: ! '2016-06-23 13:59:30', country: RU, starting_level: A1, current_level: A2}
+- model: crm.customer
+  pk: 2
+  fields: {
+      first_name: 'Vasiliy',
+      last_name: 'Poupkine',
+      'customer_email':  'f@f213.in',
+      date_arrived: ! '2016-06-23 13:59:30', country: RU, starting_level: A1, current_level: A2}
