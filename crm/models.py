@@ -11,9 +11,9 @@ class Customer(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.PROTECT, null=True, blank=True)
 
-    first_name = models.CharField(max_length=140)
-    last_name = models.CharField(max_length=140)
-    customer_email = models.EmailField()
+    customer_first_name = models.CharField('First name', max_length=140)
+    customer_last_name = models.CharField('Last name', max_length=140)
+    customer_email = models.EmailField('Email')
 
     date_arrived = models.DateTimeField(auto_now_add=True)
 
@@ -25,16 +25,31 @@ class Customer(models.Model):
     def __str__(self):
         return self.full_name
 
-    def _get_full_name(self):
-        if self.user:
-            return '%s %s' % (self.user.first_name, self.user.last_name)
-
+    @property
+    def full_name(self):
         return '%s %s' % (self.first_name, self.last_name)
 
-    def _get_email(self):
-        if self.user:
-            return self.user.email
-        return self.customer_email
+    @property
+    def email(self):
+        return self._get_user_property('email')
 
-    email = property(_get_email)
-    full_name = property(_get_full_name)
+    @property
+    def first_name(self):
+        return self._get_user_property('first_name')
+
+    @property
+    def last_name(self):
+        return self._get_user_property('last_name')
+
+    def _get_user_property(self, property):
+        """
+        Some properties are stored in the stock Django user model. This method
+        fetches a property from the user model if user is composited,
+        and fetches a customer field if not.
+
+        Please don't forget to exclude this fields from admin form defined in
+        `crm.admin`
+        """
+        if self.user:
+            return getattr(self.user, property)
+        return getattr(self, 'customer_' + property)

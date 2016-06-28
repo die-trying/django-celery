@@ -7,17 +7,11 @@ from .models import Customer
 # Register your models here.
 
 
-# @admin.register(Customer)
-# class CustomerAdmin(admin.ModelAdmin):
-#     list_display = ('customer_name', 'country', 'email', 'date_arrived')
-#
-#     def customer_name(self, obj):
-#         return str(obj)
-
 class CustomerInline(admin.StackedInline):
     model = Customer
     can_delete = False
-
+    exclude = ('customer_email', 'customer_first_name', 'customer_last_name')
+    verbose_name = 'CRM customer name'
 
 admin.site.unregister(User)
 
@@ -25,8 +19,17 @@ admin.site.unregister(User)
 @admin.register(User)
 class UserAdmin(StockUserAdmin):
     inlines = (CustomerInline, )
+    fieldsets = (
+        ('Personal info', {
+            'fields': ('username', 'password', 'first_name', 'last_name', 'email', 'is_active', 'is_staff')
+        }),
+    )
 
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
+    """
+    This admin module is for managing CRM-only customer databases
+    e.g. potential customers.
+    """
     list_display = ('full_name', 'country', 'email', 'date_arrived')

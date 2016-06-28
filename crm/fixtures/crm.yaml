@@ -69,7 +69,7 @@
 - model: crm.customer
   pk: 2
   fields: {
-      first_name: 'Vasiliy',
-      last_name: 'Poupkine',
+      customer_first_name: 'Vasiliy',
+      customer_last_name: 'Poupkine',
       'customer_email':  'f@f213.in',
       date_arrived: ! '2016-06-23 13:59:30', country: RU, starting_level: A1, current_level: A2}
