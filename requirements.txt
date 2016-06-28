@@ -3,7 +3,7 @@ backports.shutil-get-terminal-size==1.0.0
 cssselect==0.9.2
 decorator==4.0.10
 defusedxml==0.4.1
-Django==1.9.7
+Django==1.8.13
 django-countries==3.4.1
 django-debug-toolbar==1.4
 django-environ==0.4.0
