@@ -5,6 +5,7 @@ decorator==4.0.10
 defusedxml==0.4.1
 Django==1.9.7
 django-countries==3.4.1
+django-debug-toolbar==1.4
 django-environ==0.4.0
 django-markdown==0.8.4
 django-money==0.8
@@ -28,4 +29,5 @@ requests-oauthlib==0.6.1
 selenium==2.53.5
 simplegeneric==0.8.1
 six==1.10.0
+sqlparse==0.1.19
 traitlets==4.2.1
