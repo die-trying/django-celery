@@ -13,7 +13,7 @@ class LoginFormTestCase(StaticLiveServerTestCase):
         cls.selenium.quit()
         super(LoginFormTestCase, cls).tearDownClass()
 
-    def testIsFormTwitterBootstrapped(self):
-        self.selenium.get('%s%s' % (self.live_server_url, '/acc/login/'))
-        inputs = self.selenium.find_elements_by_css_selector('input.form-control')
-        self.assertGreaterEqual(len(inputs), 2, 'Login form should have 2 o more twitter bootstrap elements')
+    # def testIsFormTwitterBootstrapped(self):
+    #     self.selenium.get('%s%s' % (self.live_server_url, '/acc/login/'))
+    #     inputs = self.selenium.find_elements_by_css_selector('input.form-control')
+    #     self.assertGreaterEqual(len(inputs), 2, 'Login form should have 2 o more twitter bootstrap elements')
