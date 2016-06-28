@@ -6,11 +6,19 @@ from django_countries.fields import CountryField
 # Create your models here.
 
 
+class CustomerSource(models.Model):
+    name = models.CharField(max_length=140)
+
+    def __str__(self):
+        return self.name
+
+
 class Customer(models.Model):
     LEVELS = [(a + str(i), a + str(i)) for i in range(1, 4) for a in ('A', 'B', 'C')]
 
     user = models.OneToOneField(User, on_delete=models.PROTECT, null=True, blank=True)
 
+    source = models.ForeignKey(CustomerSource, on_delete=models.PROTECT)
     customer_first_name = models.CharField('First name', max_length=140)
     customer_last_name = models.CharField('Last name', max_length=140)
     customer_email = models.EmailField('Email')
