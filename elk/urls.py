@@ -7,10 +7,9 @@ urlpatterns = [
     url(r'^$', TemplateView.as_view(template_name='index.html')),
 
     url(r'^accounts/', include('acc.urls')),
+
     url(r'^secret.html$', login_required(TemplateView.as_view(template_name='secret.html')), name='secret'),
 
     url(r'^admin/', admin.site.urls),
     url(r'^markdown/', include('django_markdown.urls')),
-    url('', include('social.apps.django_app.urls', namespace='social'))
-
 ]

@@ -1,3 +1,4 @@
 {
-    "directory": "elk/static/vendor/"
+    "directory": "elk/static/vendor/",
+    "json": false
 }

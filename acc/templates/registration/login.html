@@ -4,33 +4,17 @@
 <div class="row">
     <div class="col-md-3 col-sm-1"></div>
     <div class="col-md-6">
-        <form class="signin__form" method="POST" action="{% url 'login' %}">
-            {% csrf_token %}
-            <input type="hidden" name="next" value="{{ next }}">
-            <h2 class="signin__heading">Please sign in</h2>
-            <div class="form-group">
-                <label for="inputEmail" class="sr-only">{{ form.username.label_tag }}</label>
-                {{ form.username }}
-            </div>
-            {% if form.errors %}
-                <div class="form-group has-error">
-            {% else %}
-            <div class="form-group">
-            {% endif %}
-                <label for="inputPassword" class="sr-only">{{ form.password.label_tag }}</label>
-                {{ form.password }}
-            </div>
-            <div class="form-group">
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" value="remember-me"> Remember me
-                    </label>
-                </div>
-            </div>
-            <div class="form-group">
-                <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-            </div>
-        </form>
+        <div class="social-login">
+            <a class="btn btn-block btn-social btn-lg btn-google" href="{% url 'social:begin' 'google-oauth2' %}">
+                <span class="fa fa-google"></span>
+                Sign in with Google
+            </a>
+
+            <a class="btn btn-block btn-social btn-lg btn-facebook" href="{% url 'social:begin' 'facebook-oauth2' %}">
+                <span class="fa fa-facebook"></span>
+                Sign in with Facebook
+            </a>
+        </div>
     </div>
     <div class="col-md-3 col-sm-1"></div>
 </div>

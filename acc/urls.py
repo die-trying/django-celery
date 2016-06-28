@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 
 import django.contrib.auth.views as stock_views
 
@@ -14,4 +14,6 @@ urlpatterns = [
     url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         stock_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset/done/$', stock_views.password_reset_complete, name='password_reset_complete'),
+
+    url('', include('social.apps.django_app.urls', namespace='social'))
 ]
