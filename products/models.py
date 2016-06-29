@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from datetime import timedelta
 
 from django.db import models
@@ -12,19 +11,24 @@ from hub.models import ActiveSubscription
 
 
 class Lesson(models.Model):
+    ENABLED = (
+        (0, 'Inactive'),
+        (1, 'Active'),
+    )
     name = models.CharField(max_length=140)
     internal_name = models.CharField(max_length=140)
 
     duration = models.DurationField(default=timedelta(minutes=30))
     description = MarkdownField()
 
+    active = models.IntegerField(default=1, choices=ENABLED)
+
     def __str__(self):
         return self.internal_name
 
-    @staticmethod
-    @abstractmethod
-    def get_default():
-        raise NotImplementedError('Every lesson should implement `get_default()` static method for buing a single lesson')
+    @classmethod
+    def get_default(cls):
+        return cls.objects.get(pk=500)
 
     class Meta:
         abstract = True
@@ -32,13 +36,12 @@ class Lesson(models.Model):
 
 class OrdinaryLesson(Lesson):
 
-    def get_default():
-        return OrdinaryLesson.objects.get(pk=500)
+    class Meta:
+        verbose_name = "Usual curated lesson"
 
 
 class LessonWithNative(Lesson):
-    def get_default():
-        return LessonWithNative.objects.get(pk=500)
+    pass
 
 
 class Product(models.Model):
@@ -68,4 +71,8 @@ class Product1(Product):
     LESSONS = ('ordinary_lessons', 'lessons_with_native')
 
     ordinary_lessons = models.ManyToManyField(OrdinaryLesson, limit_choices_to={'active': 1})
-    lessons_with_native = models.ManyToManyField(LessonWithNative)
+    lessons_with_native = models.ManyToManyField(LessonWithNative, limit_choices_to={'active': 1})
+
+    class Meta:
+        verbose_name = "Subscription type: first subscription"
+        verbose_name_plural = "Subscriptions of the first type"
