@@ -10,6 +10,7 @@ urlpatterns = [
 
     url(r'^secret.html$', login_required(TemplateView.as_view(template_name='secret.html')), name='secret'),
 
+    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^markdown/', include('django_markdown.urls')),
 ]
