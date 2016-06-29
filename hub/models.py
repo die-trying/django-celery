@@ -7,6 +7,8 @@ from django.contrib.contenttypes.models import ContentType
 
 from crm.models import Customer
 
+from timeline.models import Entry as TimelineEntry
+
 
 class ActiveSubscription(models.Model):
     """
@@ -88,6 +90,8 @@ class Class(models.Model):
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     lesson_id = models.PositiveIntegerField()
     lesson = GenericForeignKey('lesson_type', 'lesson_id')
+
+    event = models.ForeignKey(TimelineEntry, null=True, blank=True, related_name='classes')
 
     subscription = models.ForeignKey(ActiveSubscription, on_delete=models.CASCADE, null=True, related_name='classes')
 

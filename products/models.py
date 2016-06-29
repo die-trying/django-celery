@@ -68,6 +68,10 @@ class Product(models.Model):
 
 
 class Product1(Product):
+    """
+    Stores information about subscriptions of the first type. You can admindocs
+    desired lessons in the model administration.
+    """
     LESSONS = ('ordinary_lessons', 'lessons_with_native')
 
     ordinary_lessons = models.ManyToManyField(OrdinaryLesson, limit_choices_to={'active': 1})

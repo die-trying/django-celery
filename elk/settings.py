@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'crm',
     'products',
     'hub',
+    'timeline',
     'acc',
 
     'django_countries',
