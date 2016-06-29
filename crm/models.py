@@ -3,6 +3,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from django_countries.fields import CountryField
 
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+
 # Create your models here.
 
 
@@ -15,10 +18,11 @@ class CustomerSource(models.Model):
 
 class Customer(models.Model):
     LEVELS = [(a + str(i), a + str(i)) for i in range(1, 4) for a in ('A', 'B', 'C')]
+    INTERNAL_SOURCE = 1
 
     user = models.OneToOneField(User, on_delete=models.PROTECT, null=True, blank=True)
 
-    source = models.ForeignKey(CustomerSource, on_delete=models.PROTECT)
+    source = models.ForeignKey(CustomerSource, on_delete=models.PROTECT, default=INTERNAL_SOURCE)
     customer_first_name = models.CharField('First name', max_length=140)
     customer_last_name = models.CharField('Last name', max_length=140)
     customer_email = models.EmailField('Email')
@@ -61,3 +65,12 @@ class Customer(models.Model):
         if self.user:
             return getattr(self.user, property)
         return getattr(self, 'customer_' + property)
+
+
+@receiver(pre_save, sender=User)
+def create_customer(sender, **kwargs):
+    user = kwargs.get('instance')
+    if not user.pk:
+        customer = Customer()
+        customer.save()
+        user.customer = customer
