@@ -70,13 +70,19 @@ class BuySingleLessonTestCase(TestCase):
         Let's but ten lessons at a time
         """
         for lesson_type in find_ancestors(products.models, products.models.Lesson):
-            already_bot_lessons = []
+            already_bought_lessons = []
             for i in range(0, 10):
-                s = Class(
-                    customer=Customer.objects.get(pk=self.TEST_CUSTOMER_ID),
-                    lesson=lesson_type.get_default()  # this should be defined in every lesson
-                )
-                s.save()
-                self.assertTrue(s.pk)
-                self.assertNotIn(s.pk, already_bot_lessons)
-                already_bot_lessons.append(s.pk)
+                try:
+                    s = Class(
+                        customer=Customer.objects.get(pk=self.TEST_CUSTOMER_ID),
+                        lesson=lesson_type.get_default()  # this should be defined in every lesson
+                    )
+                    s.save()
+                    self.assertTrue(s.pk)
+                    self.assertNotIn(s.pk, already_bought_lessons)
+                    already_bought_lessons.append(s.pk)
+                except NotImplementedError:
+                    """
+                    Some lessons, ex master classes cannot be bought such way
+                    """
+                    pass
