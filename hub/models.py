@@ -69,6 +69,21 @@ class ActiveSubscription(models.Model):
                 lesson.save()
 
 
+class CannotBeScheduled(Exception):
+    """
+    Indicates a situation when trying to schedule lesson that does not suite
+    to a timeline entry
+    """
+    pass
+
+
+class CannotBeUnscheduled(Exception):
+    """
+    Indicates a situation when we can not un-schedule a lesson
+    """
+    pass
+
+
 class Class(models.Model):
     BUY_SOURCES = (
         (0, 'Single'),
@@ -99,3 +114,52 @@ class Class(models.Model):
         if self.subscription:
             return "#%d %s by %s for %s" % (self.pk, self.lesson, self.subscription.product, self.customer)
         return "#%d %s for %s" % (self.pk, self.lesson, self.customer)
+
+    def schedule(self, entry):
+        """
+        Schedule a lesson — assign a timeline entry.
+        You should not use Class.save() method after scheduling
+        """
+        if not self.can_be_scheduled(entry):
+            raise CannotBeScheduled('%s %s' % (self, entry))
+
+        entry.customer = self.customer
+        entry.save()
+
+        self.event = entry
+        self.save()
+
+    def unschedule(self):
+        """
+        Unschedule previously scheduled lesson
+        """
+        if not self.event:
+            raise CannotBeUnscheduled('%s' % self)
+
+        # TODO — check if entry is not completed
+        self.event.customer = None
+        self.event.save()
+        self.event = None
+        self.save()
+
+    @property
+    def is_scheduled(self):
+        """
+        Check if class is scheduled — has an assigned timeline entry and other
+        """
+        if self.event:
+            return True
+
+        return False
+
+    def can_be_scheduled(self, entry):
+        """
+        Check if timeline entry can be scheduled
+        """
+        if self.is_scheduled:
+            return False
+
+        if not entry.is_free:
+            return False
+
+        return True

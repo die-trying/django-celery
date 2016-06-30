@@ -4,7 +4,9 @@ from elk.utils.reflection import find_ancestors
 
 from crm.models import Customer
 from hub.models import ActiveSubscription, Class
-import products.models
+from timeline.models import Entry as TimelineEntry
+
+import products.models as products
 
 
 class BuySubscriptionTestCase(TestCase):
@@ -24,7 +26,7 @@ class BuySubscriptionTestCase(TestCase):
                 cnt += getattr(product, lesson_type).all().count()
             return cnt
 
-        product = products.models.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
+        product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
 
         s = ActiveSubscription(
             customer=Customer.objects.get(pk=self.TEST_CUSTOMER_ID),
@@ -41,7 +43,7 @@ class BuySubscriptionTestCase(TestCase):
     testBuySingleSubscriptionSecondTime = testBuySingleSubscription  # let's test for the second time :-)
 
     def testDisablingSubscription(self):
-        product = products.models.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
+        product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
 
         s = ActiveSubscription(
             customer=Customer.objects.get(pk=self.TEST_CUSTOMER_ID),
@@ -69,7 +71,7 @@ class BuySingleLessonTestCase(TestCase):
         """
         Let's but ten lessons at a time
         """
-        for lesson_type in find_ancestors(products.models, products.models.Lesson):
+        for lesson_type in find_ancestors(products, products.Lesson):
             already_bought_lessons = []
             for i in range(0, 10):
                 try:
@@ -86,3 +88,42 @@ class BuySingleLessonTestCase(TestCase):
                     Some lessons, ex master classes cannot be bought such way
                     """
                     pass
+
+
+class ScheduleTestCase(TestCase):
+    fixtures = ('crm.yaml', 'test_timeline_entries.yaml')
+    TEST_CUSTOMER_ID = 1
+
+    def _buy_a_lesson(self, lesson=products.OrdinaryLesson.get_default()):
+        bought_class = Class(
+            customer=Customer.objects.get(pk=self.TEST_CUSTOMER_ID),
+            lesson=lesson
+        )
+        bought_class.save()
+        return bought_class
+
+    def testScheduleSimple(self):
+        """
+        Generic test to schedule and unschedule a class
+        """
+        SIMPLE_ENTRY_ID = 1
+
+        entry = TimelineEntry.objects.get(pk=SIMPLE_ENTRY_ID)
+        self.assertTrue(entry.is_free)
+
+        bought_class = self._buy_a_lesson()
+        self.assertFalse(bought_class.is_scheduled)
+
+        bought_class.schedule(entry)  # schedule a class
+
+        entry = TimelineEntry.objects.get(pk=SIMPLE_ENTRY_ID)
+        self.assertFalse(entry.is_free, 'Entry should be occupied after scheduling')
+
+        self.assertEquals(bought_class.event.pk, SIMPLE_ENTRY_ID)
+
+        self.assertTrue(bought_class.is_scheduled, 'Class should be marked as scheduled now')
+
+        bought_class.unschedule()
+        entry = TimelineEntry.objects.get(pk=SIMPLE_ENTRY_ID)
+        self.assertTrue(entry.is_free, 'Entry should become free again after scheduling')
+        self.assertIsNone(bought_class.event)
