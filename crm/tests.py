@@ -35,4 +35,4 @@ class CustomerUserModelIntegrationTestCase(TestCase):
         user.save()
 
         self.assertTrue(user.pk)
-        self.assertEqual(user.customer.email, 'test@test.email')
+        self.assertEqual(user.crm.email, 'test@test.email')

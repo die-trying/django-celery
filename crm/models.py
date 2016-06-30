@@ -20,7 +20,7 @@ class Customer(models.Model):
     LEVELS = [(a + str(i), a + str(i)) for i in range(1, 4) for a in ('A', 'B', 'C')]
     INTERNAL_SOURCE = 1
 
-    user = models.OneToOneField(User, on_delete=models.PROTECT, null=True, blank=True)
+    user = models.OneToOneField(User, on_delete=models.PROTECT, null=True, blank=True, related_name='crm')
 
     source = models.ForeignKey(CustomerSource, on_delete=models.PROTECT, default=INTERNAL_SOURCE)
     customer_first_name = models.CharField('First name', max_length=140)
@@ -73,4 +73,4 @@ def create_customer(sender, **kwargs):
     if not user.pk:
         customer = Customer()
         customer.save()
-        user.customer = customer
+        user.crm = customer
