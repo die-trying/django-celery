@@ -1,0 +1,5 @@
+- fields: {description: "# Fuck\r\n\r\nFuck is fuck.", duration: '00:30:00', host: 1,
+    internal_name: Uncensored fucken master-class, lesson_type: 5, name: Using the
+      F word}
+  model: lessons.event
+  pk: 1

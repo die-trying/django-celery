@@ -1,11 +1,14 @@
 from django.test import TestCase
+from mixer.backend.django import mixer
 
 from .models import Entry as TimelineEntry
+from lessons.models import Event as LessonEvent
+
 from crm.models import Customer
 
 
 class EntryTestCase(TestCase):
-    fixtures = ('crm', 'test_timeline_entries',)
+    fixtures = ('crm', 'test_timeline_entries', 'test_events')
 
     def _occupy(self, entry):
         entry.customer = Customer.objects.get(pk=1)
@@ -43,3 +46,24 @@ class EntryTestCase(TestCase):
         self._free(entry)
         free_entries = TimelineEntry.objects.all().free()
         self.assertEqual(free_entries.count(), cnt)
+
+    def testAssignEvent(self):
+        entry = TimelineEntry.objects.get(pk=1)
+
+        self.assertIsNone(entry.event)
+
+        event = LessonEvent.objects.get(pk=1)
+        entry.assign_event(event)
+
+        entry = TimelineEntry.objects.get(pk=1)
+        self.assertEqual(entry.event, event)
+
+    def testEventPropertyTransition(self):
+        entry = TimelineEntry.objects.get(pk=1)
+        event = mixer.blend(LessonEvent)
+
+        entry.assign_event(event)
+        entry = TimelineEntry.objects.get(pk=1)
+
+        self.assertEqual(entry.duration, event.duration)
+        self.assertEqual(entry.slots, event.slots)

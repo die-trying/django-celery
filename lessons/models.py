@@ -2,7 +2,6 @@ from datetime import timedelta
 
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django_markdown.models import MarkdownField
 
@@ -54,7 +53,10 @@ class OrdinaryLesson(Lesson):
 
 
 class LessonWithNative(Lesson):
-    pass
+
+    class Meta:
+        verbose_name = "Curataed lesson with native speaker"
+        verbose_name_plural = "Curated lessons with native speaker"
 
 
 class MasterClass(Lesson):
@@ -63,15 +65,25 @@ class MasterClass(Lesson):
     def get_default(cls):
         raise NotImplementedError('You can not buy a default master class, sorry')
 
+    class Meta:
+        verbose_name = "Master Class"
+        verbose_name_plural = "Master Classes"
+
 
 class HappyHour(Lesson):
+
     @classmethod
     def get_default(cls):
         raise NotImplementedError('You can not buy a default master class, sorry')
 
+    class Meta:
+        verbose_name = "Happy Hour"
+
 
 class PairedLesson(Lesson):
-    pass
+
+    class Meta:
+        verbose_name = "Paired Lesson"
 
 
 class Event(models.Model):
@@ -80,8 +92,13 @@ class Event(models.Model):
     """
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
 
+    slots = models.SmallIntegerField(default=1)
+
     name = models.CharField(max_length=140)
     internal_name = models.CharField(max_length=140)
     host = models.ForeignKey(User, limit_choices_to={'is_staff': 1}, related_name='hosted_events')
     description = MarkdownField()
     duration = models.DurationField(default=timedelta(minutes=30))
+
+    def __str__(self):
+        return '%s: %s' % (self.lesson_type, self.internal_name)

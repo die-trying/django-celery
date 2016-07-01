@@ -1,4 +1,4 @@
-- fields: {customer: null, duration: '00:30:00', slots: 1, start_time: ! '2016-06-30
+- fields: {customer: null, start_time: ! '2016-06-30
       12:00:00', teacher: 1}
   model: timeline.entry
   pk: 1
