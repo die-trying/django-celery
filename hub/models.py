@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from crm.models import Customer
 
 from timeline.models import Entry as TimelineEntry
+from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 
 
 class ActiveSubscription(models.Model):
@@ -67,21 +68,6 @@ class ActiveSubscription(models.Model):
             for lesson in self.classes.all():
                 lesson.active = self.active
                 lesson.save()
-
-
-class CannotBeScheduled(Exception):
-    """
-    Indicates a situation when trying to schedule lesson that does not suite
-    to a timeline entry
-    """
-    pass
-
-
-class CannotBeUnscheduled(Exception):
-    """
-    Indicates a situation when we can not un-schedule a lesson
-    """
-    pass
 
 
 class Class(models.Model):

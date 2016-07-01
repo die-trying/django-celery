@@ -23,9 +23,9 @@ class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.PROTECT, null=True, blank=True, related_name='crm')
 
     source = models.ForeignKey(CustomerSource, on_delete=models.PROTECT, default=INTERNAL_SOURCE)
-    customer_first_name = models.CharField('First name', max_length=140)
-    customer_last_name = models.CharField('Last name', max_length=140)
-    customer_email = models.EmailField('Email')
+    customer_first_name = models.CharField('First name', max_length=140, blank=True)
+    customer_last_name = models.CharField('Last name', max_length=140, blank=True)
+    customer_email = models.EmailField('Email', blank=True)
 
     date_arrived = models.DateTimeField(auto_now_add=True)
 

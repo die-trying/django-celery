@@ -2,6 +2,8 @@ from datetime import timedelta
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 from crm.models import Customer
 
@@ -27,6 +29,10 @@ class Entry(models.Model):
     duration = models.DurationField(default=timedelta(minutes=30))
 
     slots = models.SmallIntegerField()
+
+    event_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    event_id = models.PositiveIntegerField(null=True, blank=True)
+    event = GenericForeignKey('event_type', 'event_id')
 
     def __str__(self):
         start_time = self.start_time

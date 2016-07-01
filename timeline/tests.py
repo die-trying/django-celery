@@ -5,7 +5,7 @@ from crm.models import Customer
 
 
 class EntryTestCase(TestCase):
-    fixtures = ('crm.yaml', 'test_timeline_entries.yaml')
+    fixtures = ('crm', 'test_timeline_entries',)
 
     def _occupy(self, entry):
         entry.customer = Customer.objects.get(pk=1)

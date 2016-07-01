@@ -20,6 +20,7 @@ DATABASES = {
 INSTALLED_APPS = [
     'elk',
     'crm',
+    'lessons',
     'products',
     'hub',
     'timeline',

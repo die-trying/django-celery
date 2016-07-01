@@ -1,0 +1,11 @@
+- model: products.product1
+  pk: 1
+  fields:
+    active: 1
+    cost_currency: USD
+    name: Subscription 1
+    cost: '152.00'
+    internal_name: The very first subscription
+    duration: 42 00:00:00
+    ordinary_lessons: [1, 2, 3, 4]
+    lessons_with_native: [1, 2]

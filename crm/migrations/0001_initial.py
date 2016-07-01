@@ -10,8 +10,6 @@ import django_countries.fields
 
 class Migration(migrations.Migration):
 
-    replaces = [('crm', '0001_initial'), ('crm', '0002_auto_20160627_1102'), ('crm', '0003_remove_customer_email'), ('crm', '0004_auto_20160627_1114'), ('crm', '0005_auto_20160627_1120'), ('crm', '0006_auto_20160627_1123'), ('crm', '0007_auto_20160627_1126')]
-
     initial = True
 
     dependencies = [

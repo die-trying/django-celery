@@ -7,10 +7,11 @@ from hub.models import ActiveSubscription, Class
 from timeline.models import Entry as TimelineEntry
 
 import products.models as products
+import lessons.models as lessons
 
 
 class BuySubscriptionTestCase(TestCase):
-    fixtures = ('crm.yaml',)
+    fixtures = ('crm', 'lessons', 'products')
     TEST_PRODUCT_ID = 1
     TEST_CUSTOMER_ID = 1
 
@@ -63,7 +64,7 @@ class BuySubscriptionTestCase(TestCase):
 
 
 class BuySingleLessonTestCase(TestCase):
-    fixtures = ('crm.yaml',)
+    fixtures = ('crm', 'lessons', 'products')
 
     TEST_CUSTOMER_ID = 1
 
@@ -71,7 +72,7 @@ class BuySingleLessonTestCase(TestCase):
         """
         Let's but ten lessons at a time
         """
-        for lesson_type in find_ancestors(products, products.Lesson):
+        for lesson_type in find_ancestors(lessons, lessons.Lesson):
             already_bought_lessons = []
             for i in range(0, 10):
                 try:
