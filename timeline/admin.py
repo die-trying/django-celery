@@ -7,6 +7,6 @@ from .models import Entry as TimelineEntry
 
 @admin.register(TimelineEntry)
 class TimelineEntryAdmin(admin.ModelAdmin):
-    exclude = ('customer', 'event_id', 'event_type')
+    exclude = ('customers', 'event_id', 'event_type')
     list_display = ('__str__', 'is_free')
     pass

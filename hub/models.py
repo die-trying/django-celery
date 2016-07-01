@@ -109,7 +109,7 @@ class Class(models.Model):
         if not self.can_be_scheduled(entry):
             raise CannotBeScheduled('%s %s' % (self, entry))
 
-        entry.customer = self.customer
+        entry.customers.add(self.customer)
         entry.save()
 
         self.event = entry

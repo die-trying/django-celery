@@ -106,6 +106,12 @@ class ScheduleTestCase(TestCase):
     def testScheduleSimple(self):
         """
         Generic test to schedule and unschedule a class
+
+        TODO REWRITE THIS
+
+        Разобраться, почему тест падает. Вероятно, это связано с тем, что я переделал учет свободности
+        времени преподавателя на слоты, но забыл добавить обработку слотов для простых уроков, к которым совсем
+        не привязаны события
         """
         SIMPLE_ENTRY_ID = 1
 
