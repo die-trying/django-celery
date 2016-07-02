@@ -28,7 +28,11 @@ class Entry(models.Model):
 
     start_time = models.DateTimeField()
 
-    event_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True, limit_choices_to={'app_label': 'lessons'})
+    event_type = models.ForeignKey(
+        ContentType, on_delete=models.CASCADE, null=True, blank=True,
+        limit_choices_to={'app_label': 'lessons'},
+        default=ContentType.objects.get(app_label='lessons', model='OrdinaryLesson').pk
+    )
     event_id = models.PositiveIntegerField(null=True, blank=True)
     event = GenericForeignKey('event_type', 'event_id')
 
