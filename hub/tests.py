@@ -1,13 +1,15 @@
 from django.test import TestCase
 from mixer.backend.django import mixer
-
+from django.contrib.contenttypes.models import ContentType
 from elk.utils.reflection import find_ancestors
 
+from django.contrib.auth.models import User
 import products.models as products
 import lessons.models as lessons
 from crm.models import Customer
 from hub.models import ActiveSubscription, Class
 from timeline.models import Entry as TimelineEntry
+from hub.exceptions import CannotBeScheduled
 
 
 class BuySubscriptionTestCase(TestCase):
@@ -15,7 +17,7 @@ class BuySubscriptionTestCase(TestCase):
     TEST_PRODUCT_ID = 1
     TEST_CUSTOMER_ID = 1
 
-    def testBuySingleSubscription(self):
+    def test_buy_a_single_subscription(self):
         """
         When buing a subscription, all lessons in it should become beeing
         available to the customer
@@ -41,9 +43,9 @@ class BuySubscriptionTestCase(TestCase):
 
         self.assertEqual(active_lessons_count, active_lessons_in_product_count, 'When buying a subscription should add all of its available lessons')  # two lessons with natives and four with curators
 
-    testBuySingleSubscriptionSecondTime = testBuySingleSubscription  # let's test for the second time :-)
+    test_second_time = test_buy_a_single_subscription  # let's test for the second time :-)
 
-    def testDisablingSubscription(self):
+    def test_disabling_subscription(self):
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
 
         s = ActiveSubscription(
@@ -68,7 +70,7 @@ class BuySingleLessonTestCase(TestCase):
 
     TEST_CUSTOMER_ID = 1
 
-    def testSingleLesson(self):
+    def test_single_lesson(self):
         """
         Let's but ten lessons at a time
         """
@@ -95,6 +97,9 @@ class ScheduleTestCase(TestCase):
     fixtures = ('crm.yaml', 'test_timeline_entries.yaml')
     TEST_CUSTOMER_ID = 1
 
+    def setUp(self):
+        self.event_host = mixer.blend(User, is_staff=1)
+
     def _buy_a_lesson(self, lesson=products.OrdinaryLesson.get_default()):
         bought_class = Class(
             customer=Customer.objects.get(pk=self.TEST_CUSTOMER_ID),
@@ -103,7 +108,7 @@ class ScheduleTestCase(TestCase):
         bought_class.save()
         return bought_class
 
-    def testScheduleSimple(self):
+    def test_schedule_simple(self):
         """
         Generic test to schedule and unschedule a class
         """
@@ -119,3 +124,53 @@ class ScheduleTestCase(TestCase):
 
         self.assertTrue(bought_class.is_scheduled)
         self.assertFalse(entry.is_free)
+
+    def test_schedule_master_class(self):
+        """
+        Buy a master class and then schedule it
+        """
+        event = mixer.blend(lessons.Event,
+                            lesson_type=ContentType.objects.get(app_label='lessons', model='MasterClass'),
+                            slots=5,
+                            host=self.event_host,
+                            )
+
+        lesson = mixer.blend(lessons.MasterClass)
+
+        entry = mixer.blend(TimelineEntry,
+                            event=event,
+                            teacher=self.event_host,
+                            )
+
+        entry.save()
+
+        bought_class = self._buy_a_lesson(lesson=lesson)
+        bought_class.save()
+
+        bought_class.schedule(entry)
+        bought_class.save()
+
+        self.assertTrue(bought_class.is_scheduled)
+        self.assertEqual(entry.taken_slots, 1)
+
+    def test_schedule_lesson_of_a_wrong_type(self):
+        """
+        Try to schedule bought master class lesson to a paired lesson event
+        """
+        event = mixer.blend(lessons.Event,
+                            lesson_type=ContentType.objects.get(app_label='lessons', model='PairedLesson'),
+                            slots=2,
+                            host=self.event_host,
+                            )
+
+        paired_lesson_entry = mixer.blend(TimelineEntry, event=event, teacher=self.event_host)
+
+        paired_lesson_entry.save()
+
+        bought_class = self._buy_a_lesson(mixer.blend(lessons.MasterClass))
+        bought_class.save()
+
+        with self.assertRaises(CannotBeScheduled):
+            bought_class.schedule(paired_lesson_entry)
+
+        self.assertFalse(bought_class.is_scheduled)

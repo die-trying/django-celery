@@ -56,6 +56,7 @@ class Entry(models.Model):
     def save(self, *args, **kwargs):
         if self.event:
             self.slots = self.event.slots  # The next change in this method should refactor it!
+            self.event_type = self.event.lesson_type
 
             if self.teacher != self.event.host:
                 raise ValidationError('Trying to assign a timeline entry of %s to %s' % (self.teacher, self.event.host))

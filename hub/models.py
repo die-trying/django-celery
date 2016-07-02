@@ -116,6 +116,8 @@ class Class(models.Model):
     def unschedule(self):
         """
         Unschedule previously scheduled lesson
+
+        TODO: TEST IT
         """
         if not self.timeline_entry:
             raise CannotBeUnscheduled('%s' % self)
@@ -143,6 +145,9 @@ class Class(models.Model):
             return False
 
         if not entry.is_free:
+            return False
+
+        if self.lesson_type != entry.event_type:
             return False
 
         return True
