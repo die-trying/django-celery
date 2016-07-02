@@ -92,7 +92,7 @@ class Class(models.Model):
     lesson_id = models.PositiveIntegerField()
     lesson = GenericForeignKey('lesson_type', 'lesson_id')
 
-    event = models.ForeignKey(TimelineEntry, null=True, blank=True, related_name='classes')
+    timeline_entry = models.ForeignKey(TimelineEntry, null=True, blank=True, related_name='classes')
 
     subscription = models.ForeignKey(ActiveSubscription, on_delete=models.CASCADE, null=True, related_name='classes')
 
@@ -104,7 +104,6 @@ class Class(models.Model):
     def schedule(self, entry):
         """
         Schedule a lesson — assign a timeline entry.
-        You should not use Class.save() method after scheduling
         """
         if not self.can_be_scheduled(entry):
             raise CannotBeScheduled('%s %s' % (self, entry))
@@ -112,28 +111,26 @@ class Class(models.Model):
         entry.customers.add(self.customer)
         entry.save()
 
-        self.event = entry
-        self.save()
+        self.timeline_entry = entry
 
     def unschedule(self):
         """
         Unschedule previously scheduled lesson
         """
-        if not self.event:
+        if not self.timeline_entry:
             raise CannotBeUnscheduled('%s' % self)
 
         # TODO — check if entry is not completed
-        self.event.customer = None
-        self.event.save()
-        self.event = None
-        self.save()
+        self.timeline_entry.customers.delete(self.customer)
+        self.timeline_entry.save()
+        self.timeline_entry = None
 
     @property
     def is_scheduled(self):
         """
         Check if class is scheduled — has an assigned timeline entry and other
         """
-        if self.event:
+        if self.timeline_entry:
             return True
 
         return False

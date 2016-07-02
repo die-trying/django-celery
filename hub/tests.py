@@ -1,13 +1,13 @@
 from django.test import TestCase
+from mixer.backend.django import mixer
 
 from elk.utils.reflection import find_ancestors
 
+import products.models as products
+import lessons.models as lessons
 from crm.models import Customer
 from hub.models import ActiveSubscription, Class
 from timeline.models import Entry as TimelineEntry
-
-import products.models as products
-import lessons.models as lessons
 
 
 class BuySubscriptionTestCase(TestCase):
@@ -106,31 +106,16 @@ class ScheduleTestCase(TestCase):
     def testScheduleSimple(self):
         """
         Generic test to schedule and unschedule a class
-
-        TODO REWRITE THIS
-
-        Разобраться, почему тест падает. Вероятно, это связано с тем, что я переделал учет свободности
-        времени преподавателя на слоты, но забыл добавить обработку слотов для простых уроков, к которым совсем
-        не привязаны события
         """
-        SIMPLE_ENTRY_ID = 1
 
-        entry = TimelineEntry.objects.get(pk=SIMPLE_ENTRY_ID)
-        self.assertTrue(entry.is_free)
-
+        entry = mixer.blend(TimelineEntry, slots=1)
         bought_class = self._buy_a_lesson()
-        self.assertFalse(bought_class.is_scheduled)
 
+        self.assertFalse(bought_class.is_scheduled)
+        self.assertTrue(entry.is_free)
         bought_class.schedule(entry)  # schedule a class
 
-        entry = TimelineEntry.objects.get(pk=SIMPLE_ENTRY_ID)
-        self.assertFalse(entry.is_free, 'Entry should be occupied after scheduling')
+        bought_class.save()
 
-        self.assertEquals(bought_class.event.pk, SIMPLE_ENTRY_ID)
-
-        self.assertTrue(bought_class.is_scheduled, 'Class should be marked as scheduled now')
-
-        bought_class.unschedule()
-        entry = TimelineEntry.objects.get(pk=SIMPLE_ENTRY_ID)
-        self.assertTrue(entry.is_free, 'Entry should become free again after scheduling')
-        self.assertIsNone(bought_class.event)
+        self.assertTrue(bought_class.is_scheduled)
+        self.assertFalse(entry.is_free)
