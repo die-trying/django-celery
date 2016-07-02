@@ -116,14 +116,12 @@ class Class(models.Model):
     def unschedule(self):
         """
         Unschedule previously scheduled lesson
-
-        TODO: TEST IT
         """
         if not self.timeline_entry:
             raise CannotBeUnscheduled('%s' % self)
 
         # TODO — check if entry is not completed
-        self.timeline_entry.customers.delete(self.customer)
+        self.timeline_entry.customers.remove(self.customer)
         self.timeline_entry.save()
         self.timeline_entry = None
 

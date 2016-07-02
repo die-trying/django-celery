@@ -9,7 +9,7 @@ import lessons.models as lessons
 from crm.models import Customer
 from hub.models import ActiveSubscription, Class
 from timeline.models import Entry as TimelineEntry
-from hub.exceptions import CannotBeScheduled
+from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 
 
 class BuySubscriptionTestCase(TestCase):
@@ -108,6 +108,11 @@ class ScheduleTestCase(TestCase):
         bought_class.save()
         return bought_class
 
+    def test_unschedule_of_non_scheduled_lesson(self):
+        bought_class = self._buy_a_lesson()
+        with self.assertRaises(CannotBeUnscheduled):
+            bought_class.unschedule()
+
     def test_schedule_simple(self):
         """
         Generic test to schedule and unschedule a class
@@ -124,6 +129,10 @@ class ScheduleTestCase(TestCase):
 
         self.assertTrue(bought_class.is_scheduled)
         self.assertFalse(entry.is_free)
+
+        bought_class.unschedule()
+        self.assertFalse(bought_class.is_scheduled)
+        self.assertTrue(entry.is_free)
 
     def test_schedule_master_class(self):
         """
@@ -152,6 +161,9 @@ class ScheduleTestCase(TestCase):
 
         self.assertTrue(bought_class.is_scheduled)
         self.assertEqual(entry.taken_slots, 1)
+
+        bought_class.unschedule()
+        self.assertEqual(entry.taken_slots, 0)
 
     def test_schedule_lesson_of_a_wrong_type(self):
         """
