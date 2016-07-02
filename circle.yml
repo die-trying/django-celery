@@ -1,19 +1,25 @@
 machine:
+
   python:
     version: 3.5.1
+
   node:
     version: 4.2.1
 
 dependencies:
+
   post:
     - npm install -g gulp bower
+
   cache_directories:
     - ./node_modules/
     - ./elk/static/vendor/
 
 test:
+
   pre:
     - cp elk/.env.circle elk/.env
-    - npm install -g gulp bower
+    - ./manage.py migrate
+
   override:
     - coverage run ./manage.py test
