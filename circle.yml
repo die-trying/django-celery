@@ -1,0 +1,9 @@
+machine:
+  python:
+    version: 3.5.1
+
+test:
+  pre:
+    - cp elk/.env.circle elk/.env
+  override:
+    - coverage ./manage.py test
