@@ -94,13 +94,13 @@ class BuySingleLessonTestCase(TestCase):
 
 
 class ScheduleTestCase(TestCase):
-    fixtures = ('crm.yaml', 'test_timeline_entries.yaml')
+    fixtures = ('crm', 'lessons')
     TEST_CUSTOMER_ID = 1
 
     def setUp(self):
         self.event_host = mixer.blend(User, is_staff=1)
 
-    def _buy_a_lesson(self, lesson=products.OrdinaryLesson.get_default()):
+    def _buy_a_lesson(self, lesson):
         bought_class = Class(
             customer=Customer.objects.get(pk=self.TEST_CUSTOMER_ID),
             lesson=lesson
@@ -109,7 +109,7 @@ class ScheduleTestCase(TestCase):
         return bought_class
 
     def test_unschedule_of_non_scheduled_lesson(self):
-        bought_class = self._buy_a_lesson()
+        bought_class = self._buy_a_lesson(products.OrdinaryLesson.get_default())
         with self.assertRaises(CannotBeUnscheduled):
             bought_class.unschedule()
 
@@ -119,12 +119,12 @@ class ScheduleTestCase(TestCase):
         """
 
         entry = mixer.blend(TimelineEntry, slots=1)
-        bought_class = self._buy_a_lesson()
+        bought_class = self._buy_a_lesson(products.OrdinaryLesson.get_default())
 
         self.assertFalse(bought_class.is_scheduled)
         self.assertTrue(entry.is_free)
-        bought_class.schedule(entry)  # schedule a class
 
+        bought_class.schedule(entry)  # schedule a class
         bought_class.save()
 
         self.assertTrue(bought_class.is_scheduled)

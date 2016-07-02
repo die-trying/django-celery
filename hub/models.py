@@ -145,7 +145,7 @@ class Class(models.Model):
         if not entry.is_free:
             return False
 
-        if self.lesson_type != entry.event_type:
+        if entry.event_type is not None and self.lesson_type != entry.event_type:
             return False
 
         return True
