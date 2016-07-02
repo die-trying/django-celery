@@ -36,6 +36,9 @@ class EntryTestCase(TestCase):
             entry.save()
 
     def test_is_free(self):
+        """
+        Schedule a customer to a timeleine entry
+        """
         event = mixer.blend(LessonEvent, slots=10, host=self.teacher1)
         entry = mixer.blend(TimelineEntry, event=event, teacher=self.teacher1)
         entry.save()
@@ -49,12 +52,37 @@ class EntryTestCase(TestCase):
 
         self.assertFalse(entry.is_free)
 
+        """ Let's try to schedule more customers, then event allows """
+        with self.assertRaises(ValidationError):
+            test_customer = mixer.blend(Customer)
+            entry.customers.add(test_customer)
+            entry.save()
+
+    def test_entry_wihout_an_event(self):
+        """
+        Test for a timeline entry without a direct assigned event, ex ordinary lesson
+        """
+        entry = mixer.blend(TimelineEntry, event=None, slots=1)
+        entry.save()
+
+        self.assertTrue(entry.is_free)
+
+        test_customer = mixer.blend(Customer)
+        entry.customers.add(test_customer)
+        entry.save()
+
+        self.assertFalse(entry.is_free)
+
         with self.assertRaises(ValidationError):
             test_customer = mixer.blend(Customer)
             entry.customers.add(test_customer)
             entry.save()
 
     def test_assign_entry_to_a_different_teacher(self):
+        """
+        We should not have possibility to assign an event with different host
+        to someones timeline entry
+        """
         event = mixer.blend(LessonEvent, teacher=self.teacher1)
 
         with self.assertRaises(ValidationError):

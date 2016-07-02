@@ -47,7 +47,7 @@ class Entry(models.Model):
             return '%s: %s' % (self.teacher.crm.full_name, self.event)
 
         start_time = self.start_time
-        return '%s on %s' % (self.teacher.crm.full_name, start_time.strftime('%d.%m.%Y %H:%M'))
+        return '%s scheduled on %s' % (self.teacher.crm.full_name, start_time.strftime('%d.%m.%Y %H:%M'))
 
     def save(self, *args, **kwargs):
         if self.event:
