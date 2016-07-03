@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     'django_markdown',
 
     'social.apps.django_app.default',
-
+    'django_nose',
     'django_admin_bootstrapped',
     'django.contrib.admindocs',
     'django.contrib.admin',
@@ -53,7 +53,7 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
 ]
-
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 ROOT_URLCONF = 'elk.urls'
 
 TEMPLATES = [

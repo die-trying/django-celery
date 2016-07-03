@@ -23,6 +23,3 @@ test:
   pre:
     - cp elk/.env.circle elk/.env
     - ./manage.py migrate
-
-  override:
-    - coverage run ./manage.py test
