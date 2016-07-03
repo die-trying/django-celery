@@ -7,9 +7,12 @@ machine:
     version: 4.2.1
 
 dependencies:
+  pre:
+    - pip install --upgrade pip
 
   post:
     - npm install -g gulp bower
+    - bower install
 
   cache_directories:
     - ./node_modules/
