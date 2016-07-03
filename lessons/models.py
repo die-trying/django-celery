@@ -1,9 +1,10 @@
 from datetime import timedelta
 
-from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
 from django_markdown.models import MarkdownField
+
 
 # Create your models here.
 
@@ -11,6 +12,9 @@ from django_markdown.models import MarkdownField
 class Lesson(models.Model):
     """
     Abstract class for generic lesson, defined properties for all lessons
+
+    Represents a lesson type, that user can buy — ordinary lesson, master class,
+    etc.
     """
     ENABLED = (
         (0, 'Inactive'),

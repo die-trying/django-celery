@@ -146,24 +146,50 @@ class ScheduleTestCase(TestCase):
 
         lesson = mixer.blend(lessons.MasterClass)
 
-        entry = mixer.blend(TimelineEntry,
-                            event=event,
-                            teacher=self.event_host,
-                            )
+        timeline_entry = mixer.blend(TimelineEntry,
+                                     event=event,
+                                     teacher=self.event_host,
+                                     )
 
-        entry.save()
+        timeline_entry.save()
 
         bought_class = self._buy_a_lesson(lesson=lesson)
         bought_class.save()
 
-        bought_class.schedule(entry)
+        bought_class.schedule(timeline_entry)
         bought_class.save()
 
         self.assertTrue(bought_class.is_scheduled)
-        self.assertEqual(entry.taken_slots, 1)
+        self.assertEqual(timeline_entry.taken_slots, 1)
 
         bought_class.unschedule()
-        self.assertEqual(entry.taken_slots, 0)
+        self.assertEqual(timeline_entry.taken_slots, 0)
+
+    def schedule_2_people_to_a_paired_lesson(self):
+        event = mixer.blend(lessons.Event,
+                            lesson_type=ContentType.objects.get(app_label='lessons', model='PairedLesson'),
+                            slots=2,
+                            host=self.event_host,
+                            )
+        customer1 = mixer.blend(Customer)
+        customer2 = mixer.blend(Customer)
+
+        paired_lesson = mixer.blend(lessons.PairedLesson, slots=2)
+
+        customer1_class = mixer.blend(Class, customer=customer1, lesson=paired_lesson)
+        customer2_class = mixer.blend(Class, customer=customer2, lesson=paired_lesson)
+
+        timeline_entry = mixer.blend(TimelineEntry, event=event, teacher=self.event_host)
+
+        customer1_class.schedule(timeline_entry)
+        customer2_class.schedule(timeline_entry)
+
+        self.assertTrue(customer1_class.is_scheduled)
+        self.assertTrue(customer2_class.is_scheduled)
+        self.assertEqual(timeline_entry.taken_slots, 2)
+
+        customer2_class.unschedule()
+        self.assertEqual(timeline_entry.taken_slots, 1)
 
     def test_schedule_lesson_of_a_wrong_type(self):
         """
