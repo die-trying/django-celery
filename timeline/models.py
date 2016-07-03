@@ -1,11 +1,14 @@
-from django.db import models
-from django.db.models import F
+from datetime import timedelta
+
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models import F
 
 from crm.models import Customer
+
 
 # Create your models here.
 
@@ -37,6 +40,7 @@ class Entry(models.Model):
 
     slots = models.SmallIntegerField(default=1)
     taken_slots = models.SmallIntegerField(default=0)
+    duration = models.DurationField(default=timedelta(minutes=30))
 
     @property
     def is_free(self):
@@ -56,6 +60,7 @@ class Entry(models.Model):
         if self.event:
             self.slots = self.event.slots  # The next change in this method should refactor it!
             self.event_type = self.event.lesson_type
+            self.duration = self.event.duration
 
             if self.teacher != self.event.host:
                 raise ValidationError('Trying to assign a timeline entry of %s to %s' % (self.teacher, self.event.host))

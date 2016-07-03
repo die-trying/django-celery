@@ -34,6 +34,18 @@ class EntryTestCase(TestCase):
             entry.customers.add(test_customer)
             entry.save()
 
+    def test_event_assigning(self):
+        """
+        Test if timeline entry takes all attributes from the event
+        """
+        event = mixer.blend(LessonEvent, host=self.teacher1)
+        entry = mixer.blend(TimelineEntry, event=event, teacher=self.teacher1)
+
+        for i in ('duration', 'slots'):
+            self.assertEqual(getattr(event, i), getattr(entry, i))
+
+        self.assertEqual(entry.event_type, event.lesson_type)
+
     def test_is_free(self):
         """
         Schedule a customer to a timeleine entry
@@ -56,7 +68,7 @@ class EntryTestCase(TestCase):
             entry.customers.add(test_customer)
             entry.save()
 
-    def test_entry_wihout_an_event(self):
+    def test_entry_without_an_event(self):
         """
         Test for a timeline entry without a direct assigned event, ex ordinary lesson
         """
