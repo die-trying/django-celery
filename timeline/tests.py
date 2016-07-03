@@ -1,12 +1,11 @@
-from django.test import TestCase
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.test import TestCase
 from mixer.backend.django import mixer
 
-
 from crm.models import Customer
-from timeline.models import Entry as TimelineEntry
 from lessons.models import Event as LessonEvent
-from django.contrib.auth.models import User
+from timeline.models import Entry as TimelineEntry
 
 
 class EntryTestCase(TestCase):
@@ -43,9 +42,8 @@ class EntryTestCase(TestCase):
         entry = mixer.blend(TimelineEntry, event=event, teacher=self.teacher1)
         entry.save()
 
-        self.assertTrue(entry.is_free)
-
         for i in range(0, 10):
+            self.assertTrue(entry.is_free)
             test_customer = mixer.blend(Customer)
             entry.customers.add(test_customer)
             entry.save()

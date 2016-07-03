@@ -1,15 +1,15 @@
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from mixer.backend.django import mixer
-from django.contrib.contenttypes.models import ContentType
-from elk.utils.reflection import find_ancestors
 
-from django.contrib.auth.models import User
-import products.models as products
 import lessons.models as lessons
+import products.models as products
 from crm.models import Customer
+from elk.utils.reflection import find_ancestors
+from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from hub.models import ActiveSubscription, Class
 from timeline.models import Entry as TimelineEntry
-from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 
 
 class BuySubscriptionTestCase(TestCase):
