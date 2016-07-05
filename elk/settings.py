@@ -54,6 +54,10 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.admindocs.middleware.XViewMiddleware',
 ]
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+NOSE_ARGS = [
+    '--nologcapture'
+]
+
 ROOT_URLCONF = 'elk.urls'
 
 TEMPLATES = [
