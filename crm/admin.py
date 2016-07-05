@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 
 from .models import Customer
 
+
 # Register your models here.
 
 
@@ -11,7 +12,7 @@ class CustomerInline(admin.StackedInline):
     model = Customer
     can_delete = False
     exclude = ('customer_email', 'customer_first_name', 'customer_last_name')
-    verbose_name = 'CRM customer name'
+    verbose_name = 'CRM Profile'
 
 admin.site.unregister(User)
 

@@ -1,10 +1,9 @@
-from django.db import models
-
 from django.contrib.auth.models import User
-from django_countries.fields import CountryField
-
+from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+from django_countries.fields import CountryField
+
 
 # Create your models here.
 
@@ -28,11 +27,17 @@ class Customer(models.Model):
     customer_email = models.EmailField('Email', blank=True)
 
     date_arrived = models.DateTimeField(auto_now_add=True)
+    birthday = models.DateField(null=True, blank=True)
 
     country = CountryField()
 
     starting_level = models.CharField(max_length=2, db_index=True, choices=LEVELS, default='A1')
     current_level = models.CharField(max_length=2, db_index=True, choices=LEVELS, default='A1')
+
+    skype = models.CharField('Skype login', max_length=140, blank=True)
+    facebook = models.CharField('Facebook profile id', max_length=140, blank=True)
+    twitter = models.CharField('Twitter username', max_length=140, blank=True)
+    instagram = models.CharField('Instagram username', max_length=140, blank=True)
 
     def __str__(self):
         return self.full_name
