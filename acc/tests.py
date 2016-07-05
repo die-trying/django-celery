@@ -1,19 +1,62 @@
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from selenium.webdriver.firefox.webdriver import WebDriver
+from os.path import basename
+
+import responses
+from django.contrib.auth.models import User
+from django.test import TestCase
+from mixer.backend.django import mixer
+
+from .pipelines import SaveSocialProfile
 
 
-class LoginFormTestCase(StaticLiveServerTestCase):
-    @classmethod
-    def setUpClass(cls):
-        super(LoginFormTestCase, cls).setUpClass()
-        cls.selenium = WebDriver()
+class TestSaveSocialProfile(SaveSocialProfile):
+    source_name = 'testsrc'
+    extension = 'jpgtest'
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.selenium.quit()
-        super(LoginFormTestCase, cls).tearDownClass()
+    def get_picture_url(self):
+        return 'http://testing.test/testpic.jpg'
 
-    # def testIsFormTwitterBootstrapped(self):
-    #     self.selenium.get('%s%s' % (self.live_server_url, '/acc/login/'))
-    #     inputs = self.selenium.find_elements_by_css_selector('input.form-control')
-    #     self.assertGreaterEqual(len(inputs), 2, 'Login form should have 2 o more twitter bootstrap elements')
+    @responses.activate
+    def fetch_picture(self):
+        return super().fetch_picture()
+
+
+class TestSocialPipeline(TestCase):
+    def test_fetch_picture(self):
+        responses.add(responses.GET,
+                      'http://testing.test/testpic.jpg',
+                      body=b'testbytes',
+                      status=200,
+                      content_type='image/jpeg'
+                      )
+
+        profile_saver = TestSaveSocialProfile(user='', response='', backend='')
+        profile_saver.fetch_picture()
+        self.assertEqual(profile_saver.profile_picture.read(), b'testbytes')
+
+    def test_save_source(self):
+        user = mixer.blend(User)
+
+        class TestBackend:
+            name = 'social-test-source-name'
+
+        profile_saver = TestSaveSocialProfile(user=user, response='', backend=TestBackend)
+        profile_saver.save_social_source()
+
+        self.assertEqual(user.crm.source, 'social-test-source-name')
+
+    def test_save_picture(self):
+        user = mixer.blend(User)
+        responses.add(responses.GET,
+                      'http://testing.test/testpic.jpg',
+                      body=b'testbytes',
+                      status=200,
+                      content_type='image/jpeg'
+                      )
+
+        profile_saver = TestSaveSocialProfile(user=user, response='', backend='')
+        profile_saver.fetch_picture()
+
+        profile_saver.save_picture()
+
+        self.assertEqual(basename(user.crm.profile_photo.name), '%s-testsrc.jpgtest' % user.username)
+        self.assertEqual(user.crm.profile_photo.read(), b'testbytes')
