@@ -42,3 +42,12 @@ class CustomerAdmin(admin.ModelAdmin):
         """
         queryset = super(admin.ModelAdmin, self).get_queryset(request)
         return queryset.filter(user=None)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        """
+        Disable assigning customers to users, that already have assigned customer profiles
+        """
+        if db_field.name == 'user':
+            kwargs['queryset'] = User.objects.filter(crm=None)
+
+        return super(admin.ModelAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
