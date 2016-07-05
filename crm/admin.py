@@ -34,3 +34,11 @@ class CustomerAdmin(admin.ModelAdmin):
     e.g. potential customers.
     """
     list_display = ('full_name', 'country', 'email', 'date_arrived')
+
+    def get_queryset(self, request):
+        """
+        Disable administration of customers, assigned to users.
+        One should edit this customer via the 'Users' page.
+        """
+        queryset = super(admin.ModelAdmin, self).get_queryset(request)
+        return queryset.filter(user=None)
