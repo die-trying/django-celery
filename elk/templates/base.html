@@ -1,29 +1,17 @@
 {% load static from staticfiles %}
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <title>{% block title %}ELK{% endblock %}</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-
-        <link rel="stylesheet" href="{% static 'vendor/bootstrap/dist/css/bootstrap.min.css' %}">
-        <link rel="stylesheet" href="{% static 'vendor/bootstrap-social/bootstrap-social.css' %}">
-        <link rel="stylesheet" href="{% static 'vendor/font-awesome/css/font-awesome.min.css' %}">
-
-        <link rel="stylesheet" href="{% static 'css/elk.css' %}">
-
-    </head>
+    {% include 'header/head.html' %}
     <body>
+        {% block navbar %}
+        {% include 'header/navbar.html' %}
+        {% endblock %}
         <div class="container">
-            {% block navbar %}
-            {% endblock %}
             {% block content %}
             {% endblock %}
         </div>
-        <script src="/static/vendor/jquery/dist/jquery.min.js"></script>
-        <script src="/static/vendor/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="{% static 'vendor/jquery/dist/jquery.min.js' %}"></script>
+        <script src="{% static 'vendor/bootstrap/dist/js/bootstrap.js' %}"></script>
 
     </body>
 </html>

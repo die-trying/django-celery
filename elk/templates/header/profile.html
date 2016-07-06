@@ -1,0 +1,9 @@
+{% load i18n %}
+{% if request.user.crm.profile_photo %}
+    <div class="navbar__profile-picture">
+        <img src = "{{ request.user.crm.profile_photo.url }}" />
+    </div>
+    <div class="navbar__profile-username">
+        <p>{{ request.user.crm }} (<a href="{% url 'logout' %}">{% trans 'Log&nbsp;out' %}</a>)</p>
+    </div>
+{% endif %}

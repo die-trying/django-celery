@@ -1,0 +1,24 @@
+{% load navbar_tags %}
+<nav class="navbar navbar-default navbar-collaps">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">ELK</a>
+        </div>
+
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li class="{% is_active request '^/$' %}"><a href="/">Home</a></li>
+                <li class="{% is_active request '^/accounts/payments' %}"><a href="{% url 'payments' %}">Payments</a></li>
+            </ul>
+
+        <div class="navbar-right navbar__profile">
+            {% include 'header/profile.html' %}
+        </div>
+
+    </div>
+</nav>
