@@ -25,10 +25,11 @@ INSTALLED_APPS = [
     'hub',
     'timeline',
     'acc',
+    'history',
 
     'django_countries',
     'django_markdown',
-
+    'django_user_agents',
     'social.apps.django_app.default',
     'django_nose',
     'django_admin_bootstrapped',
@@ -52,6 +53,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
 ]
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = [
