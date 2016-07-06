@@ -13,7 +13,7 @@
         <div class="collapse navbar-collapse" id="navbar">
             <ul class="nav navbar-nav">
                 <li class="{% is_active request '^/$' %}"><a href="/">Home</a></li>
-                <li class="{% is_active request '^/accounts/payments' %}"><a href="{% url 'payments' %}">Payments</a></li>
+                <li class="{% is_active request '^/accounts/payments' %}"><a href="{% url 'acc:payments' %}">Payments</a></li>
             </ul>
 
         <div class="navbar-right navbar__profile">

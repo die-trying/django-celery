@@ -8,12 +8,12 @@
     <div class="col-md-3 col-sm-1"></div>
     <div class="col-md-6">
         <div class="social-login">
-            <a class="btn btn-block btn-social btn-lg btn-google" href="{% url 'social:begin' 'google-oauth2' %}?next={{ next | urlencode}}">
+            <a class="btn btn-block btn-social btn-lg btn-google" href="{% url 'acc:social:begin' 'google-oauth2' %}?next={{ next | urlencode}}">
                 <span class="fa fa-google"></span>
                 Sign in with Google
             </a>
 
-            <a class="btn btn-block btn-social btn-lg btn-facebook" href="{% url 'social:begin' 'facebook-oauth2' %}?next={{ next| urlencode }}">
+            <a class="btn btn-block btn-social btn-lg btn-facebook" href="{% url 'acc:social:begin' 'facebook-oauth2' %}?next={{ next| urlencode }}">
                 <span class="fa fa-facebook"></span>
                 Sign in with Facebook
             </a>
