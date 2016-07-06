@@ -28,7 +28,7 @@ def log_bought_class(sender, **kwargs):
         product=instance,
         price=instance.buy_price,
     )
-    ev.store_request(instance.request)  # instance request should be stored by a view
+    ev.request = instance.request  # instance request should be stored by a view
 
     ev.save()
 
@@ -48,6 +48,6 @@ def log_bought_subscription(sender, **kwargs):
         product=instance,
         price=instance.buy_price,
     )
-    ev.store_request(instance.request)  # instance request should be stored by a view
+    ev.request = instance.request  # instance request should be stored by a view
 
     ev.save()

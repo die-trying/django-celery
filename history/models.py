@@ -6,12 +6,13 @@ from djmoney.models.fields import MoneyField
 from crm.models import Customer
 
 
-# Create your models here.
-
 class HistoryEvent(models.Model):
     """
     Abstract class for a user-generated history event.
     Every subclass must define a customer relation.
+
+    When creating a history event, you should define a request here for further
+    analysis. See examples in history.signals and history.tests.
     """
     time = models.DateTimeField(auto_now_add=True)
     price = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
@@ -32,7 +33,12 @@ class HistoryEvent(models.Model):
     os_version_string = models.CharField(max_length=140, null=True)
     device = models.CharField(max_length=140, null=True)
 
-    def store_request(self, request):
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.__store_request(self.request)
+            super().save(*args, *kwargs)
+
+    def __store_request(self, request):
         """
         Store request data for future analysis.
         Relies on https://github.com/selwin/django-user_agents
