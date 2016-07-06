@@ -21,5 +21,6 @@ dependencies:
 test:
 
   pre:
+    - gulp css
     - cp elk/.env.circle elk/.env
     - ./manage.py migrate
