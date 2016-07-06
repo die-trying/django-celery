@@ -97,6 +97,7 @@ ENV/
 
 elk/static/vendor
 elk/static/css
+elk/static/js
 
 # deployed static files folder
 /static/
