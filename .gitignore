@@ -99,6 +99,6 @@ elk/static/vendor
 elk/static/css
 
 # deployed static files folder
-static/
+/static/
 
 node_modules/
