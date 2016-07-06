@@ -139,7 +139,7 @@ class ScheduleTestCase(TestCase):
         Buy a master class and then schedule it
         """
         event = mixer.blend(lessons.Event,
-                            lesson_type=ContentType.objects.get(app_label='lessons', model='MasterClass'),
+                            lesson_type=ContentType.objects.get(app_label='lessons', model='masterclass'),
                             slots=5,
                             host=self.event_host,
                             )
@@ -167,7 +167,7 @@ class ScheduleTestCase(TestCase):
 
     def schedule_2_people_to_a_paired_lesson(self):
         event = mixer.blend(lessons.Event,
-                            lesson_type=ContentType.objects.get(app_label='lessons', model='PairedLesson'),
+                            lesson_type=ContentType.objects.get(app_label='lessons', model='pairedlesson'),
                             slots=2,
                             host=self.event_host,
                             )
@@ -196,7 +196,7 @@ class ScheduleTestCase(TestCase):
         Try to schedule bought master class lesson to a paired lesson event
         """
         event = mixer.blend(lessons.Event,
-                            lesson_type=ContentType.objects.get(app_label='lessons', model='PairedLesson'),
+                            lesson_type=ContentType.objects.get(app_label='lessons', model='pairedlesson'),
                             slots=2,
                             host=self.event_host,
                             )
