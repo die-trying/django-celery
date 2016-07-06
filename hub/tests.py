@@ -46,6 +46,25 @@ class BuySubscriptionTestCase(TestCase):
 
     test_second_time = test_buy_a_single_subscription  # let's test for the second time :-)
 
+    def test_store_class_source(self):
+        """
+        When buying a subcription, every bought class should have a sign
+        about that it's bought buy subscription.
+        """
+
+        product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
+        customer = mixer.blend(Customer)
+        s = ActiveSubscription(
+            customer=customer,
+            product=product,
+            buy_price=150
+        )
+        s.request = mock_request(customer)
+        s.save()
+
+        for c in s.classes.all():
+            self.assertEqual(c.buy_source, 1)  # 1 is defined in the model
+
     def test_disabling_subscription(self):
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
         customer = mixer.blend(Customer)

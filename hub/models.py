@@ -58,6 +58,7 @@ class ActiveSubscription(models.Model):
                     subscription=self,
                     customer=self.customer,
                     buy_price=self.buy_price,
+                    buy_source=1,  # store a sign, that class is bought by subscription
                 )
                 c.request = self.request  # bypass request object for later analysis
                 c.save()
