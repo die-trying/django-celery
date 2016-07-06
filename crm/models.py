@@ -76,6 +76,9 @@ class Customer(models.Model):
 
 @receiver(pre_save, sender=User)
 def create_customer(sender, **kwargs):
+    """
+    TODO check if this is still needed
+    """
     user = kwargs.get('instance')
     if not user.pk:
         customer = Customer()

@@ -7,6 +7,7 @@ import lessons.models as lessons
 import products.models as products
 from crm.models import Customer
 from elk.utils.reflection import find_ancestors
+from elk.utils.mockers import mock_request
 from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from hub.models import ActiveSubscription, Class
 from timeline.models import Entry as TimelineEntry
@@ -15,7 +16,6 @@ from timeline.models import Entry as TimelineEntry
 class BuySubscriptionTestCase(TestCase):
     fixtures = ('crm', 'lessons', 'products')
     TEST_PRODUCT_ID = 1
-    TEST_CUSTOMER_ID = 1
 
     def test_buy_a_single_subscription(self):
         """
@@ -30,12 +30,13 @@ class BuySubscriptionTestCase(TestCase):
             return cnt
 
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
-
+        customer = mixer.blend(Customer)
         s = ActiveSubscription(
-            customer=Customer.objects.get(pk=self.TEST_CUSTOMER_ID),
+            customer=customer,
             product=product,
             buy_price=150,
         )
+        s.request = mock_request(customer)
         s.save()
 
         active_lessons_count = Class.objects.filter(subscription_id=s.pk).count()
@@ -47,12 +48,13 @@ class BuySubscriptionTestCase(TestCase):
 
     def test_disabling_subscription(self):
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
-
+        customer = mixer.blend(Customer)
         s = ActiveSubscription(
-            customer=Customer.objects.get(pk=self.TEST_CUSTOMER_ID),
+            customer=customer,
             product=product,
             buy_price=150,
         )
+        s.request = mock_request(customer)
         s.save()
 
         for lesson in s.classes.all():
@@ -68,20 +70,20 @@ class BuySubscriptionTestCase(TestCase):
 class BuySingleLessonTestCase(TestCase):
     fixtures = ('crm', 'lessons', 'products')
 
-    TEST_CUSTOMER_ID = 1
-
     def test_single_lesson(self):
         """
         Let's but ten lessons at a time
         """
+        customer = mixer.blend(Customer)
         for lesson_type in find_ancestors(lessons, lessons.Lesson):
             already_bought_lessons = []
             for i in range(0, 10):
                 try:
                     s = Class(
-                        customer=Customer.objects.get(pk=self.TEST_CUSTOMER_ID),
+                        customer=customer,
                         lesson=lesson_type.get_default()  # this should be defined in every lesson
                     )
+                    s.request = mock_request(customer)
                     s.save()
                     self.assertTrue(s.pk)
                     self.assertNotIn(s.pk, already_bought_lessons)
@@ -101,12 +103,14 @@ class ScheduleTestCase(TestCase):
         self.event_host = mixer.blend(User, is_staff=1)
 
     def _buy_a_lesson(self, lesson):
-        bought_class = Class(
-            customer=Customer.objects.get(pk=self.TEST_CUSTOMER_ID),
+        customer = Customer.objects.get(pk=self.TEST_CUSTOMER_ID)
+        c = Class(
+            customer=customer,
             lesson=lesson
         )
-        bought_class.save()
-        return bought_class
+        c.request = mock_request(customer)
+        c.save()
+        return c
 
     def test_unschedule_of_non_scheduled_lesson(self):
         bought_class = self._buy_a_lesson(products.OrdinaryLesson.get_default())

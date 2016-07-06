@@ -1,19 +1,22 @@
-from django.db import models
-
-from djmoney.models.fields import MoneyField
-
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
+from djmoney.models.fields import MoneyField
 
 from crm.models import Customer
-
-from timeline.models import Entry as TimelineEntry
 from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
+from timeline.models import Entry as TimelineEntry
 
 
 class ActiveSubscription(models.Model):
     """
-    Represent a single bought subscription
+    Represents a single bought subscription.
+
+    When buying a subscription, one should store request in the `request`
+    property of this instance. This is neeed for the log entry to contain
+    request data requeired for futher analysis.
+
+    The property is accessed later in the history.signals module.
     """
     ENABLED = (
         (0, 'Inactive'),
@@ -50,13 +53,14 @@ class ActiveSubscription(models.Model):
         """
         for lesson_type in self.product.LESSONS:
             for lesson in getattr(self.product, lesson_type).all():
-                bought_lesson = Class(
+                c = Class(
                     lesson=lesson,
                     subscription=self,
                     customer=self.customer,
-                    buy_price=self.buy_price
+                    buy_price=self.buy_price,
                 )
-                bought_lesson.save()
+                c.request = self.request  # bypass request object for later analysis
+                c.save()
 
     def __update_classes(self):
         """
@@ -71,6 +75,13 @@ class ActiveSubscription(models.Model):
 
 
 class Class(models.Model):
+    """
+    Represents a single bought lesson. When buying a class, one should
+    store request in the `request` property of this instance. This is neeed for
+    the log entry to contain request data requeired for futher analysis.
+
+    The property is accessed later in the history.signals module.
+    """
     BUY_SOURCES = (
         (0, 'Single'),
         (1, 'Subscription')

@@ -1,6 +1,6 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from mixer.backend.django import mixer
-from django.contrib.auth import get_user_model
 
 from crm.models import Customer
 
