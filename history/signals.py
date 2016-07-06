@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from history.models import PaymentEvent
-from hub.models import Class
+from hub.models import ActiveSubscription, Class
 
 
 @receiver(post_save, sender=Class, dispatch_uid='Log_single_class_buy')
@@ -22,6 +22,26 @@ def log_bought_class(sender, **kwargs):
 
     if instance.buy_source != 0:  # log only single-bought classes
         return
+
+    ev = PaymentEvent(
+        customer=instance.customer,
+        product=instance,
+        price=instance.buy_price,
+    )
+    ev.store_request(instance.request)  # instance request should be stored by a view
+
+    ev.save()
+
+
+@receiver(post_save, sender=ActiveSubscription, dispatch_uid='Log_subscription_buy')
+def log_bought_subscription(sender, **kwargs):
+    """
+    Log a fresh-bought subscription
+    """
+    if not kwargs['created']:  # log only new subscriptions
+        return
+
+    instance = kwargs['instance']
 
     ev = PaymentEvent(
         customer=instance.customer,

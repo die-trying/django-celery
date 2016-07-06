@@ -1,16 +1,17 @@
 from django.test import TestCase
 from mixer.backend.django import mixer
-from moneyed import Money
 
 from crm.models import Customer
 from elk.utils.mockers import mock_request
 from history.models import PaymentEvent
-from hub.models import Class
+from hub.models import ActiveSubscription, Class
 from lessons.models import OrdinaryLesson
+from products.models import Product1 as product
 
 
 class TestEvent(TestCase):
     fixtures = ('crm', 'products', 'lessons')
+    TEST_PRODUCT_ID = 1
 
     def setUp(self):
         self.request = mock_request()
@@ -41,14 +42,34 @@ class TestEvent(TestCase):
         Buy a single lesson and find a respective log entry for it
         """
         customer = mixer.blend(Customer)
+        self.assertEqual(customer.payments.count(), 0)
+
         c = Class(
             customer=customer,
             lesson=OrdinaryLesson.get_default(),
-            buy_price=Money(10, 'USD'),
+            buy_price=10,
             buy_source=0,
         )
         c.request = self.request
         c.save()
 
-        self.assertEquals(customer.payments.count(), 1)
-        self.assertEquals(customer.payments.get(pk=1).product, c)
+        self.assertEqual(customer.payments.count(), 1)
+        self.assertEqual(customer.payments.all()[0].product, c)
+
+    def test_subscription_log_entry_creation(self):
+        """
+        Buy a subscription and find a respective log entry for it
+        """
+        customer = mixer.blend(Customer)
+        self.assertEqual(customer.payments.count(), 0)
+
+        s = ActiveSubscription(
+            customer=customer,
+            product=product.objects.get(pk=self.TEST_PRODUCT_ID),
+            buy_price=150,
+        )
+        s.request = mock_request(customer=customer)
+        s.save()
+
+        self.assertEqual(customer.payments.count(), 1, 'Check if only one log record appeared: for the subscription, not for classes')
+        self.assertEqual(customer.payments.all()[0].product, s)
