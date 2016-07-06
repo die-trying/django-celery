@@ -13,5 +13,6 @@ def single(request):
         lesson=OrdinaryLesson.get_default(),
         buy_price=Money(10, 'USD'),
     )
+    c.request = request
     c.save()
     return redirect('/')

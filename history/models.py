@@ -52,7 +52,7 @@ class HistoryEvent(models.Model):
         self.os_version = request.user_agent.os.version_string
         self.device = request.user_agent.device.family
 
-        self.ip = request.META.get('HTTP_HOST')
+        self.ip = request.META.get('REMOTE_ADDR')
         self.raw_useragent = request.META.get('HTTP_USER_AGENT')
 
     class Meta:

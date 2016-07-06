@@ -23,7 +23,7 @@ def mock_request(customer=mixer.blend(Customer)):
     request.user_agent.device.family = 'iPhone'
 
     request.META = {
-        'HTTP_HOST': '127.0.0.5',
+        'REMOTE_ADDR': '127.0.0.5',
         'HTTP_USER_AGENT': 'WinXP; U/16',
     }
 
