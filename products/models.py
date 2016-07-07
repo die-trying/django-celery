@@ -1,13 +1,10 @@
 from datetime import timedelta
 
 from django.db import models
-from django_markdown.models import MarkdownField
-from djmoney.models.fields import MoneyField
-from django.contrib.contenttypes.fields import GenericRelation
-from django.contrib.contenttypes.models import ContentType
 
-from hub.models import ActiveSubscription
-from lessons.models import OrdinaryLesson, LessonWithNative, PairedLesson, MasterClass, HappyHour
+from djmoney.models.fields import MoneyField
+from lessons.models import HappyHour, LessonWithNative, MasterClass, OrdinaryLesson, PairedLesson
+
 
 # Create your models here.
 
@@ -25,8 +22,6 @@ class Product(models.Model):
     internal_name = models.CharField(max_length=140)
 
     duration = models.DurationField(default=timedelta(days=7 * 6))
-
-    active_subscriptions = GenericRelation(ActiveSubscription)
 
     def __str__(self):
         return self.internal_name

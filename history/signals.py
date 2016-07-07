@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from history.models import PaymentEvent
-from hub.models import ActiveSubscription, Class
+from hub.models import Class, Subscription
 
 
 @receiver(post_save, sender=Class, dispatch_uid='Log_single_class_buy')
@@ -33,7 +33,7 @@ def log_bought_class(sender, **kwargs):
     ev.save()
 
 
-@receiver(post_save, sender=ActiveSubscription, dispatch_uid='Log_subscription_buy')
+@receiver(post_save, sender=Subscription, dispatch_uid='Log_subscription_buy')
 def log_bought_subscription(sender, **kwargs):
     """
     Log a fresh-bought subscription

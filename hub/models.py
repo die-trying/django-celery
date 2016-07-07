@@ -3,9 +3,9 @@ from abc import abstractproperty
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from djmoney.models.fields import MoneyField
 
 from crm.models import Customer
+from djmoney.models.fields import MoneyField
 from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from timeline.models import Entry as TimelineEntry
 
@@ -32,7 +32,7 @@ class BuyableProduct(models.Model):
         abstract = True
 
 
-class ActiveSubscription(BuyableProduct):
+class Subscription(BuyableProduct):
     """
     Represents a single bought subscription.
 
@@ -61,7 +61,7 @@ class ActiveSubscription(BuyableProduct):
         if not is_new:  # check, if we should enable\disable lessons
             self.__update_classes()
 
-        super(ActiveSubscription, self).save(*args, **kwargs)
+        super(Subscription, self).save(*args, **kwargs)
 
         if is_new:
             self.__add_lessons_to_user()
@@ -88,7 +88,7 @@ class ActiveSubscription(BuyableProduct):
         When the subscription is disabled for any reasons, all lessons
         assosciated to it, should be disabled too.
         """
-        orig = ActiveSubscription.objects.get(pk=self.pk)
+        orig = Subscription.objects.get(pk=self.pk)
         if orig.active != self.active:
             for lesson in self.classes.all():
                 lesson.active = self.active
@@ -118,7 +118,7 @@ class Class(BuyableProduct):
 
     timeline_entry = models.ForeignKey(TimelineEntry, null=True, blank=True, related_name='classes')
 
-    subscription = models.ForeignKey(ActiveSubscription, on_delete=models.CASCADE, null=True, related_name='classes')
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, null=True, related_name='classes')
 
     @property
     def name_for_user(self):

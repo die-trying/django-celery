@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
-from mixer.backend.django import mixer
 
 import lessons.models as lessons
 import products.models as products
@@ -9,7 +8,8 @@ from crm.models import Customer
 from elk.utils.mockers import mock_request
 from elk.utils.reflection import find_ancestors
 from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
-from hub.models import ActiveSubscription, Class
+from hub.models import Class, Subscription
+from mixer.backend.django import mixer
 from timeline.models import Entry as TimelineEntry
 
 
@@ -32,7 +32,7 @@ class BuySubscriptionTestCase(TestCase):
 
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
         customer = mixer.blend(Customer)
-        s = ActiveSubscription(
+        s = Subscription(
             customer=customer,
             product=product,
             buy_price=150,
@@ -55,7 +55,7 @@ class BuySubscriptionTestCase(TestCase):
 
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
         customer = mixer.blend(Customer)
-        s = ActiveSubscription(
+        s = Subscription(
             customer=customer,
             product=product,
             buy_price=150
@@ -69,7 +69,7 @@ class BuySubscriptionTestCase(TestCase):
     def test_disabling_subscription(self):
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
         customer = mixer.blend(Customer)
-        s = ActiveSubscription(
+        s = Subscription(
             customer=customer,
             product=product,
             buy_price=150,
@@ -245,7 +245,7 @@ class testBuyableProductMixin(TestCase):
     def test_subscription_name(self):
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
         customer = mixer.blend(Customer)
-        s = ActiveSubscription(
+        s = Subscription(
             customer=customer,
             product=product,
             buy_price=150,

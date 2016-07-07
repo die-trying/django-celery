@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 
-from hub.models import ActiveSubscription, Class
+from hub.models import Class, Subscription
 from lessons.models import OrdinaryLesson
 from moneyed import Money
 from products.models import Product1
@@ -21,7 +21,7 @@ def single(request):
 
 @login_required
 def subscription(request):
-    s = ActiveSubscription(
+    s = Subscription(
         customer=request.user.crm,
         product=Product1.objects.get(pk=1),
         buy_price=Money(150, 'USD')

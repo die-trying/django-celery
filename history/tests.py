@@ -1,11 +1,11 @@
 from django.test import TestCase
-from mixer.backend.django import mixer
 
 from crm.models import Customer
 from elk.utils.mockers import mock_request
 from history.models import PaymentEvent
-from hub.models import ActiveSubscription, Class
+from hub.models import Class, Subscription
 from lessons.models import OrdinaryLesson
+from mixer.backend.django import mixer
 from products.models import Product1 as product
 
 
@@ -61,7 +61,7 @@ class TestEvent(TestCase):
         customer = mixer.blend(Customer)
         self.assertEqual(customer.payments.count(), 0)
 
-        s = ActiveSubscription(
+        s = Subscription(
             customer=customer,
             product=product.objects.get(pk=self.TEST_PRODUCT_ID),
             buy_price=150,
