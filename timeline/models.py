@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import F
+from django.utils.dateformat import format
 
 from crm.models import Customer
 
@@ -23,6 +24,22 @@ class EntryQuerySet(models.QuerySet):
 
 
 class Entry(models.Model):
+    """
+    A timeline entry
+
+    Used for planning teachers time, and for scheduled bought
+    classes (:model:`hub.Class`).
+
+    JSON representation:
+
+    :teacher:
+        * id
+        * username
+    :entry:
+        * id — primary key
+        * start_time — start time since unix epoch
+        * duration — duration minutes
+    """
     objects = EntryQuerySet.as_manager()
 
     teacher = models.ForeignKey(User, related_name='timeline_entries', on_delete=models.PROTECT, limit_choices_to={'is_staff': 1})
@@ -74,14 +91,17 @@ class Entry(models.Model):
         super().save(*args, **kwargs)
 
     def as_dict(self):
+        """
+        Dictionary representation of a model. For details see model description.
+        """
         return {
             'teacher': {
                 'id': self.teacher.id,
                 'username': self.teacher.username,
-                'name': self.teacher.crm.full_name,
             },
             'entry': {
-                'start_time': str(self.start_time),
-                'duration': str(self.duration),
+                'id': self.pk,
+                'start_time': int(format(self.start_time, 'U')),     # int UNIX_T
+                'duration': int(self.duration.total_seconds() / 60)  # int minutes
             },
         }

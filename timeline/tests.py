@@ -1,6 +1,10 @@
+import json
+from datetime import timedelta
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import Client, TestCase
+from django.utils.dateformat import format
 from mixer.backend.django import mixer
 
 from crm.models import Customer
@@ -98,3 +102,32 @@ class EntryTestCase(TestCase):
         with self.assertRaises(ValidationError):
             entry = mixer.blend(TimelineEntry, teacher=self.teacher2, event=event)
             entry.save()
+
+
+class FunctionalEntrTest(TestCase):
+    """
+    Generate dummy teachers timeline and fetch it through JSON
+    """
+    def test_user_json(self):
+        duration = timedelta(minutes=71)
+        teacher = mixer.blend(User, is_staff=1)
+        teacher.save()
+
+        mocked_entries = {}
+        for i in range(0, 10):
+            entry = mixer.blend(TimelineEntry, teacher=teacher, duration=duration)
+            mocked_entries[entry.pk] = entry
+
+        c = Client()
+        response = c.get('/timeline/%s/calendar.json' % teacher.username)
+        data = json.loads(response.content.decode('utf-8'))
+
+        for i in data:
+            id = i['entry']['id']
+            mocked_entry = mocked_entries[id]
+
+            self.assertEqual(i['teacher']['username'], teacher.username)
+            self.assertEqual(i['entry']['duration'], 71)
+
+            mocked_start_time = format(mocked_entry.start_time, 'U')
+            self.assertEqual(i['entry']['start_time'], int(mocked_start_time))
