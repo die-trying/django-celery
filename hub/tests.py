@@ -6,8 +6,8 @@ from mixer.backend.django import mixer
 import lessons.models as lessons
 import products.models as products
 from crm.models import Customer
-from elk.utils.reflection import find_ancestors
 from elk.utils.mockers import mock_request
+from elk.utils.reflection import find_ancestors
 from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from hub.models import ActiveSubscription, Class
 from timeline.models import Entry as TimelineEntry
@@ -23,6 +23,7 @@ class BuySubscriptionTestCase(TestCase):
         available to the customer
         """
 
+        # TODO: Clean this up
         def _get_lessons_count(product):
             cnt = 0
             for lesson_type in product.LESSONS:
@@ -98,15 +99,15 @@ class BuySingleLessonTestCase(TestCase):
             already_bought_lessons = []
             for i in range(0, 10):
                 try:
-                    s = Class(
+                    c = Class(
                         customer=customer,
                         lesson=lesson_type.get_default()  # this should be defined in every lesson
                     )
-                    s.request = mock_request(customer)
-                    s.save()
-                    self.assertTrue(s.pk)
-                    self.assertNotIn(s.pk, already_bought_lessons)
-                    already_bought_lessons.append(s.pk)
+                    c.request = mock_request(customer)
+                    c.save()
+                    self.assertTrue(c.pk)
+                    self.assertNotIn(c.pk, already_bought_lessons)
+                    already_bought_lessons.append(c.pk)
                 except NotImplementedError:
                     """
                     Some lessons, ex master classes cannot be bought such way
@@ -235,3 +236,33 @@ class ScheduleTestCase(TestCase):
             bought_class.schedule(paired_lesson_entry)
 
         self.assertFalse(bought_class.is_scheduled)
+
+
+class testBuyableProductMixin(TestCase):
+    fixtures = ('crm', 'lessons', 'products')
+    TEST_PRODUCT_ID = 1
+
+    def test_subscription_name(self):
+        product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
+        customer = mixer.blend(Customer)
+        s = ActiveSubscription(
+            customer=customer,
+            product=product,
+            buy_price=150,
+        )
+        s.request = mock_request(customer)
+        s.save()
+
+        self.assertEqual(s.name_for_user, product.name)
+
+    def test_single_class_name(self):
+        customer = mixer.blend(Customer)
+        lesson = products.OrdinaryLesson.get_default()
+        c = Class(
+            customer=customer,
+            lesson=lesson
+        )
+        c.request = mock_request(customer)
+        c.save()
+
+        self.assertEqual(c.name_for_user, lesson.name)

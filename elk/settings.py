@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'acc',
     'history',
 
+    'djmoney',
     'django_countries',
     'django_markdown',
     'django_user_agents',

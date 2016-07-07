@@ -1,3 +1,5 @@
+from abc import abstractproperty
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -8,7 +10,29 @@ from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from timeline.models import Entry as TimelineEntry
 
 
-class ActiveSubscription(models.Model):
+class BuyableProduct(models.Model):
+    """
+    Parent of every buyable object
+    """
+    ENABLED = (
+        (0, 'Inactive'),
+        (1, 'Active'),
+    )
+
+    buy_time = models.DateTimeField(auto_now_add=True)
+    buy_price = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
+
+    active = models.SmallIntegerField(choices=ENABLED, default=1)
+
+    @abstractproperty
+    def name_for_user(self):
+        pass
+
+    class Meta:
+        abstract = True
+
+
+class ActiveSubscription(BuyableProduct):
     """
     Represents a single bought subscription.
 
@@ -18,20 +42,16 @@ class ActiveSubscription(models.Model):
 
     The property is accessed later in the history.signals module.
     """
-    ENABLED = (
-        (0, 'Inactive'),
-        (1, 'Active'),
-    )
+
     customer = models.ForeignKey(Customer)
-
-    buy_time = models.DateTimeField(auto_now_add=True)
-    buy_price = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
-
-    active = models.SmallIntegerField(choices=ENABLED, default=1)
 
     product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     product_id = models.PositiveIntegerField()
     product = GenericForeignKey('product_type', 'product_id')
+
+    @property
+    def name_for_user(self):
+        return self.product.name
 
     def save(self, *args, **kwargs):
         is_new = True
@@ -75,7 +95,7 @@ class ActiveSubscription(models.Model):
                 lesson.save()
 
 
-class Class(models.Model):
+class Class(BuyableProduct):
     """
     Represents a single bought lesson. When buying a class, one should
     store request in the `request` property of this instance. This is neeed for
@@ -87,18 +107,10 @@ class Class(models.Model):
         (0, 'Single'),
         (1, 'Subscription')
     )
-    ENABLED = (
-        (0, 'Inactive'),
-        (1, 'Active'),
-    )
 
     customer = models.ForeignKey(Customer)
 
-    buy_time = models.DateTimeField(auto_now_add=True)
-    buy_price = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
     buy_source = models.SmallIntegerField(choices=BUY_SOURCES, default=0)
-
-    active = models.SmallIntegerField(choices=ENABLED, default=1)
 
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     lesson_id = models.PositiveIntegerField()
@@ -107,6 +119,10 @@ class Class(models.Model):
     timeline_entry = models.ForeignKey(TimelineEntry, null=True, blank=True, related_name='classes')
 
     subscription = models.ForeignKey(ActiveSubscription, on_delete=models.CASCADE, null=True, related_name='classes')
+
+    @property
+    def name_for_user(self):
+        return self.lesson.name
 
     def __str__(self):
         if self.subscription:

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load djmoney %}
+
+{% block content %}
+<h1 class="page-title">{% trans 'Your payment history' %}</h1>
+
+{% if user.crm.payments %}
+    <div class="table-responsive">
+        <table class="payments-history table table-striped">
+            <thead>
+                <tr>
+                    <th class="payments-history__first-column">{% trans '#' %}</th>
+                    <th class="payments-history__date-column">{% trans 'Purchase date' %}</th>
+                    <th class="payments-history__product-column">{% trans 'Product' %}</th>
+                    <th class="payments-history__price-column">{% trans 'Price' %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for payment in user.crm.payments.all %}
+                <tr>
+                    <th class="payments-history__first-column">{{ forloop.counter }}</th>
+                    <td class="payments-history__date-column">{{ payment.time | date:"SHORT_DATETIME_FORMAT" }}</td>
+                    <td class="payments-history__product-column">{{ payment.product.name_for_user }}</td>
+                    <td class="payments-history__price-column">{% money_localize payment.price %}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p>{% trans "You don't have any payments yet. <a href=\"/\">Choose</a> a first one." %}</p>
+{% endif %}
+{% endblock %}

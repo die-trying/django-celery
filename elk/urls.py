@@ -16,6 +16,7 @@ urlpatterns = [
 
     url(r'^accounts/', include('acc.urls', namespace='acc')),
     url(r'^hub/', include('hub.urls', namespace='hub')),
+    url(r'^history/', include('history.urls', namespace='history')),
 
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', admin.site.urls),
