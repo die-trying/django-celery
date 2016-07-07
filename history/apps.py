@@ -5,4 +5,4 @@ class HistoryConfig(AppConfig):
     name = 'history'
 
     def ready(self):
-        import history.signals
+        import history.signals  # NOQA
