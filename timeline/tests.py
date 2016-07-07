@@ -108,6 +108,15 @@ class FunctionalEntrTest(TestCase):
     """
     Generate dummy teachers timeline and fetch it through JSON
     """
+    def setUp(self):
+        """
+        Calendar administration is limited to staff members, so we login
+        with a super user here.
+        """
+        self.user = User.objects.create_superuser('test', 'te@ss.tt', 'Chug6ATh9hei')
+        self.c = Client()
+        self.c.login(username='test', password='Chug6ATh9hei')
+
     def test_user_json(self):
         duration = timedelta(minutes=71)
         teacher = mixer.blend(User, is_staff=1)
@@ -118,8 +127,7 @@ class FunctionalEntrTest(TestCase):
             entry = mixer.blend(TimelineEntry, teacher=teacher, duration=duration)
             mocked_entries[entry.pk] = entry
 
-        c = Client()
-        response = c.get('/timeline/%s/calendar.json' % teacher.username)
+        response = self.c.get('/timeline/%s/calendar.json' % teacher.username)
         data = json.loads(response.content.decode('utf-8'))
 
         for i in data:

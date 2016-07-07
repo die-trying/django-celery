@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
 from django.shortcuts import get_list_or_404, get_object_or_404
 from jsonview.decorators import json_view
@@ -6,11 +6,12 @@ from jsonview.decorators import json_view
 from timeline.models import Entry as TimelineEntry
 
 
-@login_required
+@staff_member_required
 def calendar(request, username):
     pass
 
 
+@staff_member_required
 @json_view
 def calendar_json(request, username):
     user = get_object_or_404(User, username=username)
