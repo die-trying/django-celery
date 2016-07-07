@@ -22,5 +22,6 @@ test:
 
   pre:
     - gulp css
+    - gulp js
     - cp elk/.env.circle elk/.env
     - ./manage.py migrate
