@@ -33,8 +33,8 @@ INSTALLED_APPS = [
     'django_user_agents',
     'social.apps.django_app.default',
     'django_nose',
-    'django_admin_bootstrapped',
     'django.contrib.admindocs',
+    'suit',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -83,7 +83,10 @@ TEMPLATES = [
     },
 ]
 
-DAB_FIELD_RENDERER = 'django_admin_bootstrapped.renderers.BootstrapFieldRenderer'
+SUIT_CONFIG = {
+    'ADMIN_NAME': 'ELK Dashboard back-office',
+    'MENU_EXCLUDE': ('default',),
+}
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',

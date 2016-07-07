@@ -43,7 +43,7 @@ class Subscription(BuyableProduct):
     The property is accessed later in the history.signals module.
     """
 
-    customer = models.ForeignKey(Customer)
+    customer = models.ForeignKey(Customer, related_name='subscriptions')
 
     product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     product_id = models.PositiveIntegerField()
@@ -108,7 +108,7 @@ class Class(BuyableProduct):
         (1, 'Subscription')
     )
 
-    customer = models.ForeignKey(Customer)
+    customer = models.ForeignKey(Customer, related_name='classes')
 
     buy_source = models.SmallIntegerField(choices=BUY_SOURCES, default=0)
 

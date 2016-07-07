@@ -17,11 +17,21 @@ class CustomerSource(models.Model):
 
 
 class Customer(models.Model):
+    """
+    A model for a base customer.
+
+    Contents everything, related to CRM via properties:
+        * payments: payment history: :model:`history.PaymentEvent`
+        * classes: all bought classes: :model:`hub.Class`
+        * subscriptions: all bought subscriptions: :model:`hub.Subscription`
+
+    The model automatically assigned to a current user, so you can access all CRM properties via `request.user.crm`.
+    """
     LEVELS = [(a + str(i), a + str(i)) for i in range(1, 4) for a in ('A', 'B', 'C')]
 
     user = models.OneToOneField(User, on_delete=models.PROTECT, null=True, blank=True, related_name='crm')
 
-    source = models.CharField('Customer source', max_length=140, default='internal')
+    source = models.CharField(max_length=140, default='internal')
 
     customer_first_name = models.CharField('First name', max_length=140, blank=True)
     customer_last_name = models.CharField('Last name', max_length=140, blank=True)
@@ -30,7 +40,7 @@ class Customer(models.Model):
     date_arrived = models.DateTimeField(auto_now_add=True)
     birthday = models.DateField(null=True, blank=True)
 
-    profile_photo = models.ImageField(upload_to='profiles/', null=True)
+    profile_photo = models.ImageField(upload_to='profiles/', null=True, blank=True)
 
     profession = models.CharField(max_length=140, null=True, blank=True)
 
@@ -45,9 +55,6 @@ class Customer(models.Model):
     twitter = models.CharField('Twitter username', max_length=140, blank=True)
     instagram = models.CharField('Instagram username', max_length=140, blank=True)
     linkedin = models.CharField('Linkedin username', max_length=140, blank=True)
-
-    def __str__(self):
-        return self.full_name
 
     @property
     def full_name(self):
@@ -77,6 +84,29 @@ class Customer(models.Model):
         if self.user:
             return getattr(self.user, property)
         return getattr(self, 'customer_' + property)
+
+    def __str__(self):
+        return self.full_name
+
+    class Meta:
+        verbose_name = 'Lead'
+
+
+class RegisteredCustomer(Customer):
+    """
+    A stub customer model for administration purposes
+    """
+    @property
+    def bought_classes(customer):
+        return customer.classes.filter(buy_source=0).count()  # select only single bought classes
+
+    @property
+    def bought_subscriptions(customer):
+        return customer.subscriptions.count()
+
+    class Meta:
+        proxy = True
+        verbose_name = 'Student'
 
 
 @receiver(pre_save, sender=User)
