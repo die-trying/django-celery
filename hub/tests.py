@@ -120,7 +120,7 @@ class ScheduleTestCase(TestCase):
     TEST_CUSTOMER_ID = 1
 
     def setUp(self):
-        self.event_host = mixer.blend(User, is_staff=1)
+        self.event_host = mixer.blend(User, is_staff=1, crm=mixer.blend(Customer))
 
     def _buy_a_lesson(self, lesson):
         customer = Customer.objects.get(pk=self.TEST_CUSTOMER_ID)

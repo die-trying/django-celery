@@ -1,7 +1,5 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
 
 from django_countries.fields import CountryField
 
@@ -107,15 +105,3 @@ class RegisteredCustomer(Customer):
     class Meta:
         proxy = True
         verbose_name = 'Student'
-
-
-@receiver(pre_save, sender=User)
-def create_customer(sender, **kwargs):
-    """
-    TODO check if this is still needed
-    """
-    user = kwargs.get('instance')
-    if not user.pk:
-        customer = Customer()
-        customer.save()
-        user.crm = customer
