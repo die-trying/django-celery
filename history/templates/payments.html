@@ -5,7 +5,7 @@
 {% block content %}
 <h1 class="page-title">{% trans 'Your payment history' %}</h1>
 
-{% if user.crm.payments %}
+{% if user.crm.payments.count %}
     <div class="table-responsive">
         <table class="payments-history table table-striped">
             <thead>
