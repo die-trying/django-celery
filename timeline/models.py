@@ -72,3 +72,16 @@ class Entry(models.Model):
             raise ValidationError('Trying to assign a customer to a non-free event')
 
         super().save(*args, **kwargs)
+
+    def as_dict(self):
+        return {
+            'teacher': {
+                'id': self.teacher.id,
+                'username': self.teacher.username,
+                'name': self.teacher.crm.full_name,
+            },
+            'entry': {
+                'start_time': str(self.start_time),
+                'duration': str(self.duration),
+            },
+        }
