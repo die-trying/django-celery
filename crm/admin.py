@@ -49,7 +49,7 @@ class ExistingCustomerAdmin(admin.ModelAdmin):
     """
     The admin module for manager current customers without managing users
     """
-    list_display = ('full_name', 'country', 'bought_classes', 'bought_subscriptions', 'email', 'date_arrived')
+    list_display = ('full_name', 'country', 'bought_classes', 'bought_subscriptions', 'email', 'date_arrived', 'source')
     list_filter = ('country', 'current_level',)
     actions = None
     readonly_fields = ('__str__', 'email', 'user', 'date_arrived', 'starting_level')
