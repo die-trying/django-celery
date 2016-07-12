@@ -1,6 +1,7 @@
 import json
 from datetime import timedelta
 
+import iso8601
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import Client, TestCase
@@ -141,9 +142,8 @@ class FunctionalEntryTest(TestCase):
             mocked_entries[entry.pk] = entry
 
         response = self.c.get('/timeline/%s.json' % teacher.username)
-        data = json.loads(response.content.decode('utf-8'))
 
-        for i in data:
+        for i in json.loads(response.content.decode('utf-8')):
             id = i['entry']['id']
             mocked_entry = mocked_entries[id]
 
@@ -155,3 +155,18 @@ class FunctionalEntryTest(TestCase):
             self.assertEqual(i['entry']['end'],
                              format(mocked_entry.start_time + duration, 'c')
                              )
+
+    def test_user_json_filter(self):
+        x = iso8601.parse_date('2016-01-01')
+        teacher = mixer.blend(User, is_staff=1)
+        for i in range(0, 10):
+            entry = mixer.blend(TimelineEntry, teacher=teacher, start_time=x)
+            x += timedelta(days=1)
+            print(x.__class__)
+            entry.save()
+
+        response = self.c.get('/timeline/%s.json?start=2013-01-01&end=2016-01-03' % teacher.username)
+        self.assertEqual(response.status_code, 200)
+
+        data = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(len(data), 3)
