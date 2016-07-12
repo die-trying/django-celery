@@ -19,6 +19,19 @@ class EntryTestCase(TestCase):
         self.teacher1 = mixer.blend(User, is_staff=1)
         self.teacher2 = mixer.blend(User, is_staff=1)
 
+    def test_entry_naming(self):
+        """
+        Timeline entry with an assigned name should return the name of event.
+
+        Without an event, timeline entry should return placeholder 'Usual lesson'.
+        """
+        event = mixer.blend(LessonEvent, name='Test_Lesson_Name', host=self.teacher1)
+        entry = mixer.blend(TimelineEntry, teacher=self.teacher1, event=event)
+        self.assertEqual(str(entry), 'Test_Lesson_Name')
+
+        entry = mixer.blend(TimelineEntry, event=None)
+        self.assertEqual(str(entry), 'Usual lesson')
+
     def test_availabe_slot_count(self):
         event = mixer.blend(LessonEvent, slots=10, host=self.teacher1)
         entry = mixer.blend(TimelineEntry, event=event, teacher=self.teacher1)
@@ -97,14 +110,14 @@ class EntryTestCase(TestCase):
         We should not have possibility to assign an event with different host
         to someones timeline entry
         """
-        event = mixer.blend(LessonEvent, teacher=self.teacher1)
+        event = mixer.blend(LessonEvent, host=self.teacher1)
 
         with self.assertRaises(ValidationError):
             entry = mixer.blend(TimelineEntry, teacher=self.teacher2, event=event)
             entry.save()
 
 
-class FunctionalEntrTest(TestCase):
+class FunctionalEntryTest(TestCase):
     """
     Generate dummy teachers timeline and fetch it through JSON
     """
@@ -127,7 +140,7 @@ class FunctionalEntrTest(TestCase):
             entry = mixer.blend(TimelineEntry, teacher=teacher, duration=duration)
             mocked_entries[entry.pk] = entry
 
-        response = self.c.get('/timeline/%s/calendar.json' % teacher.username)
+        response = self.c.get('/timeline/%s.json' % teacher.username)
         data = json.loads(response.content.decode('utf-8'))
 
         for i in data:
@@ -135,7 +148,10 @@ class FunctionalEntrTest(TestCase):
             mocked_entry = mocked_entries[id]
 
             self.assertEqual(i['teacher']['username'], teacher.username)
-            self.assertEqual(i['entry']['duration'], 71)
 
-            mocked_start_time = format(mocked_entry.start_time, 'U')
-            self.assertEqual(i['entry']['start_time'], int(mocked_start_time))
+            self.assertEqual(i['entry']['start'],
+                             format(mocked_entry.start_time, 'c')
+                             )
+            self.assertEqual(i['entry']['end'],
+                             format(mocked_entry.start_time + duration, 'c')
+                             )

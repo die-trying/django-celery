@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import F
 from django.utils.dateformat import format
+from django.utils.translation import ugettext as _
 
 from crm.models import Customer
 
@@ -37,8 +38,11 @@ class Entry(models.Model):
         * username
     :entry:
         * id — primary key
-        * start_time — start time since unix epoch
-        * duration — duration minutes
+        * start — start time, ISO 8601
+        * end — end time, ISO 8601
+        * is_free — Boolean
+        * slots_taken — Integer
+        * slots_available — Integer
     """
     objects = EntryQuerySet.as_manager()
 
@@ -68,10 +72,9 @@ class Entry(models.Model):
 
     def __str__(self):
         if self.event:
-            return '%s: %s' % (self.teacher.crm.full_name, self.event)
+            return str(self.event.name)
 
-        start_time = self.start_time
-        return '%s scheduled on %s' % (self.teacher.crm.full_name, start_time.strftime('%d.%m.%Y %H:%M'))
+        return _('Usual lesson')
 
     def save(self, *args, **kwargs):
         if self.event:
@@ -101,7 +104,11 @@ class Entry(models.Model):
             },
             'entry': {
                 'id': self.pk,
-                'start_time': int(format(self.start_time, 'U')),     # int UNIX_T
-                'duration': int(self.duration.total_seconds() / 60)  # int minutes
+                'title': self.__str__(),
+                'start': format(self.start_time, 'c'),                  # ISO 8601
+                'end': format(self.start_time + self.duration, 'c'),    # ISO 8601
+                'is_free': self.is_free,
+                'slots_taken': self.taken_slots,
+                'slots_available': self.slots,
             },
         }
