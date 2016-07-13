@@ -5,7 +5,8 @@
     "bootstrap": "^3.3.6",
     "bootstrap-social": "^5.0.0",
     "moment": "^2.14.1",
-    "fullcalendar": "^2.9.0"
+    "fullcalendar": "^2.9.0",
+    "sprintfjs": "^1.2.3"
   },
   "private": "true"
 }

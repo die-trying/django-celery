@@ -46,6 +46,14 @@ class Lesson(models.Model):
         """
         return cls.objects.get(pk=500)
 
+    def as_dict(self):
+        """Dicitionary representation of a lesson"""
+        return {
+            'id': self.pk,
+            'name': self.name,
+            'duration': str(self.duration)
+        }
+
     class Meta:
         abstract = True
 

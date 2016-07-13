@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'django_user_agents',
     'social.apps.django_app.default',
     'django_nose',
+    'bootstrapform',
     'django.contrib.admindocs',
     'suit',
     'django.contrib.admin',

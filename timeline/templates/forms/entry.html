@@ -1,0 +1,10 @@
+{% load bootstrap %}
+<form method = "POST" class='timeline-entry-form form-inline' action="{% url 'timeline:timeline_create' username=object.username %}" data-lessons="{% url 'timeline:available_lessons_json' username=object.username %}">
+    <input type="hidden" name="teacher" value="{{ object.id }}">
+    {% csrf_token %}
+    {{ form.event_type | bootstrap }}
+    {{ form.event_id | bootstrap }}
+    {{ form.start_time | bootstrap }}
+    {{ form.duration | bootstrap }}
+    <input type="submit"></input>
+</form>
