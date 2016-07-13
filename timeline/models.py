@@ -98,17 +98,11 @@ class Entry(models.Model):
         Dictionary representation of a model. For details see model description.
         """
         return {
-            'teacher': {
-                'id': self.teacher.id,
-                'username': self.teacher.username,
-            },
-            'entry': {
-                'id': self.pk,
-                'title': self.__str__(),
-                'start': format(self.start_time, 'c'),                  # ISO 8601
-                'end': format(self.start_time + self.duration, 'c'),    # ISO 8601
-                'is_free': self.is_free,
-                'slots_taken': self.taken_slots,
-                'slots_available': self.slots,
-            },
+            'id': self.pk,
+            'title': self.__str__(),
+            'start': format(self.start_time, 'c'),                  # ISO 8601
+            'end': format(self.start_time + self.duration, 'c'),    # ISO 8601
+            'is_free': self.is_free,
+            'slots_taken': self.taken_slots,
+            'slots_available': self.slots,
         }

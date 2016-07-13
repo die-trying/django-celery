@@ -3,7 +3,9 @@
   "dependencies": {
     "Likely": "ilyabirman-likely#~2.0.8",
     "bootstrap": "^3.3.6",
-    "bootstrap-social": "^5.0.0"
+    "bootstrap-social": "^5.0.0",
+    "moment": "^2.14.1",
+    "fullcalendar": "^2.9.0"
   },
   "private": "true"
 }

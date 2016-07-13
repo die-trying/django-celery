@@ -1,4 +1,6 @@
 [
     "jquery/dist/jquery.min.js",
+    "moment/min/moment.min.js",
+    "fullcalendar/dist/fullcalendar.min.js",
     "bootstrap/dist/js/bootstrap.js"
 ]

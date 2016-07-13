@@ -144,15 +144,13 @@ class FunctionalEntryTest(TestCase):
         response = self.c.get('/timeline/%s.json' % teacher.username)
 
         for i in json.loads(response.content.decode('utf-8')):
-            id = i['entry']['id']
+            id = i['id']
             mocked_entry = mocked_entries[id]
 
-            self.assertEqual(i['teacher']['username'], teacher.username)
-
-            self.assertEqual(i['entry']['start'],
+            self.assertEqual(i['start'],
                              format(mocked_entry.start_time, 'c')
                              )
-            self.assertEqual(i['entry']['end'],
+            self.assertEqual(i['end'],
                              format(mocked_entry.start_time + duration, 'c')
                              )
 
