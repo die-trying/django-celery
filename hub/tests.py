@@ -1,15 +1,13 @@
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
+from mixer.backend.django import mixer
 
 import lessons.models as lessons
 import products.models as products
 from crm.models import Customer
 from elk.utils.mockers import mock_request
-from elk.utils.reflection import find_ancestors
 from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from hub.models import Class, Subscription
-from mixer.backend.django import mixer
 from timeline.models import Entry as TimelineEntry
 
 
@@ -90,37 +88,13 @@ class BuySubscriptionTestCase(TestCase):
 class BuySingleLessonTestCase(TestCase):
     fixtures = ('crm', 'lessons', 'products')
 
-    def test_single_lesson(self):
-        """
-        Let's but ten lessons at a time
-        """
-        customer = mixer.blend(Customer)
-        for lesson_type in find_ancestors(lessons, lessons.Lesson):
-            already_bought_lessons = []
-            for i in range(0, 10):
-                try:
-                    c = Class(
-                        customer=customer,
-                        lesson=lesson_type.get_default()  # this should be defined in every lesson
-                    )
-                    c.request = mock_request(customer)
-                    c.save()
-                    self.assertTrue(c.pk)
-                    self.assertNotIn(c.pk, already_bought_lessons)
-                    already_bought_lessons.append(c.pk)
-                except NotImplementedError:
-                    """
-                    Some lessons, ex master classes cannot be bought such way
-                    """
-                    pass
-
 
 class ScheduleTestCase(TestCase):
     fixtures = ('crm', 'lessons')
     TEST_CUSTOMER_ID = 1
 
     def setUp(self):
-        self.event_host = mixer.blend(User, is_staff=1, crm=mixer.blend(Customer))
+        self.host = mixer.blend(User, is_staff=1, crm=mixer.blend(Customer))
 
     def _buy_a_lesson(self, lesson):
         customer = Customer.objects.get(pk=self.TEST_CUSTOMER_ID)
@@ -141,9 +115,10 @@ class ScheduleTestCase(TestCase):
         """
         Generic test to schedule and unschedule a class
         """
+        lesson = products.OrdinaryLesson.get_default()
 
-        entry = mixer.blend(TimelineEntry, slots=1)
-        bought_class = self._buy_a_lesson(products.OrdinaryLesson.get_default())
+        entry = mixer.blend(TimelineEntry, slots=1, lesson=lesson)
+        bought_class = self._buy_a_lesson(lesson)
 
         self.assertFalse(bought_class.is_scheduled)
         self.assertTrue(entry.is_free)
@@ -162,17 +137,11 @@ class ScheduleTestCase(TestCase):
         """
         Buy a master class and then schedule it
         """
-        event = mixer.blend(lessons.Event,
-                            lesson_type=ContentType.objects.get(app_label='lessons', model='masterclass'),
-                            slots=5,
-                            host=self.event_host,
-                            )
-
-        lesson = mixer.blend(lessons.MasterClass)
+        lesson = mixer.blend(lessons.MasterClass, host=self.host)
 
         timeline_entry = mixer.blend(TimelineEntry,
-                                     event=event,
-                                     teacher=self.event_host,
+                                     lesson=lesson,
+                                     teacher=self.host,
                                      )
 
         timeline_entry.save()
@@ -190,11 +159,6 @@ class ScheduleTestCase(TestCase):
         self.assertEqual(timeline_entry.taken_slots, 0)
 
     def schedule_2_people_to_a_paired_lesson(self):
-        event = mixer.blend(lessons.Event,
-                            lesson_type=ContentType.objects.get(app_label='lessons', model='pairedlesson'),
-                            slots=2,
-                            host=self.event_host,
-                            )
         customer1 = mixer.blend(Customer)
         customer2 = mixer.blend(Customer)
 
@@ -203,7 +167,7 @@ class ScheduleTestCase(TestCase):
         customer1_class = mixer.blend(Class, customer=customer1, lesson=paired_lesson)
         customer2_class = mixer.blend(Class, customer=customer2, lesson=paired_lesson)
 
-        timeline_entry = mixer.blend(TimelineEntry, event=event, teacher=self.event_host)
+        timeline_entry = mixer.blend(TimelineEntry, lesson=paired_lesson, teacher=self.host)
 
         customer1_class.schedule(timeline_entry)
         customer2_class.schedule(timeline_entry)
@@ -219,13 +183,8 @@ class ScheduleTestCase(TestCase):
         """
         Try to schedule bought master class lesson to a paired lesson event
         """
-        event = mixer.blend(lessons.Event,
-                            lesson_type=ContentType.objects.get(app_label='lessons', model='pairedlesson'),
-                            slots=2,
-                            host=self.event_host,
-                            )
-
-        paired_lesson_entry = mixer.blend(TimelineEntry, event=event, teacher=self.event_host)
+        paired_lesson = mixer.blend(lessons.PairedLesson, slots=2)
+        paired_lesson_entry = mixer.blend(TimelineEntry, event=paired_lesson, teacher=self.host)
 
         paired_lesson_entry.save()
 

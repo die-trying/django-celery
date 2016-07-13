@@ -1,12 +1,6 @@
 from django.contrib import admin
 
-from .models import OrdinaryLesson, LessonWithNative, PairedLesson, HappyHour, MasterClass
-from .models import Event as LessonEvent
-
-
-@admin.register(LessonEvent)
-class LessonEventAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'host')
+from .models import HappyHour, LessonWithNative, MasterClass, OrdinaryLesson, PairedLesson
 
 
 class LessonAdmin(admin.ModelAdmin):

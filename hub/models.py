@@ -3,9 +3,9 @@ from abc import abstractproperty
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from djmoney.models.fields import MoneyField
 
 from crm.models import Customer
-from djmoney.models.fields import MoneyField
 from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from timeline.models import Entry as TimelineEntry
 
@@ -173,7 +173,7 @@ class Class(BuyableProduct):
         if not entry.is_free:
             return False
 
-        if entry.event_type is not None and self.lesson_type != entry.event_type:
+        if self.lesson_type != entry.lesson_type:
             return False
 
         return True

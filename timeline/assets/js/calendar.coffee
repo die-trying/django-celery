@@ -9,28 +9,27 @@ $.fn.load_user_calendar = () ->
         display: 'block'
         top: jsEvent.pageY,
         left: jsEvent.pageX
-      $.popup.popover()
 
 popupLoaded = () ->
   $('.timeline-entry-form').each () ->
-    $form       = $ this
-    $event_type = $ '#id_event_type', $form
-    $event      = $ '#id_event_id', $form
-    $duration   = $ '#id_duration', $form
+    $form        = $ this
+    $lesson_type = $ '#id_lesson_type', $form
+    $lesson      = $ '#id_lesson_id', $form
+    $duration    = $ '#id_duration', $form
 
-    $event_type.on 'change', () ->  # update event selector
+    $lesson_type.on 'change', () ->  # update lesson selector
       lessons = $form.attr 'data-lessons'
-      lessons += "?event_id=" + $(this).val()
+      lessons += "?lesson_id=" + $(this).val()
 
       $.getJSON lessons, (data) ->
-        $event.html ''
-        $event.append \
+        $lesson.html ''
+        $lesson.append \
           sprintf '<option value="%d" data-duration="%s">%s</option>', \
           lesson.id, lesson.duration, lesson.name \
             for lesson in data
-        $event.change()  # trigger update of a default duration
+        $lesson.change()  # trigger update of a default duration
 
-      $event.on 'change', () ->  # set default duration of a selected lesson
+      $lesson.on 'change', () ->  # set default duration of a selected lesson
         option = $ 'option:selected', this
         $duration.val option.attr 'data-duration'
 

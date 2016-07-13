@@ -48,10 +48,9 @@ def calendar_json(request, username):
 
 @staff_member_required
 def available_lessons_json(request, username):
-    # user = get_object_or_404(User, username=username)
-    event_id = request.GET.get('event_id')
+    lesson_id = request.GET.get('lesson_id')
 
-    Model = ContentType.objects.get(app_label='lessons', pk=event_id).model_class()
+    Model = ContentType.objects.get(app_label='lessons', pk=lesson_id).model_class()
 
     lessons = []
     for lesson in get_list_or_404(Model):

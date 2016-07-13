@@ -3,18 +3,19 @@ from datetime import timedelta
 
 import iso8601
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import Client, TestCase
 from django.utils.dateformat import format
 from mixer.backend.django import mixer
 
+import lessons.models as lessons
 from crm.models import Customer
-from lessons.models import Event as LessonEvent
 from timeline.models import Entry as TimelineEntry
 
 
 class EntryTestCase(TestCase):
-    fixtures = ('crm', 'test_timeline_entries', 'test_events')
+    fixtures = ('crm', 'test_timeline_entries')
 
     def setUp(self):
         self.teacher1 = mixer.blend(User, is_staff=1)
@@ -26,23 +27,23 @@ class EntryTestCase(TestCase):
 
         Without an event, timeline entry should return placeholder 'Usual lesson'.
         """
-        event = mixer.blend(LessonEvent, name='Test_Lesson_Name', host=self.teacher1)
-        entry = mixer.blend(TimelineEntry, teacher=self.teacher1, event=event)
+        lesson = mixer.blend(lessons.OrdinaryLesson, name='Test_Lesson_Name')
+        entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson)
         self.assertEqual(str(entry), 'Test_Lesson_Name')
 
-        entry = mixer.blend(TimelineEntry, event=None)
+        entry = mixer.blend(TimelineEntry, lesson=None)
         self.assertEqual(str(entry), 'Usual lesson')
 
     def test_availabe_slot_count(self):
-        event = mixer.blend(LessonEvent, slots=10, host=self.teacher1)
-        entry = mixer.blend(TimelineEntry, event=event, teacher=self.teacher1)
+        event = mixer.blend(lessons.MasterClass, slots=10, host=self.teacher1)
+        entry = mixer.blend(TimelineEntry, lesson=event, teacher=self.teacher1)
         entry.save()
 
         self.assertEqual(entry.slots, 10)
 
     def test_taken_slot_count(self):
-        event = mixer.blend(LessonEvent, slots=10, host=self.teacher1)
-        entry = mixer.blend(TimelineEntry, event=event, teacher=self.teacher1)
+        event = mixer.blend(lessons.MasterClass, slots=10, host=self.teacher1)
+        entry = mixer.blend(TimelineEntry, lesson=event, teacher=self.teacher1)
         entry.save()
 
         for i in range(0, 5):
@@ -56,20 +57,20 @@ class EntryTestCase(TestCase):
         """
         Test if timeline entry takes all attributes from the event
         """
-        event = mixer.blend(LessonEvent, host=self.teacher1)
-        entry = mixer.blend(TimelineEntry, event=event, teacher=self.teacher1)
+        lesson = mixer.blend(lessons.OrdinaryLesson)
+        entry = mixer.blend(TimelineEntry, lesson=lesson, teacher=self.teacher1)
 
         for i in ('duration', 'slots'):
-            self.assertEqual(getattr(event, i), getattr(entry, i))
+            self.assertEqual(getattr(lesson, i), getattr(entry, i))
 
-        self.assertEqual(entry.event_type, event.lesson_type)
+        self.assertEqual(entry.lesson_type, ContentType.objects.get(app_label='lessons', model='ordinarylesson'))
 
     def test_is_free(self):
         """
         Schedule a customer to a timeleine entry
         """
-        event = mixer.blend(LessonEvent, slots=10, host=self.teacher1)
-        entry = mixer.blend(TimelineEntry, event=event, teacher=self.teacher1)
+        lesson = mixer.blend(lessons.MasterClass, slots=10, host=self.teacher1)
+        entry = mixer.blend(TimelineEntry, lesson=lesson, teacher=self.teacher1)
         entry.save()
 
         for i in range(0, 10):
@@ -90,7 +91,7 @@ class EntryTestCase(TestCase):
         """
         Test for a timeline entry without a direct assigned event, ex ordinary lesson
         """
-        entry = mixer.blend(TimelineEntry, event=None, slots=1)
+        entry = mixer.blend(TimelineEntry, lesson=None, slots=1)
         entry.save()
 
         self.assertTrue(entry.is_free)
@@ -111,10 +112,10 @@ class EntryTestCase(TestCase):
         We should not have possibility to assign an event with different host
         to someones timeline entry
         """
-        event = mixer.blend(LessonEvent, host=self.teacher1)
+        lesson = mixer.blend(lessons.MasterClass, host=self.teacher1)
 
         with self.assertRaises(ValidationError):
-            entry = mixer.blend(TimelineEntry, teacher=self.teacher2, event=event)
+            entry = mixer.blend(TimelineEntry, teacher=self.teacher2, lesson=lesson)
             entry.save()
 
 

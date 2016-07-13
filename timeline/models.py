@@ -52,12 +52,12 @@ class Entry(models.Model):
 
     start_time = models.DateTimeField()
 
-    event_type = models.ForeignKey(
+    lesson_type = models.ForeignKey(
         ContentType, on_delete=models.CASCADE, null=True, blank=True,
         limit_choices_to={'app_label': 'lessons'},
     )
-    event_id = models.PositiveIntegerField(null=True, blank=True)
-    event = GenericForeignKey('event_type', 'event_id')
+    lesson_id = models.PositiveIntegerField(null=True, blank=True)
+    lesson = GenericForeignKey('lesson_type', 'lesson_id')
 
     slots = models.SmallIntegerField(default=1)
     taken_slots = models.SmallIntegerField(default=0)
@@ -71,19 +71,18 @@ class Entry(models.Model):
         verbose_name_plural = 'Entries'
 
     def __str__(self):
-        if self.event:
-            return str(self.event.name)
+        if self.lesson:
+            return str(self.lesson.name)
 
         return _('Usual lesson')
 
     def save(self, *args, **kwargs):
-        if self.event:
-            self.slots = self.event.slots  # The next change in this method should refactor it!
-            self.event_type = self.event_type
-            self.duration = self.event.duration
+        if self.lesson:
+            self.slots = self.lesson.slots  # The next change in this method should refactor it!
+            self.duration = self.lesson.duration
 
-            # if self.teacher != self.event.teacher:
-            #     raise ValidationError('Trying to assign a timeline entry of %s to %s' % (self.teacher, self.event.host))
+            if hasattr(self.lesson, 'host') and self.teacher != self.lesson.host:
+                raise ValidationError('Trying to assign a timeline entry of %s to %s' % (self.teacher, self.lesson.host))
 
         if self.pk:
             self.taken_slots = self.customers.count()

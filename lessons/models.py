@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django_markdown.models import MarkdownField
 
@@ -58,6 +57,17 @@ class Lesson(models.Model):
         abstract = True
 
 
+class HostedLesson(Lesson):
+    """
+    Abstract class for generic lesson, that requires a host, i.e. Master class
+    or ELK Happy hour
+    """
+    host = models.ForeignKey(User, limit_choices_to={'is_staff': 1}, related_name='+', null=True)
+
+    class Meta:
+        abstract = True
+
+
 class OrdinaryLesson(Lesson):
 
     class Meta:
@@ -71,7 +81,7 @@ class LessonWithNative(Lesson):
         verbose_name_plural = "Curated lessons with native speaker"
 
 
-class MasterClass(Lesson):
+class MasterClass(HostedLesson):
 
     @classmethod
     def get_default(cls):
@@ -82,7 +92,7 @@ class MasterClass(Lesson):
         verbose_name_plural = "Master Classes"
 
 
-class HappyHour(Lesson):
+class HappyHour(HostedLesson):
 
     @classmethod
     def get_default(cls):
@@ -96,21 +106,3 @@ class PairedLesson(Lesson):
 
     class Meta:
         verbose_name = "Paired Lesson"
-
-
-class Event(models.Model):
-    """
-    Represents an event type — Master class or ELK Happy Hour
-    """
-    lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
-
-    slots = models.SmallIntegerField(default=1)
-
-    name = models.CharField(max_length=140)
-    internal_name = models.CharField(max_length=140)
-    host = models.ForeignKey(User, limit_choices_to={'is_staff': 1}, related_name='hosted_events')
-    description = MarkdownField()
-    duration = models.DurationField(default=timedelta(minutes=30))
-
-    def __str__(self):
-        return '%s: %s' % (self.lesson_type, self.internal_name)

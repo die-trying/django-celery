@@ -2,5 +2,5 @@
 
 {% block content %}
 <div class="user-calendar" data-calendar="{% url 'timeline:timeline.json' username=object.username%}"></div>
-<div class="user-calendar__add-popup" data-src="{% url 'timeline:timeline_create' username=object.username %}"><h1>test</h1></div>
+<div class="user-calendar__add-popup" data-src="{% url 'timeline:timeline_create' username=object.username %}"></div>
 {% endblock %}
