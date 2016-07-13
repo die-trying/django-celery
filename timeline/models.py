@@ -69,6 +69,9 @@ class Entry(models.Model):
 
     class Meta:
         verbose_name_plural = 'Entries'
+        permissions = (
+            ('other_entries', "Can work with other's timeleine entries"),
+        )
 
     def __str__(self):
         if self.lesson:

@@ -169,3 +169,29 @@ class FunctionalEntryTest(TestCase):
 
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(len(data), 3)
+
+    def test_create_form(self):
+        teacher = mixer.blend(User, is_staff=1)
+        response = self.c.get('/timeline/%s/create/' % teacher.username)
+        self.assertEqual(response.status_code, 200)
+
+
+class PermissionTest(TestCase):
+    def setUp(self):
+        self.superuser = User.objects.create_superuser('superuser', 'te@ss.a', '123')
+        self.user = User.objects.create_user('user', 'te@ss.tt', '123')
+
+        self.c = Client()
+
+        self.teacher = mixer.blend(User, is_staff=1)
+
+    def test_create_form_permission(self):
+        self.c.login(username='user', password='123')
+        response = self.c.get('/timeline/%s/create/' % self.teacher.username)
+        self.assertNotEqual(response.status_code, 200)
+
+        self.c.logout()
+
+        self.c.login(username='superuser', password='123')
+        response = self.c.get('/timeline/%s/create/' % self.teacher.username)
+        self.assertEqual(response.status_code, 200)
