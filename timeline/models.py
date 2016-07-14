@@ -52,10 +52,7 @@ class Entry(models.Model):
 
     start_time = models.DateTimeField()
 
-    lesson_type = models.ForeignKey(
-        ContentType, on_delete=models.CASCADE, null=True, blank=True,
-        limit_choices_to={'app_label': 'lessons'},
-    )
+    lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
     lesson_id = models.PositiveIntegerField(null=True, blank=True)
     lesson = GenericForeignKey('lesson_type', 'lesson_id')
 

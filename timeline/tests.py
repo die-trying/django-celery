@@ -16,7 +16,7 @@ from timeline.models import Entry as TimelineEntry
 
 
 class EntryTestCase(TestCase):
-    fixtures = ('crm', 'test_timeline_entries')
+    fixtures = ('crm',)
 
     def setUp(self):
         self.teacher1 = mixer.blend(User, is_staff=1)
@@ -31,9 +31,6 @@ class EntryTestCase(TestCase):
         lesson = mixer.blend(lessons.OrdinaryLesson, name='Test_Lesson_Name')
         entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson)
         self.assertEqual(str(entry), 'Test_Lesson_Name')
-
-        entry = mixer.blend(TimelineEntry, lesson=None)
-        self.assertEqual(str(entry), 'Usual lesson')
 
     def test_availabe_slot_count(self):
         event = mixer.blend(lessons.MasterClass, slots=10, host=self.teacher1)
@@ -83,26 +80,6 @@ class EntryTestCase(TestCase):
         self.assertFalse(entry.is_free)
 
         """ Let's try to schedule more customers, then event allows """
-        with self.assertRaises(ValidationError):
-            test_customer = mixer.blend(Customer)
-            entry.customers.add(test_customer)
-            entry.save()
-
-    def test_entry_without_an_event(self):
-        """
-        Test for a timeline entry without a direct assigned event, ex ordinary lesson
-        """
-        entry = mixer.blend(TimelineEntry, lesson=None, slots=1)
-        entry.save()
-
-        self.assertTrue(entry.is_free)
-
-        test_customer = mixer.blend(Customer)
-        entry.customers.add(test_customer)
-        entry.save()
-
-        self.assertFalse(entry.is_free)
-
         with self.assertRaises(ValidationError):
             test_customer = mixer.blend(Customer)
             entry.customers.add(test_customer)
