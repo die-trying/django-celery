@@ -7,6 +7,9 @@ var vendor_dir = './elk/static/vendor/'
 gulp.task('css', function(){
     return gulp.src('*/assets/css/*.styl')
         .pipe($.sourcemaps.init())
+        .pipe($.stylint())
+        .pipe($.stylint.reporter())
+        .pipe($.stylint.reporter('fail', { failOnWarning: true }))
         .pipe($.stylus({
             use: [nib()]
         }))
