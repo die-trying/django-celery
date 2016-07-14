@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
+from elk.utils import date
 from timeline.forms import EntryForm as TimelineEntryForm
 from timeline.models import Entry as TimelineEntry
 
@@ -34,8 +35,8 @@ class calendar_create(CreateView):
 def calendar_json(request, username):
     user = get_object_or_404(User, username=username)
     entries = []
-    start = request.GET.get('start', '1970-01-01')  # TODO set more convienient default values, i.e. last month
-    end = request.GET.get('end', '2100-01-01')
+    start = request.GET.get('start', date.ago(days=16))
+    end = request.GET.get('end', date.fwd(days=16))
 
     for entry in get_list_or_404(TimelineEntry,
                                  start_time__range=(start, end),

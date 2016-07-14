@@ -11,6 +11,7 @@ from mixer.backend.django import mixer
 
 import lessons.models as lessons
 from crm.models import Customer
+from elk.utils import date
 from timeline.models import Entry as TimelineEntry
 
 
@@ -139,7 +140,7 @@ class FunctionalEntryTest(TestCase):
 
         mocked_entries = {}
         for i in range(0, 10):
-            entry = mixer.blend(TimelineEntry, teacher=teacher, duration=duration)
+            entry = mixer.blend(TimelineEntry, teacher=teacher, duration=duration, start_time=date.ago(days=5))
             mocked_entries[entry.pk] = entry
 
         response = self.c.get('/timeline/%s.json' % teacher.username)
@@ -169,11 +170,6 @@ class FunctionalEntryTest(TestCase):
 
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(len(data), 3)
-
-    def test_create_form(self):
-        teacher = mixer.blend(User, is_staff=1)
-        response = self.c.get('/timeline/%s/create/' % teacher.username)
-        self.assertEqual(response.status_code, 200)
 
 
 class PermissionTest(TestCase):
