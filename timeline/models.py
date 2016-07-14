@@ -81,17 +81,10 @@ class Entry(models.Model):
 
     def save(self, *args, **kwargs):
         if self.lesson:
-            self.slots = self.lesson.slots  # The next change in this method should refactor it!
-            self.duration = self.lesson.duration
-
-            if hasattr(self.lesson, 'host') and self.teacher != self.lesson.host:
-                raise ValidationError('Trying to assign a timeline entry of %s to %s' % (self.teacher, self.lesson.host))
+            self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
 
         if self.pk:
-            self.taken_slots = self.customers.count()
-
-        if self.taken_slots > self.slots:
-            raise ValidationError('Trying to assign a customer to a non-free event')
+            self.__update_slots()  # update free slot count, check if no customers added when no slots are free
 
         super().save(*args, **kwargs)
 
@@ -108,3 +101,26 @@ class Entry(models.Model):
             'slots_taken': self.taken_slots,
             'slots_available': self.slots,
         }
+
+    def __get_data_from_lesson(self):
+        """
+        Timelentry entry can get some attributes (i.e. available student slote)
+        only when it has an assigned lesson.
+        """
+        self.slots = self.lesson.slots
+        self.duration = self.lesson.duration
+
+        if hasattr(self.lesson, 'host') and self.lesson.host is not None:
+            if self.teacher != self.lesson.host:
+                raise ValidationError('Trying to assign a timeline entry of %s to %s' % (self.teacher, self.lesson.host))
+
+    def __update_slots(self):
+        """
+        Count assigned customers and update available time slots.
+
+        If there is too much customers — raise an exception
+        """
+        self.taken_slots = self.customers.count()
+
+        if self.taken_slots > self.slots:
+            raise ValidationError('Trying to assign a customer to event without free slots')
