@@ -1,27 +1,23 @@
 from datetime import timedelta
 
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import F
 from django.utils.dateformat import format
 from django.utils.translation import ugettext as _
 
 from crm.models import Customer
-
+from lessons.models import Lesson
 
 # Create your models here.
 
 
-class EntryQuerySet(models.QuerySet):
-    def free(self):
-        """
-        Find free timeline entries.
-        EDITING THIS YOU SHOULD ALS EDIT Entry.is_free() METHOD!!11
-        """
-        return self.filter(taken_slots__lte=F('slots'))
+class EntryManager(models.Manager):
+
+    def get_queryset(self, exclude_void=True):
+        return super(EntryManager, self).get_queryset().exclude(active=0)
 
 
 class Entry(models.Model):
@@ -44,7 +40,11 @@ class Entry(models.Model):
         * slots_taken — Integer
         * slots_available — Integer
     """
-    objects = EntryQuerySet.as_manager()
+    ENABLED = (
+        (0, 'Inactive'),
+        (1, 'Active'),
+    )
+    objects = EntryManager()
 
     teacher = models.ForeignKey(User, related_name='timeline_entries', on_delete=models.PROTECT, limit_choices_to={'is_staff': 1})
 
@@ -55,10 +55,14 @@ class Entry(models.Model):
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
     lesson_id = models.PositiveIntegerField(null=True, blank=True)
     lesson = GenericForeignKey('lesson_type', 'lesson_id')
+    lessons = GenericRelation(Lesson, related_query_name='timeline_entries')
 
     slots = models.SmallIntegerField(default=1)
     taken_slots = models.SmallIntegerField(default=0)
     duration = models.DurationField(default=timedelta(minutes=30))
+
+    # TODO — disable assigning of bought classes to inactive entries
+    active = models.SmallIntegerField(choices=ENABLED, default=1)
 
     @property
     def is_free(self):
