@@ -6,7 +6,9 @@
     "bootstrap-social": "^5.0.0",
     "moment": "^2.14.1",
     "fullcalendar": "^2.9.0",
-    "sprintfjs": "^1.2.3"
+    "sprintfjs": "^1.2.3",
+    "jquery-timepicker": "jonthornton/jquery-timepicker#~1.11.1",
+    "bootstrap-datepicker": "^1.6.1"
   },
   "private": "true"
 }

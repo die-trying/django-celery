@@ -8,6 +8,7 @@ class EntryForm(forms.ModelForm):
         fields = ('lesson_type', 'lesson_id', 'teacher', 'start_time', 'duration')
         model = TimelineEntry
         widgets = {
-            'lesson_id': forms.Select(),  # populated by js/calendar.coffee
-            'teacher': forms.HiddenInput()  # populated in the template
+            'start_time': forms.SplitDateTimeWidget(),
+            'lesson_id': forms.Select(),                # populated by js/calendar.coffee
+            'teacher': forms.HiddenInput()              # populated in the template
         }

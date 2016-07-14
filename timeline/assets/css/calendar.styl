@@ -1,5 +1,49 @@
+@import 'nib'
+
 .user-calendar
     &__add-popup
         position: absolute
         display: none
-        z-index: 100500
+        z-index: 100
+
+.timeline-entry-form
+    &__time
+        margin-bottom: 25px
+
+        label[for=id_start_time] + div
+            display: inline
+            margin-left: 5px
+
+        label[for=id_start_time]:after
+            content: ':'
+
+        .form-group:first-child
+            margin-bottom 5px
+
+    &__lesson
+        margin-bottom: 25px
+
+        label
+            display: none
+        .form-group:first-child
+            margin-bottom 5px
+    #id_start_time_0
+        display: inline
+        width: 100px
+
+    #id_start_time_1
+        display: inline
+        margin-left: 5px
+        width: 80px
+
+    #id_duration
+        display: inline
+        margin-left: 5px
+        width: 75px
+
+    label[for=id_duration]
+        display: inline
+        margin-left: 8px
+
+    .ui-timepicker-wrapper
+        z-index: 200
