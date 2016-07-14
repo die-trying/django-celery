@@ -21,6 +21,8 @@ gulp.task('css', function(){
 gulp.task('js', function(){
     return gulp.src('*/assets/js/*.coffee')
         .pipe($.sourcemaps.init())
+        .pipe($.coffeelint())
+        .pipe($.coffeelint.reporter())
         .pipe($.coffee({bare: true}))
         .pipe($.concat('app.js'))
         .pipe($.sourcemaps.write())
