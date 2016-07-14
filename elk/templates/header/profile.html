@@ -3,9 +3,9 @@
 
 <div class="navbar__profile-picture">
     {% if request.user.crm.profile_photo %}
-        <img src="{{ request.user.crm.profile_photo.url }}" data-no-retina />
+        <img class="img-circle" src="{{ request.user.crm.profile_photo.url }}" data-no-retina />
     {% else %}
-        <img src="{% static 'no-photo.jpg' %}" />
+        <img class="img-circle" src="{% static 'no-photo.jpg' %}" />
     {% endif %}
 </div>
 
