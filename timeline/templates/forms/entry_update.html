@@ -4,8 +4,13 @@
 <div class="panel panel-default timeline-entry-form">
     <div class="panel-heading"><h3 class="panel-title">{% trans 'Timeline event' %}</h3></div>
     <div class="panel-body">
-        <form method = "POST" class="form"  action="{% url 'timeline:timeline_create' username=object.username %}" data-lessons="{% url 'timeline:available_lessons_json' username=object.username %}">
-            <input type="hidden" name="teacher" value="{{ object.id }}">
+        {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+                {{ field }} — {{ error }}
+            {% endfor %}
+        {% endfor %}
+        <form method = "POST" class="form"  action="{% url 'timeline:timeline_update' username=user.username pk=object.pk %}" data-lessons="{% url 'timeline:available_lessons_json' username=user.username %}">
+            <input type="hidden" name="teacher" value="{{ user.pk }}">
             {% csrf_token %}
             <div class="timeline-entry-form__lesson">
                 {{ form.lesson_type | bootstrap }}
@@ -18,7 +23,8 @@
                     <input maxlength=5 placeholder='HH:MM' type="text" class="form-control", id="{{ form.duration.id_for_label }}" name="duration" value="{{ form.duration.value }}">
                 </div>
             </div>
-            <button type="submit" class="btn btn-default">{% trans 'Add entry!' %}</input>
+            <button type="submit" class="btn btn-default timeline-entry-form__submit">{% trans 'Update entry' %}</button>
+            <p class="timeline-entry-form__delete">or <a class="text-danger" href="{% url 'timeline:timeline_delete' username=user.username pk=object.pk %}">delete</a> it.</p>
         </form>
     </div>
 </div>

@@ -6,6 +6,15 @@
         display: none
         z-index: 100
 
+    a.fc-event
+        cursor: pointer
+        &:hover
+            color: #333
+            background-color: #dff0d8 // like bg-success
+            border-color: #dff0d8
+        &:not(:hover)
+            transition: ease-out .1s
+
 .timeline-entry-form
     &__time
         margin-bottom: 25px
@@ -20,6 +29,24 @@
         .form-group:first-child
             margin-bottom 5px
 
+        #id_start_time_0
+            display: inline
+            width: 100px
+
+        #id_start_time_1
+            display: inline
+            margin-left: 5px
+            width: 80px
+
+        #id_duration
+            display: inline
+            margin-left: 5px
+            width: 75px
+
+        label[for=id_duration]
+            display: inline
+            margin-left: 8px
+
     &__lesson
         margin-bottom: 25px
 
@@ -27,23 +54,13 @@
             display: none
         .form-group:first-child
             margin-bottom 5px
-    #id_start_time_0
-        display: inline
-        width: 100px
 
-    #id_start_time_1
+    &__submit
+        display: inline
+
+    &__delete
         display: inline
         margin-left: 5px
-        width: 80px
-
-    #id_duration
-        display: inline
-        margin-left: 5px
-        width: 75px
-
-    label[for=id_duration]
-        display: inline
-        margin-left: 8px
 
     .ui-timepicker-wrapper
         z-index: 200

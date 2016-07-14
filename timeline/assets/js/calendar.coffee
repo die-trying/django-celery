@@ -3,10 +3,21 @@ $.fn.load_user_calendar = () ->
 
   this.fullCalendar
     events: this.attr 'data-calendar'  # load events from JSON
+
     dayClick: (date, jsEvent, view) ->
       # store clicked date, to load it after popup appears
       $(this).parents('.user-calendar').data 'clickedDay', date
-      $popup.load $popup.attr('data-src'), null, popupLoaded
+
+      url = sprintf '/timeline/%s/create/', $popup.attr('data-username')
+      $popup.load url, null, popupLoaded
+      $popup.css
+        display: 'block'
+        top: jsEvent.pageY,
+        left: jsEvent.pageX
+
+    eventClick: (calEvent, jsEvent, view) ->
+      url = sprintf '/timeline/%s/%d/update/', $popup.attr('data-username'), calEvent.id
+      $popup.load url, null, popupLoaded
       $popup.css
         display: 'block'
         top: jsEvent.pageY,
@@ -24,7 +35,8 @@ popupLoaded = () ->
     $date        = $ '#id_start_time_0', $form
     $calendar    = $ '.user-calendar'
 
-    $date.val $calendar.data('clickedDay').format 'L'
+    $date.val $calendar.data('clickedDay').format 'L' if $calendar.data 'clickedDay'
+
     $date.applyDatePicker()
 
     $time.applyTimepicker()
@@ -66,6 +78,7 @@ popupLoaded = () ->
 
     $('option:first-child', $lesson_type).text('Choose lesson type')
 
+    $lesson_type.change() if $lesson_type.val()
 
 $(document).ready ->
   $('.user-calendar').load_user_calendar()

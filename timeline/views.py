@@ -3,8 +3,8 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.http import JsonResponse
-from django.shortcuts import get_list_or_404, get_object_or_404, render
-from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.shortcuts import get_list_or_404, get_object_or_404, redirect, render
+from django.views.generic.edit import CreateView, UpdateView
 
 from elk.utils import date
 from timeline.forms import EntryForm as TimelineEntryForm
@@ -18,17 +18,38 @@ def calendar(request, username):
     })
 
 
-class calendar_create(CreateView):
-    template_name = 'forms/entry.html'
-    form_class = TimelineEntryForm
-
+class UserCtxMixin():
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['object'] = get_object_or_404(User, username=self.kwargs['username'])
+        context['user'] = get_object_or_404(User, username=self.kwargs['username'])
         return context
+
+
+class calendar_create(CreateView, UserCtxMixin):
+    template_name = 'forms/entry_create.html'
+    form_class = TimelineEntryForm
 
     def get_success_url(self):
         return reverse('timeline:timeline', kwargs=self.kwargs)
+
+
+class calendar_update(UpdateView, UserCtxMixin):
+    template_name = 'forms/entry_update.html'
+    form_class = TimelineEntryForm
+    model = TimelineEntry
+
+    def get_success_url(self):
+        return reverse('timeline:timeline',
+                       kwargs={'username': self.kwargs['username']},
+                       )
+
+
+def calendar_delete(request, username, pk):
+    user = get_object_or_404(User, username=username)
+    entry = get_object_or_404(TimelineEntry, teacher=user, pk=pk)
+    entry.active = 0
+    entry.save()
+    return redirect(reverse('timeline:timeline', kwargs={'username': username}))
 
 
 @login_required
