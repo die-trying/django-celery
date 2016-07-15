@@ -1,19 +1,19 @@
 from django.conf.urls import url
-from django.contrib.auth.decorators import permission_required
+from django.contrib.admin.views.decorators import staff_member_required
 
 from . import views
 
 urlpatterns = [
     url(regex=r'(?P<username>.+)/create/$',
-        view=permission_required('timeline.other_entries')(views.calendar_create.as_view()),
+        view=staff_member_required(views.calendar_create.as_view()),
         name='timeline_create',
         ),
     url(regex=r'(?P<username>.+)/(?P<pk>\d+)/update/$',
-        view=permission_required('timeline.other_entries')(views.calendar_update.as_view()),
+        view=staff_member_required(views.calendar_update.as_view()),
         name='timeline_update',
         ),
     url(regex=r'(?P<username>.+)/(?P<pk>\d+)/delete/$',
-        view=permission_required('timeline.other_entries')(views.calendar_delete),
+        view=staff_member_required(views.calendar_delete),
         name='timeline_delete',
         ),
     url(r'(?P<username>.+)/available_lessons.json$', views.available_lessons_json, name='available_lessons_json'),
