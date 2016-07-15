@@ -7,7 +7,7 @@ from django.utils.dateformat import format
 from elk.utils.date import ago, fwd
 
 
-class TstDateUtils(TestCase):
+class TestDateUtils(TestCase):
     def test_ago(self):
         d = iso8601.parse_date('2014-03-29')
         self.assertEqual(ago(d, days=29), '2014-02-28')

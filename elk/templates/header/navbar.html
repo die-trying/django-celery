@@ -14,6 +14,9 @@
             <ul class="nav navbar-nav">
                 <li class="{% is_active request '^/$' %}"><a href="/">Home</a></li>
                 <li class="{% is_active request '^/history/payments' %}"><a href="{% url 'history:payments' %}">Payments</a></li>
+                {% if request.user.is_staff %}
+                    <li class="{% is_active request '^/timeline/__username__/' %}"><a href="{% url 'timeline:timeline' username=request.user.username %}">Timeline</a></li>
+                {% endif %}
             </ul>
 
         <div class="navbar-right navbar__profile">
