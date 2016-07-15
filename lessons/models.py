@@ -49,7 +49,7 @@ class Lesson(models.Model):
         """Dicitionary representation of a lesson"""
         return {
             'id': self.pk,
-            'name': self.name,
+            'name': self.internal_name,
             'duration': str(self.duration)
         }
 
