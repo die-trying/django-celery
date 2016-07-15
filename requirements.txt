@@ -15,6 +15,7 @@ django-money==0.8
 django-nose==1.4.4
 django-suit==0.2.19
 django-user-agents==0.3.0
+django-with-asserts==0.0.1
 docutils==0.12
 fake-factory==0.5.7
 gnureadline==6.3.3

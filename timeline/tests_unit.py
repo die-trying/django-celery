@@ -1,17 +1,11 @@
-import json
-from datetime import timedelta
-
-import iso8601
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import Client, TestCase
-from django.utils.dateformat import format
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
 from crm.models import Customer
-from elk.utils import date
 from timeline.models import Entry as TimelineEntry
 
 
@@ -109,58 +103,6 @@ class EntryTestCase(TestCase):
         with self.assertRaises(ValidationError):
             entry = mixer.blend(TimelineEntry, teacher=self.teacher2, lesson=lesson)
             entry.save()
-
-
-class FunctionalEntryTest(TestCase):
-    """
-    Generate dummy teachers timeline and fetch it through JSON
-    """
-    def setUp(self):
-        """
-        Calendar administration is limited to staff members, so we login
-        with a super user here.
-        """
-        self.user = User.objects.create_superuser('test', 'te@ss.tt', 'Chug6ATh9hei')
-        self.c = Client()
-        self.c.login(username='test', password='Chug6ATh9hei')
-
-    def test_user_json(self):
-        duration = timedelta(minutes=71)
-        teacher = mixer.blend(User, is_staff=1)
-        teacher.save()
-
-        mocked_entries = {}
-        for i in range(0, 10):
-            entry = mixer.blend(TimelineEntry, teacher=teacher, duration=duration, start_time=date.ago(days=5))
-            mocked_entries[entry.pk] = entry
-
-        response = self.c.get('/timeline/%s.json' % teacher.username)
-
-        for i in json.loads(response.content.decode('utf-8')):
-            id = i['id']
-            mocked_entry = mocked_entries[id]
-
-            self.assertEqual(i['start'],
-                             format(mocked_entry.start_time, 'c')
-                             )
-            self.assertEqual(i['end'],
-                             format(mocked_entry.start_time + duration, 'c')
-                             )
-
-    def test_user_json_filter(self):
-        x = iso8601.parse_date('2016-01-01')
-        teacher = mixer.blend(User, is_staff=1)
-        for i in range(0, 10):
-            entry = mixer.blend(TimelineEntry, teacher=teacher, start_time=x)
-            x += timedelta(days=1)
-            print(x.__class__)
-            entry.save()
-
-        response = self.c.get('/timeline/%s.json?start=2013-01-01&end=2016-01-03' % teacher.username)
-        self.assertEqual(response.status_code, 200)
-
-        data = json.loads(response.content.decode('utf-8'))
-        self.assertEqual(len(data), 3)
 
 
 class PermissionTest(TestCase):
