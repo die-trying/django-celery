@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^hub/', include('hub.urls', namespace='hub')),
     url(r'^history/', include('history.urls', namespace='history')),
     url(r'^timeline/', include('timeline.urls', namespace='timeline')),
+    url(r'^lessons/', include('lessons.urls', namespace='lessons')),
 
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', admin.site.urls),

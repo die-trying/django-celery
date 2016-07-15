@@ -1,6 +1,5 @@
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404, redirect, render
@@ -66,16 +65,3 @@ def calendar_json(request, username):
         entries.append(entry.as_dict())
 
     return JsonResponse(entries, safe=False)
-
-
-@staff_member_required
-def available_lessons_json(request, username):
-    lesson_id = request.GET.get('lesson_id')
-
-    Model = ContentType.objects.get(app_label='lessons', pk=lesson_id).model_class()
-
-    lessons = []
-    for lesson in get_list_or_404(Model):
-        lessons.append(lesson.as_dict())
-
-    return JsonResponse(lessons, safe=False)

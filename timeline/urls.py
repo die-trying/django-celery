@@ -16,7 +16,6 @@ urlpatterns = [
         view=staff_member_required(views.calendar_delete),
         name='timeline_delete',
         ),
-    url(r'(?P<username>.+)/available_lessons.json$', views.available_lessons_json, name='available_lessons_json'),
     url(r'(?P<username>.+).json', views.calendar_json, name='timeline.json'),
     url(r'(?P<username>.+)/$', views.calendar, name='timeline'),
 ]
