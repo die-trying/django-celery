@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^history/', include('history.urls', namespace='history')),
     url(r'^timeline/', include('timeline.urls', namespace='timeline')),
     url(r'^lessons/', include('lessons.urls', namespace='lessons')),
+    url(r'^teachers/', include('teachers.urls', namespace='teachers')),
 
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', admin.site.urls),

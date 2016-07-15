@@ -65,14 +65,6 @@ class ExistingCustomerAdmin(admin.ModelAdmin):
         }),
     )
 
-    def get_queryset(self, request):
-        """
-        In this module we see only registered students. One should edit
-        potential customers via the 'Users' page.
-        """
-        queryset = super(admin.ModelAdmin, self).get_queryset(request)
-        return queryset.filter(user__isnull=False)
-
     def has_add_permission(self, request):
         return False
 

@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'products',
     'hub',
     'timeline',
+    'teachers',
     'acc',
     'history',
 

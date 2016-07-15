@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.db import models
-
 from django_countries.fields import CountryField
 
 
@@ -90,10 +89,17 @@ class Customer(models.Model):
         verbose_name = 'Lead'
 
 
+class RegisteredCustomerManager(models.Manager):
+    def get_queryset(self, exclude_void=True):
+        return super(RegisteredCustomerManager, self).get_queryset().filter(user__isnull=False, user__teacher_data__isnull=True)
+
+
 class RegisteredCustomer(Customer):
     """
     A stub customer model for administration purposes
     """
+    objects = RegisteredCustomerManager()
+
     @property
     def bought_classes(customer):
         return customer.classes.filter(buy_source=0).count()  # select only single bought classes
