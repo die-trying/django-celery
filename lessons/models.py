@@ -50,6 +50,7 @@ class Lesson(models.Model):
         return {
             'id': self.pk,
             'name': self.internal_name,
+            'slots': self.slots,
             'duration': str(self.duration)
         }
 

@@ -51,10 +51,12 @@ popupLoaded = () ->
 
       $.getJSON lessons, (data) ->
         $lesson.html ''
-        $lesson.append \
-          sprintf '<option value="%d" data-duration="%s">%s</option>', \
-          lesson.id, lesson.duration, lesson.name \
-            for lesson in data
+
+        for lesson in data
+          lesson.name = sprintf "%s | %d ppl.", lesson.name, lesson.slots if lesson.slots? and lesson.slots isnt 1
+          option = sprintf '<option value="%d" data-duration="%s">%s</option>', lesson.id, lesson.duration, lesson.name
+          $lesson.append option
+
         $lesson.change()  # trigger update of a default duration
 
 

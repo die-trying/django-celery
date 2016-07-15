@@ -42,3 +42,4 @@ class TestLessonsFunctional(TestCase):
             mocked_lesson = mocked_lessons[i['id']]
             self.assertEqual(i['name'], mocked_lesson.internal_name)
             self.assertEqual(i['duration'], str(mocked_lesson.duration))
+            self.assertEqual(i['slots'], mocked_lesson.slots)
