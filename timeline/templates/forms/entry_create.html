@@ -15,7 +15,7 @@
                 {{ form.start_time | bootstrap }}
                 <div class="form-group">
                     <label for="{{ form.duration.id_for_label }}">{% trans 'Duration'%}:</label>
-                    <input maxlength=5 placeholder='HH:MM' type="text" class="form-control", id="{{ form.duration.id_for_label }}" name="duration" value="{{ form.duration.value }}">
+                    <input readonly maxlength=5 placeholder='HH:MM' type="text" class="form-control", id="{{ form.duration.id_for_label }}" name="duration" value="{{ form.duration.value }}">
                 </div>
             </div>
             <button type="submit" class="btn btn-default">{% trans 'Create entry' %}</input>
