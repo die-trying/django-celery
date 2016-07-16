@@ -127,7 +127,7 @@ class EntryAPITest(TestCase):
                              format(mocked_entry.start, 'c')
                              )
             self.assertEqual(i['end'],
-                             format(mocked_entry.start + duration, 'c')
+                             format(now + duration, 'c')
                              )
 
     def test_user_json_filter(self):
