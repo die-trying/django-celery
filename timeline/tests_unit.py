@@ -1,3 +1,4 @@
+import iso8601
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -6,6 +7,7 @@ from mixer.backend.django import mixer
 
 import lessons.models as lessons
 from crm.models import Customer
+from teachers.models import Teacher
 from timeline.models import Entry as TimelineEntry
 
 
@@ -103,6 +105,61 @@ class EntryTestCase(TestCase):
         with self.assertRaises(ValidationError):
             entry = mixer.blend(TimelineEntry, teacher=self.teacher2, lesson=lesson)
             entry.save()
+
+
+class SlotAvailableTest(TestCase):
+    def setUp(self):
+        self.teacher = mixer.blend(User, is_staff=1)
+        self.teacher.teacher_data = mixer.blend(Teacher)
+
+        self.lesson = mixer.blend(lessons.OrdinaryLesson, teacher=self.teacher)
+
+        self.big_entry = mixer.blend(TimelineEntry,
+                                     teacher=self.teacher,
+                                     start=iso8601.parse_date('2016-01-02 18:00'),
+                                     end=iso8601.parse_date('2016-01-03 12:00'),
+                                     )
+
+    def test_can_be_created(self):
+        """
+        Create two entries — one overlapping with the big_entry, and one — not
+        """
+        overlapping_entry = TimelineEntry(teacher=self.teacher,
+                                          start=iso8601.parse_date('2016-01-03 04:00'),
+                                          end=iso8601.parse_date('2016-01-03 04:30'),
+                                          )
+        self.assertTrue(overlapping_entry.is_overlapping())
+
+        non_overlapping_entry = TimelineEntry(teacher=self.teacher,
+                                              start=iso8601.parse_date('2016-01-03 12:00'),
+                                              end=iso8601.parse_date('2016-01-03 12:30'),
+                                              )
+        self.assertFalse(non_overlapping_entry.is_overlapping())
+
+    def test_overlapping_with_different_teacher(self):
+        """
+        Check, if it's pohuy, that an entry overlapes entry of the other teacher
+        """
+        other_teacher = mixer.blend(User, is_staff=1)
+        test_entry = TimelineEntry(teacher=other_teacher,
+                                   start=iso8601.parse_date('2016-01-03 04:00'),
+                                   end=iso8601.parse_date('2016-01-03 04:30'),
+                                   )
+        self.assertFalse(test_entry.is_overlapping())
+
+    def test_cant_save(self):
+        """
+        We should not have posibillity to save a timeline entry, that can not
+        be created
+        """
+        overlapping_entry = TimelineEntry(teacher=self.teacher,
+                                          lesson=self.lesson,
+                                          start=iso8601.parse_date('2016-01-03 04:00'),
+                                          end=iso8601.parse_date('2016-01-03 04:30'),
+                                          allow_overlap=False,  # excplicitly say, that entry can't overlap other ones
+                                          )
+        with self.assertRaises(ValidationError):
+            overlapping_entry.save()
 
 
 class PermissionTest(TestCase):

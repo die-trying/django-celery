@@ -18,12 +18,29 @@ class EntryManager(models.Manager):
 
 class Entry(models.Model):
     """
-    A timeline entry
+    timeline.models.Entry
+
+    Single timeline entry
+    =====================
 
     Used for planning teachers time, and for scheduled bought
     classes (:model:`hub.Class`).
 
-    JSON representation:
+    Please import it like this::
+        from timeline.models import Entry as TimelineEntry
+
+    OVERLAPPING ENTRIES
+    ===================
+
+    By default timeline entries can overlap each other. You should set
+    instance.`allow_overlap` property to True if you want to enable overlap
+    protection.
+
+    You can check overlapping with the `instance.is_overlapping()` method. Checks will be
+    done automaticaly, when save() is invoced and allow_overlap == False
+
+    JSON representation
+    ===================
 
     :teacher:
         * id
@@ -49,6 +66,7 @@ class Entry(models.Model):
 
     start = models.DateTimeField()
     end = models.DateTimeField()
+    allow_overlap = models.BooleanField(default=True)
 
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
     lesson_id = models.PositiveIntegerField(null=True, blank=True)
@@ -81,10 +99,25 @@ class Entry(models.Model):
         if self.lesson:
             self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
 
+        if not self.allow_overlap and self.is_overlapping():
+            raise ValidationError('Entry time overlapes with some other entry of this teacher')
+
         if self.pk:
             self.__update_slots()  # update free slot count, check if no customers added when no slots are free
 
         super().save(*args, **kwargs)
+
+    def is_overlapping(self):
+        """
+        Check if timeline entry overlapes other entries of the same teacher.
+        """
+        concurent_entries = Entry.objects.filter(end__gt=self.start,
+                                                 start__lt=self.end,
+                                                 teacher=self.teacher
+                                                 )
+        if concurent_entries.count():
+            return True
+        return False
 
     def as_dict(self):
         """
