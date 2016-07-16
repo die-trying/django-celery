@@ -1,5 +1,5 @@
 import json
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import iso8601
 from django.contrib.auth.models import User
@@ -10,7 +10,6 @@ from mixer.backend.django import mixer
 from with_asserts.mixin import AssertHTMLMixin
 
 import lessons.models as lessons
-from elk.utils import date
 from timeline.models import Entry as TimelineEntry
 
 
@@ -34,8 +33,8 @@ class EntryCRUDTest(TestCase, AssertHTMLMixin):
             'lesson_type': self.lesson_type,
             'lesson_id': self.lesson.pk,
             'teacher': self.user.pk,
-            'start_time_0': '06/29/2016',
-            'start_time_1': '15:00',
+            'start_0': '06/29/2016',
+            'start_1': '15:00',
             'duration': '00:33',
         })
         self.assertEqual(response.status_code, 302)
@@ -55,8 +54,8 @@ class EntryCRUDTest(TestCase, AssertHTMLMixin):
             'lesson_type': self.lesson_type,
             'lesson_id': self.lesson.pk,
             'teacher': self.user.pk,
-            'start_time_0': '06/29/2016',
-            'start_time_1': '16:00',  # moved fwd for 1 hour
+            'start_0': '06/29/2016',
+            'start_1': '16:00',  # moved fwd for 1 hour
             'duration': '00:33',
         })
         self.assertEqual(response.status_code, 302)
@@ -107,9 +106,16 @@ class EntryAPITest(TestCase):
         teacher.save()
 
         mocked_entries = {}
+
+        now = datetime.now()
         for i in range(0, 10):
-            entry = mixer.blend(TimelineEntry, teacher=teacher, duration=duration, start_time=date.ago(days=5))
+            entry = mixer.blend(TimelineEntry,
+                                teacher=teacher,
+                                start=(now - timedelta(days=3)),
+                                end=(now + duration),
+                                )
             mocked_entries[entry.pk] = entry
+            print(entry.start, entry.end)
 
         response = self.c.get('/timeline/%s.json' % teacher.username)
 
@@ -118,17 +124,17 @@ class EntryAPITest(TestCase):
             mocked_entry = mocked_entries[id]
 
             self.assertEqual(i['start'],
-                             format(mocked_entry.start_time, 'c')
+                             format(mocked_entry.start, 'c')
                              )
             self.assertEqual(i['end'],
-                             format(mocked_entry.start_time + duration, 'c')
+                             format(mocked_entry.start + duration, 'c')
                              )
 
     def test_user_json_filter(self):
         x = iso8601.parse_date('2016-01-01')
         teacher = mixer.blend(User, is_staff=1)
         for i in range(0, 10):
-            entry = mixer.blend(TimelineEntry, teacher=teacher, start_time=x)
+            entry = mixer.blend(TimelineEntry, teacher=teacher, start=x)
             x += timedelta(days=1)
             print(x.__class__)
             entry.save()

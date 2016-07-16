@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
@@ -10,8 +8,6 @@ from django.utils.translation import ugettext as _
 
 from crm.models import Customer
 from lessons.models import Lesson
-
-# Create your models here.
 
 
 class EntryManager(models.Manager):
@@ -44,13 +40,15 @@ class Entry(models.Model):
         (0, 'Inactive'),
         (1, 'Active'),
     )
+
     objects = EntryManager()
 
     teacher = models.ForeignKey(User, related_name='timeline_entries', on_delete=models.PROTECT, limit_choices_to={'is_staff': 1})
 
     customers = models.ManyToManyField(Customer, related_name='planned_timeline_entries', blank=True)
 
-    start_time = models.DateTimeField()
+    start = models.DateTimeField()
+    end = models.DateTimeField()
 
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
     lesson_id = models.PositiveIntegerField(null=True, blank=True)
@@ -59,7 +57,6 @@ class Entry(models.Model):
 
     slots = models.SmallIntegerField(default=1)
     taken_slots = models.SmallIntegerField(default=0)
-    duration = models.DurationField(default=timedelta(minutes=30))
 
     # TODO — disable assigning of bought classes to inactive entries
     active = models.SmallIntegerField(choices=ENABLED, default=1)
@@ -96,8 +93,8 @@ class Entry(models.Model):
         return {
             'id': self.pk,
             'title': self.__str__(),
-            'start': format(self.start_time, 'c'),                  # ISO 8601
-            'end': format(self.start_time + self.duration, 'c'),    # ISO 8601
+            'start': format(self.start, 'c'),   # ISO 8601
+            'end': format(self.end, 'c'),       # ISO 8601
             'is_free': self.is_free,
             'slots_taken': self.taken_slots,
             'slots_available': self.slots,
@@ -109,7 +106,7 @@ class Entry(models.Model):
         only when it has an assigned lesson.
         """
         self.slots = self.lesson.slots
-        self.duration = self.lesson.duration
+        self.end = self.start + self.lesson.duration
 
         if hasattr(self.lesson, 'host') and self.lesson.host is not None:
             if self.teacher != self.lesson.host:

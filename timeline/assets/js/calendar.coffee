@@ -31,8 +31,8 @@ popupLoaded = () ->
     $lesson_type = $ '#id_lesson_type', $form
     $lesson      = $ '#id_lesson_id', $form
     $duration    = $ '#id_duration', $form
-    $time        = $ '#id_start_time_1', $form
-    $date        = $ '#id_start_time_0', $form
+    $time        = $ '#id_start_1', $form
+    $date        = $ '#id_start_0', $form
     $calendar    = $ '.user-calendar'
 
     $date.val $calendar.data('clickedDay').format 'L' if $calendar.data 'clickedDay'

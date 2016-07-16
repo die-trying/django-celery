@@ -59,7 +59,7 @@ def calendar_json(request, username):
     end = request.GET.get('end', date.fwd(days=16))
 
     for entry in get_list_or_404(TimelineEntry,
-                                 start_time__range=(start, end),
+                                 start__range=(start, end),
                                  teacher=user
                                  ):
         entries.append(entry.as_dict())

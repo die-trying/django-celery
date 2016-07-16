@@ -66,8 +66,8 @@ class EntryTestCase(TestCase):
         lesson = mixer.blend(lessons.OrdinaryLesson)
         entry = mixer.blend(TimelineEntry, lesson=lesson, teacher=self.teacher1)
 
-        for i in ('duration', 'slots'):
-            self.assertEqual(getattr(lesson, i), getattr(entry, i))
+        self.assertEqual(entry.slots, lesson.slots)
+        self.assertEqual(entry.end, entry.start + lesson.duration)
 
         self.assertEqual(entry.lesson_type, ContentType.objects.get(app_label='lessons', model='ordinarylesson'))
 

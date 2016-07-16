@@ -17,10 +17,10 @@
                 {{ form.lesson_id | bootstrap }}
             </div>
             <div class="timeline-entry-form__time">
-                {{ form.start_time | bootstrap }}
+                {{ form.start | bootstrap }}
                 <div class="form-group">
-                    <label for="{{ form.duration.id_for_label }}">{% trans 'Duration'%}:</label>
-                    <input readonly maxlength=5 placeholder='HH:MM' type="text" class="form-control", id="{{ form.duration.id_for_label }}" name="duration" value="{{ form.duration.value }}">
+                    <label for="id_duration">{% trans 'Duration'%}:</label>
+                    <input readonly maxlength=5 placeholder='HH:MM' type="text" class="form-control", id="id_duration" name="duration" value="{{ form.duration.value }}">
                 </div>
             </div>
             <button type="submit" class="btn btn-default timeline-entry-form__submit">{% trans 'Update entry' %}</button>

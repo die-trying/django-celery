@@ -9,6 +9,13 @@ from .models import Entry as TimelineEntry
 @admin.register(TimelineEntry)
 class TimelineEntryAdmin(admin.ModelAdmin):
     exclude = ('customers', 'event_id')
-    readonly_fields = ('taken_slots',)
-    list_display = ('teacher', 'start_time', 'is_free')
-    pass
+    readonly_fields = ('taken_slots', 'end')
+    list_display = ('teacher', 'start', 'duration', 'is_free')
+
+    def duration(self, instance):
+        d = str(instance.end - instance.start).split(':')
+
+        if len(d[0]) < 2:
+            d[0] = '0%s' % d[0]
+
+        return '%s:%s' % (d[0], d[1])
