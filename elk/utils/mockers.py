@@ -1,9 +1,8 @@
 import random
 from unittest.mock import Mock
 
-from mixer.backend.django import mixer
-
 from crm.models import Customer
+from mixer.backend.django import mixer
 
 
 def mock_request(customer=mixer.blend(Customer)):
@@ -26,7 +25,7 @@ def mock_request(customer=mixer.blend(Customer)):
         'REMOTE_ADDR': '127.0.0.5',
         'HTTP_USER_AGENT': 'WinXP; U/16',
     }
-
+    request.get_host = Mock(return_value='127.0.0.5')
     request.crm = customer
 
     return request

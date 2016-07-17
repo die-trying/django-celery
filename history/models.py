@@ -1,9 +1,9 @@
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from djmoney.models.fields import MoneyField
 
 from crm.models import Customer
+from djmoney.models.fields import MoneyField
 
 
 class HistoryEvent(models.Model):
@@ -52,7 +52,7 @@ class HistoryEvent(models.Model):
         self.os_version = request.user_agent.os.version_string
         self.device = request.user_agent.device.family
 
-        self.ip = request.META.get('REMOTE_ADDR')
+        self.ip = request.get_host()
         self.raw_useragent = request.META.get('HTTP_USER_AGENT')
 
     class Meta:
