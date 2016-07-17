@@ -1,14 +1,16 @@
-import iso8601
+
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import Client, TestCase
-from mixer.backend.django import mixer
 
+import iso8601
 import lessons.models as lessons
 from crm.models import Customer
+from mixer.backend.django import mixer
 from teachers.models import Teacher
 from timeline.models import Entry as TimelineEntry
+from with_asserts.mixin import AssertHTMLMixin
 
 
 class EntryTestCase(TestCase):
@@ -162,7 +164,7 @@ class SlotAvailableTest(TestCase):
             overlapping_entry.save()
 
 
-class PermissionTest(TestCase):
+class TestPermissions(TestCase):
     def setUp(self):
         self.superuser = User.objects.create_superuser('superuser', 'te@ss.a', '123')
         self.user = User.objects.create_user('user', 'te@ss.tt', '123')
@@ -181,3 +183,36 @@ class PermissionTest(TestCase):
         self.c.login(username='superuser', password='123')
         response = self.c.get('/timeline/%s/create/' % self.teacher.username)
         self.assertEqual(response.status_code, 200)
+
+
+class TestFormContext(TestCase, AssertHTMLMixin):
+    """
+    Check for a bug: timeline entry edit form should edit entry for the owner
+    of the entry, not for the current logged in user.
+    """
+
+    def setUp(self):
+        self.superuser = User.objects.create_superuser('superuser', 'te@ss.a', '123')
+        self.user = User.objects.create_user('user', 'te@ss.tt', '123')
+        self.c = Client()
+        self.c.login(username='superuser', password='123')
+
+    def test_create_context(self):
+        """
+        Get create form and check for hidden field 'teacher',
+        see template timeline/forms/entry_create.html
+        """
+        response = self.c.get('/timeline/%s/create/' % self.user.username)
+        with self.assertHTML(response, 'form.form #teacher') as (input,):
+            self.assertEquals(input.value, str(self.user.pk))
+
+    def test_update_context(self):
+        """
+        Get update form and check for hidden field 'teacher',
+        see template timeline/forms/entry_update.html
+        """
+        entry = mixer.blend(TimelineEntry, teacher=self.user)
+
+        response = self.c.get('/timeline/%s/%d/update/' % (self.user.username, entry.pk))
+        with self.assertHTML(response, 'form.form #teacher') as (input,):
+            self.assertEquals(input.value, str(self.user.pk))

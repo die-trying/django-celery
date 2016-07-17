@@ -17,14 +17,14 @@ def calendar(request, username):
     })
 
 
-class UserCtxMixin():
+class RequestedUserCtxMixin():
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['user'] = get_object_or_404(User, username=self.kwargs['username'])
+        context['requested_user'] = get_object_or_404(User, username=self.kwargs['username'])
         return context
 
 
-class calendar_create(CreateView, UserCtxMixin):
+class calendar_create(RequestedUserCtxMixin, CreateView):
     template_name = 'timeline/forms/entry_create.html'
     form_class = TimelineEntryForm
 
@@ -32,7 +32,7 @@ class calendar_create(CreateView, UserCtxMixin):
         return reverse('timeline:timeline', kwargs=self.kwargs)
 
 
-class calendar_update(UpdateView, UserCtxMixin):
+class calendar_update(RequestedUserCtxMixin, UpdateView):
     template_name = 'timeline/forms/entry_update.html'
     form_class = TimelineEntryForm
     model = TimelineEntry

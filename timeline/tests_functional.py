@@ -1,16 +1,16 @@
 import json
 from datetime import datetime, timedelta
 
-import iso8601
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.test import Client, TestCase
 from django.utils.dateformat import format
-from mixer.backend.django import mixer
-from with_asserts.mixin import AssertHTMLMixin
 
+import iso8601
 import lessons.models as lessons
+from mixer.backend.django import mixer
 from timeline.models import Entry as TimelineEntry
+from with_asserts.mixin import AssertHTMLMixin
 
 
 class EntryCRUDTest(TestCase, AssertHTMLMixin):
