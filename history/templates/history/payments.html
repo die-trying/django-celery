@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'elk/base.html' %}
 {% load i18n %}
 {% load djmoney %}
 
@@ -30,5 +30,6 @@
     </div>
 {% else %}
     <p>{% trans "You don't have any payments yet. <a href=\"/\">Choose</a> a first one." %}</p>
+    <p>{{ user.username }}</p>
 {% endif %}
 {% endblock %}

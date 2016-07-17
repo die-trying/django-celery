@@ -12,7 +12,7 @@ from timeline.models import Entry as TimelineEntry
 
 @staff_member_required
 def calendar(request, username):
-    return render(request, 'calendar/user.html', context={
+    return render(request, 'timeline/calendar/user.html', context={
         'object': get_object_or_404(User, username=username)
     })
 
@@ -25,7 +25,7 @@ class UserCtxMixin():
 
 
 class calendar_create(CreateView, UserCtxMixin):
-    template_name = 'forms/entry_create.html'
+    template_name = 'timeline/forms/entry_create.html'
     form_class = TimelineEntryForm
 
     def get_success_url(self):
@@ -33,7 +33,7 @@ class calendar_create(CreateView, UserCtxMixin):
 
 
 class calendar_update(UpdateView, UserCtxMixin):
-    template_name = 'forms/entry_update.html'
+    template_name = 'timeline/forms/entry_update.html'
     form_class = TimelineEntryForm
     model = TimelineEntry
 

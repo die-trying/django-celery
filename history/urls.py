@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 urlpatterns = [
     url(
         regex=r'^payments/$',
-        view=login_required(TemplateView.as_view(template_name='payments.html')),
+        view=login_required(TemplateView.as_view(template_name='history/payments.html')),
         name='payments'
     ),
 ]

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'elk/base.html' %}
 
 {% block content %}
 <div class="user-calendar" data-calendar="{% url 'timeline:timeline.json' username=object.username%}"></div>

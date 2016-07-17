@@ -12,7 +12,7 @@ and for starting social auth — app:social:begin.
 """
 
 urlpatterns = [
-    url(r'^$', login_required(TemplateView.as_view(template_name='index.html'))),
+    url(r'^$', login_required(TemplateView.as_view(template_name='acc/index.html'))),
 
     url(r'^accounts/', include('acc.urls', namespace='acc')),
     url(r'^hub/', include('hub.urls', namespace='hub')),

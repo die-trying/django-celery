@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from mixer.backend.django import mixer
 
 import lessons.models as lessons
 import products.models as products
@@ -8,6 +7,7 @@ from crm.models import Customer
 from elk.utils.mockers import mock_request
 from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from hub.models import Class, Subscription
+from mixer.backend.django import mixer
 from timeline.models import Entry as TimelineEntry
 
 
