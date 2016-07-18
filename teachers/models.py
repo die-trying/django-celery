@@ -5,13 +5,14 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from timeline.models import Entry as TimelineEntry
+
 
 class Teacher(models.Model):
     """
     Teacher model
 
-    Represent options, specific to a teacher.
-    Usualy accessable via `user.teacher_data`
+    Represents options, specific to a teacher. Usualy accessable via `user.teacher_data`
     """
     user = models.OneToOneField(User, on_delete=models.PROTECT, related_name='teacher_data', limit_choices_to={'is_staff': 1})
 
@@ -21,6 +22,8 @@ class Teacher(models.Model):
     def find_free_slots(self, date, period=timedelta(minutes=30)):
         """
         Get datetime.datetime objects for free slots for a date
+
+        Returns an array of available slots in format ['15:00', '15:30', '16:00']
         """
         hours = WorkingHours.for_date(teacher=self, date=date)
         if hours is None:
@@ -29,9 +32,25 @@ class Teacher(models.Model):
         slots = []
         slot = hours.start
         while slot + period <= hours.end:
-            slots.append(slot)
+            if not self.__check_overlap(slot, period):
+                slots.append(slot)
             slot += period
         return slots
+
+    def __check_overlap(self, start, period):
+        """
+        Check, if a slot does not overlap with other timeline entries
+
+        This implementtion could be less expensive: it creates a timeline entry
+        per every testing slot
+        """
+        print(self.user.pk, start, start + period)
+        entry = TimelineEntry(
+            teacher=self.user,
+            start=start,
+            end=start + period,
+        )
+        return entry.is_overlapping()
 
 
 class WorkingHours(models.Model):

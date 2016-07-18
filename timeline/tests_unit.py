@@ -1,16 +1,16 @@
 
+import iso8601
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import Client, TestCase
+from mixer.backend.django import mixer
+from with_asserts.mixin import AssertHTMLMixin
 
-import iso8601
 import lessons.models as lessons
 from crm.models import Customer
-from mixer.backend.django import mixer
 from teachers.models import Teacher
 from timeline.models import Entry as TimelineEntry
-from with_asserts.mixin import AssertHTMLMixin
 
 
 class EntryTestCase(TestCase):
@@ -122,7 +122,7 @@ class SlotAvailableTest(TestCase):
                                      end=iso8601.parse_date('2016-01-03 12:00'),
                                      )
 
-    def test_can_be_created(self):
+    def test_overlap(self):
         """
         Create two entries — one overlapping with the big_entry, and one — not
         """
@@ -148,6 +148,23 @@ class SlotAvailableTest(TestCase):
                                    end=iso8601.parse_date('2016-01-03 04:30'),
                                    )
         self.assertFalse(test_entry.is_overlapping())
+
+    def test_two_equal_entryes(self):
+        """
+        Two equal entries should overlap each other
+        """
+        first_entry = mixer.blend(TimelineEntry,
+                                  teacher=self.teacher,
+                                  start=iso8601.parse_date('2016-01-03 04:00'),
+                                  end=iso8601.parse_date('2016-01-03 04:30'),
+                                  )
+        first_entry.save()
+
+        second_entry = TimelineEntry(teacher=self.teacher,
+                                     start=iso8601.parse_date('2016-01-03 04:00'),
+                                     end=iso8601.parse_date('2016-01-03 04:30'),
+                                     )
+        self.assertTrue(second_entry.is_overlapping())
 
     def test_cant_save(self):
         """

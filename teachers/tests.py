@@ -1,16 +1,22 @@
 import json
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from mixer.backend.django import mixer
 
+from lessons.models import OrdinaryLesson
 from teachers.models import Teacher, WorkingHours
+from timeline.models import Entry as TimelineEntry
 
 
 class TestFreeSlots(TestCase):
     def setUp(self):
+        self.user = User.objects.create_superuser('superuser', 't@t.t', '123')
         self.teacher = mixer.blend(Teacher)
+        self.user.teacher_data = self.teacher
+        self.user.save()
+
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=1, start='17:00', end='19:00')  # thursday
 
@@ -48,8 +54,34 @@ class TestFreeSlots(TestCase):
         slots = self.teacher.find_free_slots(date='2016-07-20')
         self.assertIsNone(slots)  # should not throw DoesNotExist
 
+    def test_get_free_slots_event_bypass(self):
+        """
+        Add an event and check that get_free_slots should not return a slot, overlapping with it
+        """
+        entry = TimelineEntry(teacher=self.user,
+                              lesson=mixer.blend(OrdinaryLesson),
+                              start=datetime(2016, 7, 18, 14, 0),
+                              end=datetime(2016, 7, 18, 14, 30),
+                              )
+        entry.save()
+        slots = self.teacher.find_free_slots(date='2016-07-18')
+        self.assertEquals(len(slots), 3)
 
-class TestTeachers(TestCase):
+    def test_get_free_slots_offset_event_bypass(self):
+        """
+        Add event with an offset, overlapping two time slots
+        """
+        entry = TimelineEntry(teacher=self.user,
+                              lesson=mixer.blend(OrdinaryLesson),
+                              start=datetime(2016, 7, 18, 14, 10),
+                              end=datetime(2016, 7, 18, 14, 40)
+                              )
+        entry.save()
+        slots = self.teacher.find_free_slots(date='2016-07-18')
+        self.assertEquals(len(slots), 2)
+
+
+class TestWorkingHours(TestCase):
     def setUp(self):
         self.c = Client()
         self.user = User.objects.create_superuser('test', 'te@ss.tt', '123')
