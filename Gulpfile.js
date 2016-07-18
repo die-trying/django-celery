@@ -23,7 +23,7 @@ gulp.task('js', function(){
         .pipe($.sourcemaps.init())
         .pipe($.coffeelint())
         .pipe($.coffeelint.reporter())
-        .pipe($.coffee({bare: true}))
+        .pipe($.coffee())
         .pipe($.concat('app.js'))
         .pipe($.sourcemaps.write())
         .pipe(gulp.dest('./elk/static/js/'));
