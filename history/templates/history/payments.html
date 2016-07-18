@@ -3,7 +3,9 @@
 {% load djmoney %}
 
 {% block content %}
-<h1 class="page-title">{% trans 'Your payment history' %}</h1>
+<div class="page-header">
+    <h1>{% trans 'Your payments' %}</h1>
+</div>
 
 {% if user.crm.payments.count %}
     <div class="table-responsive">
