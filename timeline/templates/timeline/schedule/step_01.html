@@ -1,0 +1,54 @@
+{% load i18n %}
+<div class="modal-dialog schedule-popup">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            <h3 class="modal-title">{% trans 'Schedule a lesson' %}</h3>
+        </div>
+        <div class="modal-body">
+            <div class="row schedule-popup__filters">
+                <div class="col-sm-12">
+                    <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-primary active">
+                            <input type="radio" autocomplete="off" checked>Curator sessions</input>
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" autocomplete="off">Native speakers</input>
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" autocomplete="off">Master classes</input>
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" autocomplete="off">Happy hours</input>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="schedule-popup__content">
+            {% for l in '12345678890' %}
+                <div class="row schedule-popup__record">
+                    <div class="col-md-1">
+                        <img class="img-circle" src="/static/no-photo.jpg">
+                    </div>
+                    <div class="col-md-5 teacher">
+                        <h5>Denny Trejo</h5>
+                        <p>Your curator. That mexican, than can teach you with a Machete and couple of Tekilas.</p>
+                    </div>
+                    <div class="col-md-6 slots">
+                        <div class="btn-group" data-toggle="buttons">
+                            {% for i in "123456789123456" %}
+                                <label class="btn btn-default">
+                                    <input class="schedule-popup__time-selector" type=radio name="time_{{ l }}_{{ i }}">22:34</input>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+    </div>
+</div>

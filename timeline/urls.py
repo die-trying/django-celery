@@ -1,9 +1,14 @@
 from django.conf.urls import url
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
 
 from . import views
 
 urlpatterns = [
+    url(regex='schedule/$',
+        view=login_required(views.schedule_step01.as_view()),
+        name='schedule',
+        ),
     url(regex=r'(?P<username>.+)/create/$',
         view=staff_member_required(views.calendar_create.as_view()),
         name='timeline_create',

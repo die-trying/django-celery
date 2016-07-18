@@ -3,15 +3,24 @@
 {% block content %}
 <h1>Hi, %username%!</h1>
 
-<div class="col-sm-4"></div>
+<div class="row">
+    <div class="col-sm-4"></div>
 
-<div class="col-sm-2">
-    <button data-url="{% url 'hub:buy_a_subscription' %}" type="button" class="btn btn-primary btn-lg">Buy a subscription</button>
+    <div class="col-sm-2">
+        <button data-url="{% url 'hub:buy_a_subscription' %}" type="button" class="btn btn-primary btn-lg">Buy a subscription</button>
+    </div>
+
+    <div class="col-sm-2">
+        <button data-url="{% url 'hub:buy_a_single' %}" type="button" class="btn btn-primary btn-lg">Buy a single lesson</button>
+    </div>
+
+    <div class="col-sm-4"></div>
 </div>
 
-<div class="col-sm-2">
-    <button data-url="{% url 'hub:buy_a_single' %}"type="button" class="btn btn-primary btn-lg">Buy a single lesson</button>
+<div class="row">
+    <div class="col-sm-1">
+        <button type="button" data-popup-url="{% url 'timeline:schedule' %}" class="btn btn-primary" data-toggle="modal" data-target="#schedule-popup">Schedule a lesson</button>
+    </div>
 </div>
-
-<div class="col-sm-4"></div>
+<div class="modal fade" id="schedule-popup" role="dialog"></div>
 {% endblock %}

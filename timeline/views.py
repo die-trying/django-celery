@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404, redirect, render
+from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView, UpdateView
 
 from elk.utils import date
@@ -43,6 +44,11 @@ class calendar_update(RequestedUserCtxMixin, UpdateView):
                        )
 
 
+class schedule_step01(TemplateView):
+    template_name = 'timeline/schedule/step_01.html'
+
+
+@staff_member_required
 def calendar_delete(request, username, pk):
     user = get_object_or_404(User, username=username)
     entry = get_object_or_404(TimelineEntry, teacher=user, pk=pk)
