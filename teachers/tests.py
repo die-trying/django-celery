@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from mixer.backend.django import mixer
 
+from elk.utils.fixtures import test_teacher
 from lessons.models import OrdinaryLesson
 from teachers.models import Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry
@@ -12,10 +13,7 @@ from timeline.models import Entry as TimelineEntry
 
 class TestFreeSlots(TestCase):
     def setUp(self):
-        self.user = User.objects.create_superuser('superuser', 't@t.t', '123')
-        self.teacher = mixer.blend(Teacher)
-        self.user.teacher_data = self.teacher
-        self.user.save()
+        self.teacher = test_teacher()
 
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=1, start='17:00', end='19:00')  # thursday
@@ -58,7 +56,7 @@ class TestFreeSlots(TestCase):
         """
         Add an event and check that get_free_slots should not return a slot, overlapping with it
         """
-        entry = TimelineEntry(teacher=self.user,
+        entry = TimelineEntry(teacher=self.teacher,
                               lesson=mixer.blend(OrdinaryLesson),
                               start=datetime(2016, 7, 18, 14, 0),
                               end=datetime(2016, 7, 18, 14, 30),
@@ -71,7 +69,7 @@ class TestFreeSlots(TestCase):
         """
         Add event with an offset, overlapping two time slots
         """
-        entry = TimelineEntry(teacher=self.user,
+        entry = TimelineEntry(teacher=self.teacher,
                               lesson=mixer.blend(OrdinaryLesson),
                               start=datetime(2016, 7, 18, 14, 10),
                               end=datetime(2016, 7, 18, 14, 40)
@@ -83,10 +81,11 @@ class TestFreeSlots(TestCase):
 
 class TestWorkingHours(TestCase):
     def setUp(self):
+        self.teacher = test_teacher()
+
         self.c = Client()
-        self.user = User.objects.create_superuser('test', 'te@ss.tt', '123')
-        self.user.teacher_data = mixer.blend(Teacher, user=self.user)
-        self.c.login(username='test', password='123')
+        self.superuser = User.objects.create_superuser('root', 'te@ss.tt', '123')
+        self.c.login(username='root', password='123')
 
     def test_hours_JSON(self):
         """
@@ -95,12 +94,12 @@ class TestWorkingHours(TestCase):
         mocked_hours = {}
 
         for i in range(0, 7):
-            hours = mixer.blend(WorkingHours, teacher=self.user.teacher_data, weekday=i)
+            hours = mixer.blend(WorkingHours, teacher=self.teacher, weekday=i)
             hours.save()
             mocked_hours[hours.pk] = hours
             print(hours)
 
-        response = self.c.get('/teachers/%s/hours.json' % self.user.username)
+        response = self.c.get('/teachers/%s/hours.json' % self.teacher.user.username)
         self.assertEquals(response.status_code, 200)
 
         got_hours = json.loads(response.content.decode('utf-8'))

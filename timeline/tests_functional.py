@@ -1,24 +1,27 @@
 import json
 from datetime import datetime, timedelta
 
+import iso8601
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.test import Client, TestCase
 from django.utils.dateformat import format
-
-import iso8601
-import lessons.models as lessons
 from mixer.backend.django import mixer
-from timeline.models import Entry as TimelineEntry
 from with_asserts.mixin import AssertHTMLMixin
+
+import lessons.models as lessons
+from elk.utils.fixtures import test_teacher
+from timeline.models import Entry as TimelineEntry
 
 
 class EntryCRUDTest(TestCase, AssertHTMLMixin):
     def setUp(self):
-        self.user = User.objects.create_superuser('user', 'te@ss.a', '123')
+        self.superuser = User.objects.create_superuser('root', 'te@ss.a', '123')
 
         self.c = Client()
-        self.c.login(username='user', password='123')
+        self.c.login(username='root', password='123')
+
+        self.teacher = test_teacher()
 
         self.lesson = mixer.blend(lessons.OrdinaryLesson, duration=timedelta(minutes=33))
         self.lesson_type = ContentType.objects.get_for_model(lessons.OrdinaryLesson).pk
@@ -29,10 +32,10 @@ class EntryCRUDTest(TestCase, AssertHTMLMixin):
         self._delete()
 
     def _create(self):
-        response = self.c.post('/timeline/%s/create/' % self.user.username, {
+        response = self.c.post('/timeline/%s/create/' % self.teacher.user.username, {
             'lesson_type': self.lesson_type,
             'lesson_id': self.lesson.pk,
-            'teacher': self.user.pk,
+            'teacher': self.teacher.pk,
             'start_0': '06/29/2016',
             'start_1': '15:00',
             'duration': '00:33',
@@ -50,10 +53,10 @@ class EntryCRUDTest(TestCase, AssertHTMLMixin):
     def _update(self):
         pk = self.added_entry['id']
 
-        response = self.c.post('/timeline/%s/%d/update/' % (self.user.username, pk), {
+        response = self.c.post('/timeline/%s/%d/update/' % (self.teacher.user.username, pk), {
             'lesson_type': self.lesson_type,
             'lesson_id': self.lesson.pk,
-            'teacher': self.user.pk,
+            'teacher': self.teacher.pk,
             'start_0': '06/29/2016',
             'start_1': '16:00',  # moved fwd for 1 hour
             'duration': '00:33',
@@ -67,7 +70,7 @@ class EntryCRUDTest(TestCase, AssertHTMLMixin):
 
     def _delete(self):
         pk = self.added_entry['id']
-        response = self.c.get('/timeline/%s/%d/update/' % (self.user.username, pk))
+        response = self.c.get('/timeline/%s/%d/update/' % (self.teacher.user.username, pk))
         self.assertEqual(response.status_code, 200, 'Should generate an edit form')
 
         with self.assertHTML(response, 'a.text-danger') as (delete_link,):
@@ -79,7 +82,7 @@ class EntryCRUDTest(TestCase, AssertHTMLMixin):
                 TimelineEntry.objects.get(pk=pk)
 
     def __get_entry_from_json(self):
-        response = self.c.get('/timeline/%s.json?start=2016-06-28&end=2016-06-30' % self.user.username)
+        response = self.c.get('/timeline/%s.json?start=2016-06-28&end=2016-06-30' % self.teacher.user.username)
         self.assertEqual(response.status_code, 200)
         entries = json.loads(response.content.decode('utf-8'))
         self.assertEqual(len(entries), 1)
@@ -96,28 +99,28 @@ class EntryAPITest(TestCase):
         Calendar administration is limited to staff members, so we login
         with a super user here.
         """
-        self.user = User.objects.create_superuser('test', 'te@ss.tt', 'Chug6ATh9hei')
+        self.superuser = User.objects.create_superuser('root', 'te@ss.tt', '123')
         self.c = Client()
-        self.c.login(username='test', password='Chug6ATh9hei')
+        self.c.login(username='root', password='123')
+
+        self.teacher = test_teacher()
 
     def test_user_json(self):
         duration = timedelta(minutes=71)
-        teacher = mixer.blend(User, is_staff=1)
-        teacher.save()
 
         mocked_entries = {}
 
         now = datetime.now()
         for i in range(0, 10):
             entry = mixer.blend(TimelineEntry,
-                                teacher=teacher,
+                                teacher=self.teacher,
                                 start=(now - timedelta(days=3)),
                                 end=(now + duration),
                                 )
             mocked_entries[entry.pk] = entry
             print(entry.start, entry.end)
 
-        response = self.c.get('/timeline/%s.json' % teacher.username)
+        response = self.c.get('/timeline/%s.json' % self.teacher.user.username)
 
         for i in json.loads(response.content.decode('utf-8')):
             id = i['id']
@@ -132,14 +135,13 @@ class EntryAPITest(TestCase):
 
     def test_user_json_filter(self):
         x = iso8601.parse_date('2016-01-01')
-        teacher = mixer.blend(User, is_staff=1)
         for i in range(0, 10):
-            entry = mixer.blend(TimelineEntry, teacher=teacher, start=x)
+            entry = mixer.blend(TimelineEntry, teacher=self.teacher, start=x)
             x += timedelta(days=1)
             print(x.__class__)
             entry.save()
 
-        response = self.c.get('/timeline/%s.json?start=2013-01-01&end=2016-01-03' % teacher.username)
+        response = self.c.get('/timeline/%s.json?start=2013-01-01&end=2016-01-03' % self.teacher.user.username)
         self.assertEqual(response.status_code, 200)
 
         data = json.loads(response.content.decode('utf-8'))

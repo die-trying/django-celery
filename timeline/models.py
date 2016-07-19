@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -8,6 +7,7 @@ from django.utils.translation import ugettext as _
 
 from crm.models import Customer
 from lessons.models import Lesson
+from teachers.models import Teacher
 
 
 class EntryManager(models.Manager):
@@ -60,7 +60,7 @@ class Entry(models.Model):
 
     objects = EntryManager()
 
-    teacher = models.ForeignKey(User, related_name='timeline_entries', on_delete=models.PROTECT, limit_choices_to={'is_staff': 1})
+    teacher = models.ForeignKey(Teacher, related_name='timeline_entries', on_delete=models.PROTECT)
 
     customers = models.ManyToManyField(Customer, related_name='planned_timeline_entries', blank=True)
 

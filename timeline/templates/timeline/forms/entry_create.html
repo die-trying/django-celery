@@ -9,8 +9,8 @@
                 {{ field }} — {{ error }}
             {% endfor %}
         {% endfor %}
-        <form method = "POST" class="form"  action="{% url 'timeline:timeline_create' username=requested_user.username %}" data-lessons="{% url 'lessons:available_json' username=requested_user.username %}">
-            <input type="hidden" id="teacher" name="teacher" value="{{ requested_user.pk }}">
+        <form method = "POST" class="form"  action="{% url 'timeline:timeline_create' username=teacher.user.username %}" data-lessons="{% url 'lessons:available_json' username=teacher.user.username %}">
+            <input type="hidden" id="teacher" name="teacher" value="{{ teacher.pk }}">
             {% csrf_token %}
             <div class="timeline-entry-form__lesson">
                 {{ form.lesson_type | bootstrap }}

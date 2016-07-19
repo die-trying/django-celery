@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta
 
 import iso8601
+from django.apps import apps
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-
-from timeline.models import Entry as TimelineEntry
 
 
 class Teacher(models.Model):
@@ -44,9 +43,9 @@ class Teacher(models.Model):
         This implementtion could be less expensive: it creates a timeline entry
         per every testing slot
         """
-        print(self.user.pk, start, start + period)
+        TimelineEntry = apps.get_model('timeline.Entry')
         entry = TimelineEntry(
-            teacher=self.user,
+            teacher=self,
             start=start,
             end=start + period,
         )

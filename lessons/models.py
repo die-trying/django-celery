@@ -1,8 +1,9 @@
 from datetime import timedelta
 
-from django.contrib.auth.models import User
 from django.db import models
 from django_markdown.models import MarkdownField
+
+from teachers.models import Teacher
 
 
 # Create your models here.
@@ -63,7 +64,7 @@ class HostedLesson(Lesson):
     Abstract class for generic lesson, that requires a host, i.e. Master class
     or ELK Happy hour
     """
-    host = models.ForeignKey(User, limit_choices_to={'is_staff': 1}, related_name='+', null=True)
+    host = models.ForeignKey(Teacher, limit_choices_to={'is_staff': 1}, related_name='+', null=True)
 
     class Meta:
         abstract = True

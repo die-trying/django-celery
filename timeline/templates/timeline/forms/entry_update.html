@@ -9,8 +9,8 @@
                 {{ field }} — {{ error }}
             {% endfor %}
         {% endfor %}
-        <form method = "POST" class="form"  action="{% url 'timeline:timeline_update' username=requested_user.username pk=object.pk %}" data-lessons="{% url 'lessons:available_json' username=requested_user.username %}">
-            <input type="hidden" id="teacher" name="teacher" value="{{ requested_user.pk }}">
+        <form method = "POST" class="form"  action="{% url 'timeline:timeline_update' username=teacher.user.username pk=object.pk %}" data-lessons="{% url 'lessons:available_json' username=teacher.user.username %}">
+            <input type="hidden" id="teacher" name="teacher" value="{{ teacher.pk }}">
             {% csrf_token %}
             <div class="timeline-entry-form__lesson">
                 {{ form.lesson_type | bootstrap }}
@@ -24,7 +24,7 @@
                 </div>
             </div>
             <button type="submit" class="btn btn-default timeline-entry-form__submit">{% trans 'Update entry' %}</button>
-            <p class="timeline-entry-form__delete">or <a class="text-danger" href="{% url 'timeline:timeline_delete' username=user.username pk=object.pk %}">delete</a> it.</p>
+            <p class="timeline-entry-form__delete">or <a class="text-danger" href="{% url 'timeline:timeline_delete' username=teacher.user.username pk=object.pk %}">delete</a> it.</p>
         </form>
     </div>
 </div>

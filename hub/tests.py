@@ -1,13 +1,14 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
+from mixer.backend.django import mixer
 
 import lessons.models as lessons
 import products.models as products
 from crm.models import Customer
+from elk.utils.fixtures import test_teacher
 from elk.utils.mockers import mock_request
 from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from hub.models import Class, Subscription
-from mixer.backend.django import mixer
 from timeline.models import Entry as TimelineEntry
 
 
@@ -94,7 +95,7 @@ class ScheduleTestCase(TestCase):
     TEST_CUSTOMER_ID = 1
 
     def setUp(self):
-        self.host = mixer.blend(User, is_staff=1, crm=mixer.blend(Customer))
+        self.host = test_teacher()
 
     def _buy_a_lesson(self, lesson):
         customer = Customer.objects.get(pk=self.TEST_CUSTOMER_ID)

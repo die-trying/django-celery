@@ -9,7 +9,7 @@ from with_asserts.mixin import AssertHTMLMixin
 
 import lessons.models as lessons
 from crm.models import Customer
-from teachers.models import Teacher
+from elk.utils.fixtures import test_teacher
 from timeline.models import Entry as TimelineEntry
 
 
@@ -17,8 +17,8 @@ class EntryTestCase(TestCase):
     fixtures = ('crm',)
 
     def setUp(self):
-        self.teacher1 = mixer.blend(User, is_staff=1)
-        self.teacher2 = mixer.blend(User, is_staff=1)
+        self.teacher1 = test_teacher()
+        self.teacher2 = test_teacher()
 
     def test_entry_naming(self):
         """
@@ -111,9 +111,7 @@ class EntryTestCase(TestCase):
 
 class SlotAvailableTest(TestCase):
     def setUp(self):
-        self.teacher = mixer.blend(User, is_staff=1)
-        self.teacher.teacher_data = mixer.blend(Teacher)
-
+        self.teacher = test_teacher()
         self.lesson = mixer.blend(lessons.OrdinaryLesson, teacher=self.teacher)
 
         self.big_entry = mixer.blend(TimelineEntry,
@@ -142,7 +140,7 @@ class SlotAvailableTest(TestCase):
         """
         Check, if it's pohuy, that an entry overlapes entry of the other teacher
         """
-        other_teacher = mixer.blend(User, is_staff=1)
+        other_teacher = test_teacher()
         test_entry = TimelineEntry(teacher=other_teacher,
                                    start=iso8601.parse_date('2016-01-03 04:00'),
                                    end=iso8601.parse_date('2016-01-03 04:30'),
@@ -188,17 +186,17 @@ class TestPermissions(TestCase):
 
         self.c = Client()
 
-        self.teacher = mixer.blend(User, is_staff=1)
+        self.teacher = test_teacher()
 
     def test_create_form_permission(self):
         self.c.login(username='user', password='123')
-        response = self.c.get('/timeline/%s/create/' % self.teacher.username)
+        response = self.c.get('/timeline/%s/create/' % self.teacher.user.username)
         self.assertNotEqual(response.status_code, 200)
 
         self.c.logout()
 
         self.c.login(username='superuser', password='123')
-        response = self.c.get('/timeline/%s/create/' % self.teacher.username)
+        response = self.c.get('/timeline/%s/create/' % self.teacher.user.username)
         self.assertEqual(response.status_code, 200)
 
 
@@ -209,27 +207,28 @@ class TestFormContext(TestCase, AssertHTMLMixin):
     """
 
     def setUp(self):
-        self.superuser = User.objects.create_superuser('superuser', 'te@ss.a', '123')
-        self.user = User.objects.create_user('user', 'te@ss.tt', '123')
+        self.teacher = test_teacher()
+        self.superuser = User.objects.create_superuser('root', 'te@ss.a', '123')
         self.c = Client()
-        self.c.login(username='superuser', password='123')
+        self.c.login(username='root', password='123')
 
     def test_create_context(self):
         """
         Get create form and check for hidden field 'teacher',
         see template timeline/forms/entry_create.html
         """
-        response = self.c.get('/timeline/%s/create/' % self.user.username)
+        response = self.c.get('/timeline/%s/create/' % self.teacher.user.username)
+
         with self.assertHTML(response, 'form.form #teacher') as (input,):
-            self.assertEquals(input.value, str(self.user.pk))
+            self.assertEquals(input.value, str(self.teacher.pk))
 
     def test_update_context(self):
         """
         Get update form and check for hidden field 'teacher',
         see template timeline/forms/entry_update.html
         """
-        entry = mixer.blend(TimelineEntry, teacher=self.user)
+        entry = mixer.blend(TimelineEntry, teacher=self.teacher)
 
-        response = self.c.get('/timeline/%s/%d/update/' % (self.user.username, entry.pk))
+        response = self.c.get('/timeline/%s/%d/update/' % (self.teacher.user.username, entry.pk))
         with self.assertHTML(response, 'form.form #teacher') as (input,):
-            self.assertEquals(input.value, str(self.user.pk))
+            self.assertEquals(input.value, str(self.teacher.pk))

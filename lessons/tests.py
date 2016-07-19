@@ -6,14 +6,16 @@ from django.test import Client, TestCase
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
+from elk.utils.fixtures import test_teacher
 
 
 class TestLessonsFunctional(TestCase):
     def setUp(self):
+        self.teacher = test_teacher()
         self.c = Client()
 
-        self.user = User.objects.create_superuser('test', 'te@ss.tt', '123')
-        self.c.login(username='test', password='123')
+        self.superuser = User.objects.create_superuser('root', 'te@ss.tt', '123')
+        self.c.login(username='root', password='123')
 
     def testAvailableLessonsJSON(self):
         """
@@ -26,12 +28,12 @@ class TestLessonsFunctional(TestCase):
         mocked_lessons = {}
 
         for i in range(0, 55):
-            mocked_lesson = mixer.blend(klass, host=self.user)
+            mocked_lesson = mixer.blend(klass, host=self.teacher)
             mocked_lessons[mocked_lesson.pk] = mocked_lesson
 
         lesson_type_id = ContentType.objects.get_for_model(klass).pk
 
-        response = self.c.get('/lessons/%s/available.json?lesson_id=%d' % (self.user.username, lesson_type_id))
+        response = self.c.get('/lessons/%s/available.json?lesson_id=%d' % (self.teacher.user.username, lesson_type_id))
 
         self.assertEquals(response.status_code, 200)
         got_lessons = json.loads(response.content.decode('utf-8'))
