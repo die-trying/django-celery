@@ -1,8 +1,6 @@
 from django.test import TestCase
-from mixer.backend.django import mixer
 
-from crm.models import Customer
-from elk.utils.test import mock_request
+from elk.utils.test import mock_request, test_customer
 from history.models import PaymentEvent
 from hub.models import Class, Subscription
 from lessons.models import OrdinaryLesson
@@ -39,7 +37,7 @@ class TestEvent(TestCase):
         """
         Buy a single lesson and find a respective log entry for it
         """
-        customer = mixer.blend(Customer)
+        customer = test_customer()
         self.assertEqual(customer.payments.count(), 0)
 
         c = Class(
@@ -58,7 +56,7 @@ class TestEvent(TestCase):
         """
         Buy a subscription and find a respective log entry for it
         """
-        customer = mixer.blend(Customer)
+        customer = test_customer()
         self.assertEqual(customer.payments.count(), 0)
 
         s = Subscription(

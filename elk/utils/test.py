@@ -10,9 +10,15 @@ from unittest.mock import Mock
 from mixer.backend.django import mixer
 
 
-def test_customer():
+def test_user():
     user = mixer.blend('auth.user')
-    return mixer.blend('crm.customer', user=user)
+    mixer.blend('crm.customer', user=user)
+    return user
+
+
+def test_customer():
+    user = test_user()
+    return user.crm
 
 
 def test_teacher():

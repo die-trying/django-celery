@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.utils.dateformat import format
 
 from elk.utils.date import ago, fwd
-from elk.utils.test import test_customer, test_teacher
+from elk.utils.test import test_customer, test_teacher, test_user
 
 
 class TestDateUtils(TestCase):
@@ -29,6 +29,12 @@ class TestFixtures(TestCase):
     """
     Test if my fixtures helper generates fixtures with correct relations
     """
+    def test_user(self):
+        User = apps.get_model('auth.user')
+        user = test_user()
+        self.assertEquals(User.objects.get(username=user.username), user)
+        self.assertIsNotNone(user.crm)
+
     def test_customer(self):
         Customer = apps.get_model('crm.customer')
         customer = test_customer()

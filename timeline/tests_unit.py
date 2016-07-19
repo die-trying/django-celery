@@ -8,8 +8,7 @@ from mixer.backend.django import mixer
 from with_asserts.mixin import AssertHTMLMixin
 
 import lessons.models as lessons
-from crm.models import Customer
-from elk.utils.test import test_teacher
+from elk.utils.test import test_customer, test_teacher
 from timeline.models import Entry as TimelineEntry
 
 
@@ -58,9 +57,7 @@ class EntryTestCase(TestCase):
 
         for i in range(0, 5):
             self.assertEqual(entry.taken_slots, i)
-            test_customer = mixer.blend(Customer)
-
-            entry.customers.add(test_customer)
+            entry.customers.add(test_customer())
             entry.save()
 
     def test_event_assigning(self):
@@ -85,16 +82,14 @@ class EntryTestCase(TestCase):
 
         for i in range(0, 10):
             self.assertTrue(entry.is_free)
-            test_customer = mixer.blend(Customer)
-            entry.customers.add(test_customer)
+            entry.customers.add(test_customer())
             entry.save()
 
         self.assertFalse(entry.is_free)
 
         """ Let's try to schedule more customers, then event allows """
         with self.assertRaises(ValidationError):
-            test_customer = mixer.blend(Customer)
-            entry.customers.add(test_customer)
+            entry.customers.add(test_customer())
             entry.save()
 
     def test_assign_entry_to_a_different_teacher(self):

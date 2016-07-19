@@ -1,11 +1,9 @@
-from django.contrib.auth.models import User
 from django.test import TestCase
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
 import products.models as products
-from crm.models import Customer
-from elk.utils.test import mock_request, test_teacher
+from elk.utils.test import mock_request, test_customer, test_teacher
 from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from hub.models import Class, Subscription
 from timeline.models import Entry as TimelineEntry
@@ -14,6 +12,9 @@ from timeline.models import Entry as TimelineEntry
 class BuySubscriptionTestCase(TestCase):
     fixtures = ('crm', 'lessons', 'products')
     TEST_PRODUCT_ID = 1
+
+    def setUp(self):
+        self.customer = test_customer()
 
     def test_buy_a_single_subscription(self):
         """
@@ -29,13 +30,12 @@ class BuySubscriptionTestCase(TestCase):
             return cnt
 
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
-        customer = mixer.blend(Customer)
         s = Subscription(
-            customer=customer,
+            customer=self.customer,
             product=product,
             buy_price=150,
         )
-        s.request = mock_request(customer)
+        s.request = mock_request(self.customer)
         s.save()
 
         active_lessons_count = Class.objects.filter(subscription_id=s.pk).count()
@@ -52,13 +52,12 @@ class BuySubscriptionTestCase(TestCase):
         """
 
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
-        customer = mixer.blend(Customer)
         s = Subscription(
-            customer=customer,
+            customer=self.customer,
             product=product,
             buy_price=150
         )
-        s.request = mock_request(customer)
+        s.request = mock_request(self.customer)
         s.save()
 
         for c in s.classes.all():
@@ -66,13 +65,12 @@ class BuySubscriptionTestCase(TestCase):
 
     def test_disabling_subscription(self):
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
-        customer = mixer.blend(Customer)
         s = Subscription(
-            customer=customer,
+            customer=self.customer,
             product=product,
             buy_price=150,
         )
-        s.request = mock_request(customer)
+        s.request = mock_request(self.customer)
         s.save()
 
         for lesson in s.classes.all():
@@ -91,18 +89,17 @@ class BuySingleLessonTestCase(TestCase):
 
 class ScheduleTestCase(TestCase):
     fixtures = ('crm', 'lessons')
-    TEST_CUSTOMER_ID = 1
 
     def setUp(self):
         self.host = test_teacher()
+        self.customer = test_customer()
 
     def _buy_a_lesson(self, lesson):
-        customer = Customer.objects.get(pk=self.TEST_CUSTOMER_ID)
         c = Class(
-            customer=customer,
+            customer=self.customer,
             lesson=lesson
         )
-        c.request = mock_request(customer)
+        c.request = mock_request(self.customer)
         c.save()
         return c
 
@@ -159,8 +156,8 @@ class ScheduleTestCase(TestCase):
         self.assertEqual(timeline_entry.taken_slots, 0)
 
     def schedule_2_people_to_a_paired_lesson(self):
-        customer1 = mixer.blend(Customer)
-        customer2 = mixer.blend(Customer)
+        customer1 = test_customer()
+        customer2 = test_customer()
 
         paired_lesson = mixer.blend(lessons.PairedLesson, slots=2)
 
@@ -201,27 +198,28 @@ class testBuyableProductMixin(TestCase):
     fixtures = ('crm', 'lessons', 'products')
     TEST_PRODUCT_ID = 1
 
+    def setUp(self):
+        self.customer = test_customer()
+
     def test_subscription_name(self):
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
-        customer = mixer.blend(Customer)
         s = Subscription(
-            customer=customer,
+            customer=self.customer,
             product=product,
             buy_price=150,
         )
-        s.request = mock_request(customer)
+        s.request = mock_request(self.customer)
         s.save()
 
         self.assertEqual(s.name_for_user, product.name)
 
     def test_single_class_name(self):
-        customer = mixer.blend(Customer)
         lesson = products.OrdinaryLesson.get_default()
         c = Class(
-            customer=customer,
+            customer=self.customer,
             lesson=lesson
         )
-        c.request = mock_request(customer)
+        c.request = mock_request(self.customer)
         c.save()
 
         self.assertEqual(c.name_for_user, lesson.name)

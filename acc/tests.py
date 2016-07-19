@@ -1,10 +1,9 @@
 from os.path import basename
 
 import responses
-from django.contrib.auth.models import User
-from crm.models import Customer
 from django.test import TestCase
-from mixer.backend.django import mixer
+
+from elk.utils.test import test_user
 
 from .pipelines import SaveSocialProfile
 
@@ -35,7 +34,7 @@ class TestSocialPipeline(TestCase):
         self.assertEqual(profile_saver.profile_picture.read(), b'testbytes')
 
     def test_save_source(self):
-        user = mixer.blend(User, crm=mixer.blend(Customer))
+        user = test_user()
 
         class TestBackend:
             name = 'social-test-source-name'
@@ -46,7 +45,7 @@ class TestSocialPipeline(TestCase):
         self.assertEqual(user.crm.source, 'social-test-source-name')
 
     def test_save_picture(self):
-        user = mixer.blend(User, crm=mixer.blend(Customer))
+        user = test_user()
         responses.add(responses.GET,
                       'http://testing.test/testpic.jpg',
                       body=b'testbytes',
