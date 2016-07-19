@@ -35,7 +35,10 @@ def test_teacher():
     Generate a simple teacher object.
     """
     customer = test_customer()
-    return mixer.blend('teachers.teacher', user=customer.user)  # second level relations — that is wy i've created this helper
+    teacher = mixer.blend('teachers.teacher', user=customer.user)  # second level relations — that is wy i've created this helper
+    teacher.user.is_staff = True
+    teacher.user.save()
+    return teacher
 
 
 def mock_request(customer=test_customer()):

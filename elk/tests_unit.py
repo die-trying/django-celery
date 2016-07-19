@@ -48,3 +48,4 @@ class TestFixtures(TestCase):
         t = Teacher.objects.get(user__username=teacher.user.username)
         self.assertEquals(t, teacher)
         self.assertIsNotNone(t.user.crm)
+        self.assertTrue(t.user.is_staff)
