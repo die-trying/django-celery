@@ -8,9 +8,15 @@ import random
 from unittest.mock import Mock
 
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.test import Client, RequestFactory, TestCase
 from mixer.backend.django import mixer
 from with_asserts.mixin import AssertHTMLMixin
+
+
+def __add_all_lessons(teacher):
+    for lesson in ContentType.objects.filter(app_label='lessons'):
+        teacher.acceptable_lessons.add(lesson)
 
 
 def test_user():
@@ -30,7 +36,7 @@ def test_customer():
     return user.crm
 
 
-def test_teacher():
+def test_teacher(accepts_all_lessons=True):
     """
     Generate a simple teacher object.
     """
@@ -38,6 +44,10 @@ def test_teacher():
     teacher = mixer.blend('teachers.teacher', user=customer.user)  # second level relations — that is wy i've created this helper
     teacher.user.is_staff = True
     teacher.user.save()
+
+    if accepts_all_lessons:
+        __add_all_lessons(teacher)
+
     return teacher
 
 

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import iso8601
 from django.apps import apps
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -12,8 +13,16 @@ class Teacher(models.Model):
     Teacher model
 
     Represents options, specific to a teacher. Usualy accessable via `user.teacher_data`
+
+    Acceptable lessons
+    ==================
+
+    Before teacher can host an event, he should be allowed to do that by adding
+    event type to the `acceptable_lessons` property.
     """
     user = models.OneToOneField(User, on_delete=models.PROTECT, related_name='teacher_data', limit_choices_to={'is_staff': 1})
+
+    acceptable_lessons = models.ManyToManyField(ContentType, related_name='+', limit_choices_to={'app_label': 'lessons'})
 
     def __str__(self):
         return '%s (%s)' % (self.user.crm.full_name, self.user.username)

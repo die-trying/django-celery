@@ -1,10 +1,23 @@
 import json
 
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
+from django.test import TestCase
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
 from elk.utils.test import ClientTestCase, test_teacher
+
+
+class TestLessonsUnit(TestCase):
+    def test_planning_unaccaptable_lesson(self):
+        lazy_teacher = test_teacher(accepts_all_lessons=False)  # teacher2 does not accept any lesson, so cannot be planned
+        hard_working_teacher = test_teacher()
+
+        with self.assertRaises(ValidationError):
+            mixer.blend(lessons.MasterClass, host=lazy_teacher)
+
+        self.assertIsNotNone(mixer.blend(lessons.MasterClass, host=hard_working_teacher))
 
 
 class TestLessonsFunctional(ClientTestCase):

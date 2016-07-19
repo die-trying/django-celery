@@ -46,6 +46,12 @@ class TestFixtures(TestCase):
         teacher = test_teacher()
 
         t = Teacher.objects.get(user__username=teacher.user.username)
-        self.assertEquals(t, teacher)
+        self.assertEqual(t, teacher)
         self.assertIsNotNone(t.user.crm)
         self.assertTrue(t.user.is_staff)
+
+    def test_teacher_all_lessons(self):
+        teacher = test_teacher()
+        acceptable_lessons = teacher.acceptable_lessons.all()
+        self.assertGreater(acceptable_lessons.count(), 0)
+        self.assertEqual(acceptable_lessons[0].app_label, 'lessons')

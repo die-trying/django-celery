@@ -185,7 +185,7 @@ class ScheduleTestCase(TestCase):
 
         paired_lesson_entry.save()
 
-        bought_class = self._buy_a_lesson(mixer.blend(lessons.MasterClass))
+        bought_class = self._buy_a_lesson(mixer.blend(lessons.MasterClass, host=self.host))
         bought_class.save()
 
         with self.assertRaises(CannotBeScheduled):

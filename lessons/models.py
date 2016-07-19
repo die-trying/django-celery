@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db import models
 from django_markdown.models import MarkdownField
 
@@ -65,6 +67,20 @@ class HostedLesson(Lesson):
     or ELK Happy hour
     """
     host = models.ForeignKey(Teacher, limit_choices_to={'is_staff': 1}, related_name='+', null=True)
+
+    def save(self, *args, **kwargs):
+        """
+        Check if assigned teacher is allowed to host this event type.
+        """
+        if self.host is not None:
+            my_content_type = ContentType.objects.get_for_model(self)
+            try:
+                self.host.acceptable_lessons.get(pk=my_content_type.pk)
+            except:
+                raise ValidationError('Teacher %s can not accept lesson %s' % (self.host, my_content_type))
+
+            else:
+                super().save(*args, **kwargs)
 
     class Meta:
         abstract = True
