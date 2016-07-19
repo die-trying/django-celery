@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.utils.dateformat import format
 
 from elk.utils.date import ago, fwd
-from elk.utils.fixtures import test_customer, test_teacher
+from elk.utils.test import test_customer, test_teacher
 
 
 class TestDateUtils(TestCase):

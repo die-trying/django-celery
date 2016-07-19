@@ -1,12 +1,26 @@
+"""
+Tiny fixture helper to generate `mixer<https://github.com/klen/mixer>`_-based
+fixtures with correct relations.
+
+Every new call returnes a new fixture.
+"""
 import random
 from unittest.mock import Mock
 
 from mixer.backend.django import mixer
 
-from crm.models import Customer
+
+def test_customer():
+    user = mixer.blend('auth.user')
+    return mixer.blend('crm.customer', user=user)
 
 
-def mock_request(customer=mixer.blend(Customer)):
+def test_teacher():
+    customer = test_customer()
+    return mixer.blend('teachers.teacher', user=customer.user)  # second level relations — that is wy i've created this helper
+
+
+def mock_request(customer=test_customer()):
     """
     Mock a request object, typicaly used for tests when buying a class
     """

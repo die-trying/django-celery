@@ -5,8 +5,7 @@ from mixer.backend.django import mixer
 import lessons.models as lessons
 import products.models as products
 from crm.models import Customer
-from elk.utils.fixtures import test_teacher
-from elk.utils.mockers import mock_request
+from elk.utils.test import mock_request, test_teacher
 from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from hub.models import Class, Subscription
 from timeline.models import Entry as TimelineEntry

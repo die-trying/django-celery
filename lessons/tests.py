@@ -6,7 +6,7 @@ from django.test import Client, TestCase
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
-from elk.utils.fixtures import test_teacher
+from elk.utils.test import test_teacher
 
 
 class TestLessonsFunctional(TestCase):

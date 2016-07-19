@@ -1,11 +1,11 @@
 from django.contrib.auth.models import User
 from django.test import RequestFactory, TestCase
+from with_asserts.mixin import AssertHTMLMixin
 
 from crm.models import Customer
-from elk.utils.mockers import mock_request
+from elk.utils.test import mock_request
 from hub.models import Class
 from lessons.models import OrdinaryLesson
-from with_asserts.mixin import AssertHTMLMixin
 
 from . import views
 

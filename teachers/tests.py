@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from mixer.backend.django import mixer
 
-from elk.utils.fixtures import test_teacher
+from elk.utils.test import test_teacher
 from lessons.models import OrdinaryLesson
 from teachers.models import Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry

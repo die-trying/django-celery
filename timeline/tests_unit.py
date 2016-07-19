@@ -9,7 +9,7 @@ from with_asserts.mixin import AssertHTMLMixin
 
 import lessons.models as lessons
 from crm.models import Customer
-from elk.utils.fixtures import test_teacher
+from elk.utils.test import test_teacher
 from timeline.models import Entry as TimelineEntry
 
 
