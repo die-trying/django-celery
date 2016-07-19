@@ -3,10 +3,30 @@ from datetime import datetime, timedelta
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 import iso8601
+from elk.utils.date import day_range
+
+
+class TeacherManager(models.Manager):
+    def find_free(self, date, lesson_type=None):
+        """
+        Find teachers, that can host a specific event or work with no assigned
+        events (by working hours)
+
+        Returns an iterable of teachers with assigned attribute free_slots — 
+        iterable of available slots as datetime.
+        """
+        teachers = []
+        for teacher in self.get_queryset().all():
+            free_slots = teacher.find_free_slots(date, lesson_type=lesson_type)
+            if free_slots:
+                teacher.free_slots = free_slots
+                teachers.append(teacher)
+        return teachers
 
 
 class Teacher(models.Model):
@@ -21,6 +41,7 @@ class Teacher(models.Model):
     Before teacher can host an event, he should be allowed to do that by adding
     event type to the `acceptable_lessons` property.
     """
+    objects = TeacherManager()
     user = models.OneToOneField(User, on_delete=models.PROTECT, related_name='teacher_data', limit_choices_to={'is_staff': 1})
 
     acceptable_lessons = models.ManyToManyField(ContentType, related_name='+', limit_choices_to={'app_label': 'lessons'})
@@ -28,33 +49,42 @@ class Teacher(models.Model):
     def __str__(self):
         return '%s (%s)' % (self.user.crm.full_name, self.user.username)
 
-    def find_free_slots(self, date, period=timedelta(minutes=30), event_type=None):
+    def find_free_slots(self, date, period=timedelta(minutes=30), lesson_type=None):
         """
         Get datetime.datetime objects for free slots for a date
 
-        Returns an array of available slots in format ['15:00', '15:30', '16:00']
+        Returns an iterable of available slots in format ['15:00', '15:30', '16:00']
         """
-        hours = WorkingHours.for_date(teacher=self, date=date)
+        hours = WorkingHours.objects.for_date(teacher=self, date=date)
 
-        if event_type is None:
+        if lesson_type is None:
             if hours is None:
                 return None
 
             return self.__all_free_slots(hours.start, hours.end, period)
 
-        return self.__find_timeline_entries(lesson_type=event_type)
+        return self.__find_timeline_entries(date=date, lesson_type=lesson_type)
 
-    def __find_timeline_entries(self, **kwargs):
+    def __find_timeline_entries(self, date, lesson_type):
+        """
+        Find timeline entries of lessons with specific type, assigned to current
+        teachers.
+
+        Returns an iterable of slots as datetime objects.
+        """
         TimelineEntry = apps.get_model('timeline.entry')
 
         slots = []
-        for entry in TimelineEntry.objects.filter(teacher=self, **kwargs):
+        for entry in TimelineEntry.objects.filter(teacher=self, lesson_type=lesson_type, start__range=day_range(date)):
             slots.append(entry.start)
         return slots
 
     def __all_free_slots(self, start, end, period):
         """
-        Get all existing time slots, not checking an event type
+        Get all existing time slots, not checking an event type — by teacher's
+        working hours.
+
+        Returns an iterable of slots as datetime objects.
         """
         slots = []
         slot = start
@@ -80,6 +110,23 @@ class Teacher(models.Model):
         return entry.is_overlapping()
 
 
+class WorkingHoursManager(models.Manager):
+    def for_date(self, date, teacher):
+        """
+        Returns an iterable of date objects for start of working time and end of
+        working time for the distinct date.
+        """
+        date = iso8601.parse_date(date)
+        try:
+            hours = self.get(teacher=teacher, weekday=date.weekday())
+        except ObjectDoesNotExist:
+            return None
+        else:
+            hours.start = datetime.combine(date, hours.start)
+            hours.end = datetime.combine(date, hours.end)
+            return hours
+
+
 class WorkingHours(models.Model):
     WEEKDAYS = (
         (0, _('Monday')),
@@ -90,6 +137,7 @@ class WorkingHours(models.Model):
         (5, _('Saturday')),
         (6, _('Sunday')),
     )
+    objects = WorkingHoursManager()
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='working_hours')
 
     weekday = models.IntegerField('Weekday', choices=WEEKDAYS)
@@ -103,22 +151,6 @@ class WorkingHours(models.Model):
             'start': str(self.start),
             'end': str(self.end)
         }
-
-    @classmethod
-    def for_date(cls, teacher, date):
-        """
-        Returns date objects for start of working time and end of working time
-        for the distinct date
-        """
-        date = iso8601.parse_date(date)
-        try:
-            hours = cls.objects.get(teacher=teacher, weekday=date.weekday())
-        except cls.DoesNotExist:
-            return None
-        else:
-            hours.start = datetime.combine(date, hours.start)
-            hours.end = datetime.combine(date, hours.end)
-            return hours
 
     def __str__(self):
         return '%s: day %d' % (self.teacher.user.username, self.weekday)

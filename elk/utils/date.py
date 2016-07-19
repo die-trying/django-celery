@@ -24,3 +24,13 @@ def fwd(date=datetime.now(), fmt='Y-m-d', **kwargs):
     d = copy(date)
     d += timedelta(**kwargs)
     return format(d, fmt)
+
+
+def day_range(d):
+    """
+    Return a day range for model query — a tuple with start of the day and end of the day
+    """
+    return (
+        d + ' 00:00:00',
+        d + ' 23:59:59',
+    )
