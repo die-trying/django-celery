@@ -7,24 +7,19 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import Client, TestCase
 from django.utils.dateformat import format
 from mixer.backend.django import mixer
-from with_asserts.mixin import AssertHTMLMixin
 
 import lessons.models as lessons
-from elk.utils.test import test_teacher
+from elk.utils.test import ClientTestCase, test_teacher
 from timeline.models import Entry as TimelineEntry
 
 
-class EntryCRUDTest(TestCase, AssertHTMLMixin):
+class EntryCRUDTest(ClientTestCase):
     def setUp(self):
-        self.superuser = User.objects.create_superuser('root', 'te@ss.a', '123')
-
-        self.c = Client()
-        self.c.login(username='root', password='123')
-
         self.teacher = test_teacher()
-
         self.lesson = mixer.blend(lessons.OrdinaryLesson, duration=timedelta(minutes=33))
         self.lesson_type = ContentType.objects.get_for_model(lessons.OrdinaryLesson).pk
+
+        super().setUp()
 
     def testCRUD(self):
         self._create()

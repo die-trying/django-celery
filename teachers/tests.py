@@ -1,13 +1,12 @@
 import json
 from datetime import datetime, timedelta
 
-from django.contrib.auth.models import User
-from django.test import Client, TestCase
+from django.test import TestCase
 from mixer.backend.django import mixer
 
-from elk.utils.test import test_teacher
+from elk.utils.test import ClientTestCase, test_teacher
 from lessons.models import OrdinaryLesson
-from teachers.models import Teacher, WorkingHours
+from teachers.models import WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
@@ -79,13 +78,10 @@ class TestFreeSlots(TestCase):
         self.assertEquals(len(slots), 2)
 
 
-class TestWorkingHours(TestCase):
+class TestWorkingHours(ClientTestCase):
     def setUp(self):
         self.teacher = test_teacher()
-
-        self.c = Client()
-        self.superuser = User.objects.create_superuser('root', 'te@ss.tt', '123')
-        self.c.login(username='root', password='123')
+        super().setUp()
 
     def test_hours_JSON(self):
         """

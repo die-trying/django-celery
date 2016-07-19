@@ -1,9 +1,9 @@
 from django.contrib.auth.models import User
-from django.test import Client, TestCase
-from with_asserts.mixin import AssertHTMLMixin
+
+from elk.utils.test import ClientTestCase
 
 
-class TestNavBar(TestCase, AssertHTMLMixin):
+class TestNavBar(ClientTestCase):
     """
     Login with 2 different users: teacher(superuser) and a student.
     Teacher should see a link to his own timeline, and a student should not.
@@ -11,8 +11,7 @@ class TestNavBar(TestCase, AssertHTMLMixin):
     def setUp(self):
         self.student = User.objects.create_user('student', 'te@ss.a', '123')
         self.teacher = User.objects.create_superuser('teacher', 'te@ss.a', '123')
-
-        self.c = Client()
+        super().setUp()
 
     def testNavBarPublicArea(self):
         self.c.login(username='student', password='123')

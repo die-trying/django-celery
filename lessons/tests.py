@@ -1,21 +1,16 @@
 import json
 
-from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.test import Client, TestCase
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
-from elk.utils.test import test_teacher
+from elk.utils.test import ClientTestCase, test_teacher
 
 
-class TestLessonsFunctional(TestCase):
+class TestLessonsFunctional(ClientTestCase):
     def setUp(self):
         self.teacher = test_teacher()
-        self.c = Client()
-
-        self.superuser = User.objects.create_superuser('root', 'te@ss.tt', '123')
-        self.c.login(username='root', password='123')
+        super().setUp()
 
     def testAvailableLessonsJSON(self):
         """

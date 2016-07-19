@@ -3,12 +3,11 @@ import iso8601
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.test import Client, TestCase
+from django.test import TestCase
 from mixer.backend.django import mixer
-from with_asserts.mixin import AssertHTMLMixin
 
 import lessons.models as lessons
-from elk.utils.test import test_customer, test_teacher
+from elk.utils.test import ClientTestCase, test_customer, test_teacher
 from timeline.models import Entry as TimelineEntry
 
 
@@ -174,14 +173,12 @@ class SlotAvailableTest(TestCase):
             overlapping_entry.save()
 
 
-class TestPermissions(TestCase):
+class TestPermissions(ClientTestCase):
     def setUp(self):
-        self.superuser = User.objects.create_superuser('superuser', 'te@ss.a', '123')
         self.user = User.objects.create_user('user', 'te@ss.tt', '123')
-
-        self.c = Client()
-
         self.teacher = test_teacher()
+
+        super().setUp()
 
     def test_create_form_permission(self):
         self.c.login(username='user', password='123')
@@ -190,12 +187,12 @@ class TestPermissions(TestCase):
 
         self.c.logout()
 
-        self.c.login(username='superuser', password='123')
+        self.c.login(username=self.superuser_login, password=self.superuser_password)
         response = self.c.get('/timeline/%s/create/' % self.teacher.user.username)
         self.assertEqual(response.status_code, 200)
 
 
-class TestFormContext(TestCase, AssertHTMLMixin):
+class TestFormContext(ClientTestCase):
     """
     Check for a bug: timeline entry edit form should edit entry for the owner
     of the entry, not for the current logged in user.
@@ -203,9 +200,7 @@ class TestFormContext(TestCase, AssertHTMLMixin):
 
     def setUp(self):
         self.teacher = test_teacher()
-        self.superuser = User.objects.create_superuser('root', 'te@ss.a', '123')
-        self.c = Client()
-        self.c.login(username='root', password='123')
+        super().setUp()
 
     def test_create_context(self):
         """
