@@ -1,11 +1,12 @@
 import json
 from datetime import datetime, timedelta
 
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
-from mixer.backend.django import mixer
 
+import lessons.models as lessons
 from elk.utils.test import ClientTestCase, test_teacher
-from lessons.models import OrdinaryLesson
+from mixer.backend.django import mixer
 from teachers.models import WorkingHours
 from timeline.models import Entry as TimelineEntry
 
@@ -56,7 +57,7 @@ class TestFreeSlots(TestCase):
         Add an event and check that get_free_slots should not return a slot, overlapping with it
         """
         entry = TimelineEntry(teacher=self.teacher,
-                              lesson=mixer.blend(OrdinaryLesson),
+                              lesson=mixer.blend(lessons.OrdinaryLesson),
                               start=datetime(2016, 7, 18, 14, 0),
                               end=datetime(2016, 7, 18, 14, 30),
                               )
@@ -69,13 +70,46 @@ class TestFreeSlots(TestCase):
         Add event with an offset, overlapping two time slots
         """
         entry = TimelineEntry(teacher=self.teacher,
-                              lesson=mixer.blend(OrdinaryLesson),
+                              lesson=mixer.blend(lessons.OrdinaryLesson),
                               start=datetime(2016, 7, 18, 14, 10),
                               end=datetime(2016, 7, 18, 14, 40)
                               )
         entry.save()
         slots = self.teacher.find_free_slots(date='2016-07-18')
         self.assertEquals(len(slots), 2)
+
+    def test_free_slots_for_event(self):
+        """
+        Test for getting free time slots for a certain event type.
+        """
+        master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
+        entry = TimelineEntry(teacher=self.teacher,
+                              lesson=master_class,
+                              start=datetime(2016, 7, 18, 14, 10),
+                              end=datetime(2016, 7, 18, 14, 40)
+                              )
+        entry.save()
+        event_type = ContentType.objects.get_for_model(master_class)
+
+        slots = self.teacher.find_free_slots(date='2016-07-18', event_type=event_type)
+        self.assertEquals(len(slots), 1)
+
+    def test_two_teachers_for_single_slot(self):
+        """
+        Check if find_free_slots returns only slots of selected teacher
+        """
+        other_teacher = test_teacher()
+        master_class = mixer.blend(lessons.MasterClass, host=other_teacher)
+        entry = TimelineEntry(teacher=other_teacher,
+                              lesson=master_class,
+                              start=datetime(2016, 7, 18, 14, 10),
+                              end=datetime(2016, 7, 18, 14, 40)
+                              )
+        entry.save()
+        event_type = ContentType.objects.get_for_model(master_class)
+
+        slots = self.teacher.find_free_slots(date='2016-07-18', event_type=event_type)
+        self.assertEquals(len(slots), 0)  # should not return anything — we are checking slots for self.teacher, not other_teacher
 
 
 class TestWorkingHours(ClientTestCase):

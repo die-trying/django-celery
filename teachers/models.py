@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
 
-import iso8601
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+
+import iso8601
 
 
 class Teacher(models.Model):
@@ -27,19 +28,37 @@ class Teacher(models.Model):
     def __str__(self):
         return '%s (%s)' % (self.user.crm.full_name, self.user.username)
 
-    def find_free_slots(self, date, period=timedelta(minutes=30)):
+    def find_free_slots(self, date, period=timedelta(minutes=30), event_type=None):
         """
         Get datetime.datetime objects for free slots for a date
 
         Returns an array of available slots in format ['15:00', '15:30', '16:00']
         """
         hours = WorkingHours.for_date(teacher=self, date=date)
-        if hours is None:
-            return None
+
+        if event_type is None:
+            if hours is None:
+                return None
+
+            return self.__all_free_slots(hours.start, hours.end, period)
+
+        return self.__find_timeline_entries(lesson_type=event_type)
+
+    def __find_timeline_entries(self, **kwargs):
+        TimelineEntry = apps.get_model('timeline.entry')
 
         slots = []
-        slot = hours.start
-        while slot + period <= hours.end:
+        for entry in TimelineEntry.objects.filter(teacher=self, **kwargs):
+            slots.append(entry.start)
+        return slots
+
+    def __all_free_slots(self, start, end, period):
+        """
+        Get all existing time slots, not checking an event type
+        """
+        slots = []
+        slot = start
+        while slot + period <= end:
             if not self.__check_overlap(slot, period):
                 slots.append(slot)
             slot += period
