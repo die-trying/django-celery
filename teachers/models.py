@@ -17,17 +17,18 @@ class SlotsList(list):
 
 
 class TeacherManager(models.Manager):
-    def find_free(self, date, lesson_type=None):
+    def find_free(self, date, **kwargs):
         """
         Find teachers, that can host a specific event or work with no assigned
-        events (by working hours)
+        events (by working hours). Accepts kwargs for filtering output of
+        :model:`timeline.Entry`.
 
         Returns an iterable of teachers with assigned attribute free_slots — 
         iterable of available slots as datetime.
         """
         teachers = []
         for teacher in self.get_queryset().all():
-            free_slots = teacher.find_free_slots(date, lesson_type=lesson_type)
+            free_slots = teacher.find_free_slots(date, **kwargs)
             if free_slots:
                 teacher.free_slots = free_slots
                 teachers.append(teacher)
@@ -54,33 +55,32 @@ class Teacher(models.Model):
     def __str__(self):
         return '%s (%s)' % (self.user.crm.full_name, self.user.username)
 
-    def find_free_slots(self, date, period=timedelta(minutes=30), lesson_type=None):
+    def find_free_slots(self, date, period=timedelta(minutes=30), **kwargs):
         """
-        Get datetime.datetime objects for free slots for a date
+        Get datetime.datetime objects for free slots for a date. Accepts kwargs
+        for filtering output of :model:`timeline.Entry`.
 
         Returns an iterable of available slots in format ['15:00', '15:30', '16:00']
         """
+        if len(kwargs.keys()):
+            return self.__find_timeline_entries(date=date, **kwargs)
+
         hours = WorkingHours.objects.for_date(teacher=self, date=date)
+        if hours is None:
+            return None
+        return self.__all_free_slots(hours.start, hours.end, period)
 
-        if lesson_type is None:
-            if hours is None:
-                return None
-
-            return self.__all_free_slots(hours.start, hours.end, period)
-
-        return self.__find_timeline_entries(date=date, lesson_type=lesson_type)
-
-    def __find_timeline_entries(self, date, lesson_type):
+    def __find_timeline_entries(self, date, **kwargs):
         """
         Find timeline entries of lessons with specific type, assigned to current
-        teachers.
+        teachers. Accepts kwargs for filtering output of :model:`timeline.Entry`.
 
         Returns an iterable of slots as datetime objects.
         """
         TimelineEntry = apps.get_model('timeline.entry')
 
         slots = SlotsList()
-        for entry in TimelineEntry.objects.filter(teacher=self, lesson_type=lesson_type, start__range=day_range(date)):
+        for entry in TimelineEntry.objects.filter(teacher=self, start__range=day_range(date), **kwargs):
             slots.append(entry.start)
         return slots
 

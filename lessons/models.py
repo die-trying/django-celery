@@ -35,6 +35,13 @@ class Lesson(models.Model):
     def __str__(self):
         return self.internal_name
 
+    @property
+    def timeline_entry_required(self):
+        """
+        Does this lesson type require a timeline entry
+        """
+        return False
+
     @classmethod
     def get_default(cls):
         """
@@ -67,6 +74,13 @@ class HostedLesson(Lesson):
     or ELK Happy hour
     """
     host = models.ForeignKey(Teacher, limit_choices_to={'is_staff': 1}, related_name='+', null=True)
+
+    @property
+    def timeline_entry_required(self):
+        """
+        All hosted lessons require planning
+        """
+        return True
 
     def save(self, *args, **kwargs):
         """

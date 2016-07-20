@@ -79,9 +79,9 @@ class TestFreeSlots(TestCase):
         slots = self.teacher.find_free_slots(date='2016-07-18')
         self.assertEquals(len(slots), 2)
 
-    def test_free_slots_for_event(self):
+    def test_free_slots_for_lesson_type(self):
         """
-        Test for getting free time slots for a certain event type.
+        Test for getting free time slots for a certain lesson type.
         """
         master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
         entry = TimelineEntry(teacher=self.teacher,
@@ -97,6 +97,33 @@ class TestFreeSlots(TestCase):
 
         slots = self.teacher.find_free_slots(date='2016-07-20', lesson_type=lesson_type)
         self.assertEquals(len(slots), 0)  # there is no master classes, planned on 2016-07-20
+
+    def test_free_slots_for_lesson(self):
+        """
+        Test for getting free time slots for a particular teacher with particular
+        lesson
+        """
+        other_teacher = test_teacher()
+
+        master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
+        other_master_class = mixer.blend(lessons.MasterClass, host=other_teacher)
+
+        entry = TimelineEntry(teacher=self.teacher,
+                              lesson=master_class,
+                              start=datetime(2016, 7, 18, 14, 10),
+                              end=datetime(2016, 7, 18, 14, 40)
+                              )
+        entry.save()
+        other_entry = TimelineEntry(teacher=other_teacher,
+                                    lesson=other_master_class,
+                                    start=datetime(2016, 7, 18, 14, 10),
+                                    end=datetime(2016, 7, 18, 14, 40)
+                                    )
+        other_entry.save()
+        slots = self.teacher.find_free_slots(date='2016-07-18', lesson_id=master_class.pk)
+        self.assertEquals(len(slots), 1)
+        slots = self.teacher.find_free_slots(date='2016-07-18', lesson_id=other_master_class.pk)
+        self.assertEquals(len(slots), 0)
 
     def test_two_teachers_for_single_slot(self):
         """
@@ -153,6 +180,29 @@ class TestFreeSlots(TestCase):
 
         free_teachers = Teacher.objects.find_free(date='2016-07-20', lesson_type=lesson_type)
         self.assertEquals(len(free_teachers), 0)  # there is no master classes. planned on 2016-07-20
+
+    def test_get_teachers_by_lesson(self):
+        """
+        Find teachers for a particular lesson
+        """
+        first_master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
+        second_master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
+        first_entry = TimelineEntry(teacher=self.teacher,
+                                    lesson=first_master_class,
+                                    start=datetime(2016, 7, 18, 14, 10),
+                                    end=datetime(2016, 7, 18, 14, 40)
+                                    )
+        first_entry.save()
+        second_entry = TimelineEntry(teacher=self.teacher,
+                                     lesson=second_master_class,
+                                     start=datetime(2016, 7, 18, 14, 10),
+                                     end=datetime(2016, 7, 18, 14, 40)
+                                     )
+        second_entry.save()
+        free_teachers = Teacher.objects.find_free(date='2016-07-18', lesson_id=first_master_class.pk)
+        self.assertEquals(len(free_teachers), 1)
+        free_teachers = Teacher.objects.find_free(date='2016-07-20', lesson_id=first_master_class.pk)
+        self.assertEquals(len(free_teachers), 0)
 
 
 class TestSlotsIterable(TestCase):
