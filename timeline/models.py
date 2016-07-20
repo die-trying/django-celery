@@ -115,8 +115,9 @@ class Entry(models.Model):
         """
         concurent_entries = Entry.objects.filter(end__gt=self.start,
                                                  start__lt=self.end,
-                                                 teacher=self.teacher
-                                                 )
+                                                 teacher=self.teacher,
+                                                 ).exclude(pk=self.pk)
+
         if concurent_entries.count():
             return True
         return False

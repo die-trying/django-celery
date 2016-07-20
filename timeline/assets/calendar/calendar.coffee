@@ -10,7 +10,6 @@ $.fn.load_user_calendar = () ->
 
       url = sprintf '/timeline/%s/create/', $popup.attr('data-username')
       $popup.load url, null, popupLoaded
-      $popup.removeClass 'hidden'
       $popup.css
         top: jsEvent.pageY,
         left: jsEvent.pageX
@@ -19,7 +18,6 @@ $.fn.load_user_calendar = () ->
       url = sprintf '/timeline/%s/%d/update/', $popup.attr('data-username'), calEvent.id
       $popup.load url, null, popupLoaded
       $popup.css
-        display: 'block'
         top: jsEvent.pageY,
         left: jsEvent.pageX
 
@@ -29,6 +27,7 @@ close_popup = () ->
   $('.user-calendar__add-popup').addClass 'hidden'
 
 popupLoaded = () ->
+  $(this).removeClass 'hidden'
   $('.timeline-entry-form form').each () ->
     $form        = $ this
     $lesson_type = $ '#id_lesson_type', $form

@@ -172,6 +172,24 @@ class SlotAvailableTest(TestCase):
         with self.assertRaises(ValidationError):
             overlapping_entry.save()
 
+    def test_save_again_entry_that_does_not_allow_overlapping(self):
+        """
+        Create and entry that does not allow overlapping and the save it again
+        """
+        entry = TimelineEntry(
+            teacher=self.teacher,
+            lesson=self.lesson,
+            start=iso8601.parse_date('2016-01-10 04:00'),
+            end=iso8601.parse_date('2016-01-10 04:30'),
+            allow_overlap=False
+        )
+        entry.save()
+
+        entry.start = iso8601.parse_date('2016-01-10 04:01')  # change random parameter
+        entry.save()
+
+        self.assertIsNotNone(entry)  # should not throw anything
+
 
 class TestPermissions(ClientTestCase):
     def setUp(self):
