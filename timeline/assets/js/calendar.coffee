@@ -54,7 +54,11 @@ popupLoaded = () ->
 
         for lesson in data
           lesson.name = sprintf "%s | %d ppl.", lesson.name, lesson.slots if lesson.slots? and lesson.slots isnt 1
-          option = sprintf '<option value="%d" data-duration="%s">%s</option>', lesson.id, lesson.duration, lesson.name
+          selected = ''
+          selected = ' selected ' if $ '#initial_lesson' and lesson.id is $('#initial_lesson').val()
+
+          option = sprintf '<option value="%d" %s data-duration="%s">%s</option>', \
+          lesson.id, selected, lesson.duration, lesson.name
           $lesson.append option
 
         $lesson.change()  # trigger update of a default duration

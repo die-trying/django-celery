@@ -11,6 +11,7 @@
         {% endfor %}
         <form method = "POST" class="form"  action="{% url 'timeline:timeline_update' username=teacher.user.username pk=object.pk %}" data-lessons="{% url 'lessons:available_json' username=teacher.user.username %}">
             <input type="hidden" id="teacher" name="teacher" value="{{ teacher.pk }}">
+            <input type="hidden" id="initial_lesson" value="{{ form.lesson_id.value }}">
             {% csrf_token %}
             <div class="timeline-entry-form__lesson">
                 {{ form.lesson_type | bootstrap }}
