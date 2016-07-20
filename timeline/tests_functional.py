@@ -2,9 +2,7 @@ import json
 from datetime import datetime, timedelta
 
 import iso8601
-from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.test import Client, TestCase
 from django.utils.dateformat import format
 from mixer.backend.django import mixer
 
@@ -85,7 +83,7 @@ class EntryCRUDTest(ClientTestCase):
         return entries[0]
 
 
-class EntryAPITest(TestCase):
+class EntryAPITest(ClientTestCase):
     """
     Generate dummy teachers timeline and fetch it through JSON
     """
@@ -94,11 +92,9 @@ class EntryAPITest(TestCase):
         Calendar administration is limited to staff members, so we login
         with a super user here.
         """
-        self.superuser = User.objects.create_superuser('root', 'te@ss.tt', '123')
-        self.c = Client()
-        self.c.login(username='root', password='123')
-
         self.teacher = test_teacher()
+
+        super().setUp()
 
     def test_user_json(self):
         duration = timedelta(minutes=71)
@@ -141,3 +137,50 @@ class EntryAPITest(TestCase):
 
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(len(data), 3)
+
+
+class TestFormAPIHelpers(ClientTestCase):
+    def setUp(self):
+        self.teacher = test_teacher()
+        self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher)
+
+        super().setUp()
+
+    def test_check_overlap(self):
+        entry = TimelineEntry(
+            teacher=self.teacher,
+            lesson=self.lesson,
+            start=datetime(2016, 1, 18, 14, 10),
+            end=datetime(2016, 1, 18, 14, 40),
+            allow_overlap=False,
+        )
+        entry.save()
+
+        overlaps = self.__get_overlap_response(
+            username=self.teacher.user.username,
+            start='2016-01-18 14:30',
+            end='2016-01-18 15:00',
+        )
+        self.assertTrue(overlaps)
+
+        not_overlaps = self.__get_overlap_response(
+            username=self.teacher.user.username,
+            start='2016-01-18 14:45',
+            end='2016-01-18 15:15'
+        )
+        self.assertFalse(not_overlaps)
+
+        not_overlaps = self.__get_overlap_response(
+            username=self.teacher.user.username,
+            start='2016-01-18 14:30',
+            end='2016-01-18 15:00',
+            query_string_append='&entry=%d' % entry.pk,
+        )
+        self.assertFalse(not_overlaps)
+
+    def __get_overlap_response(self, username, start, end, query_string_append=''):
+        response = self.c.get(
+            '/timeline/%s/check_overlap/?start=%s&end=%s%s' % (username, start, end, query_string_append)
+        )
+        self.assertEqual(response.status_code, 200)
+        return json.loads(response.content.decode('utf-8'))

@@ -71,3 +71,23 @@ def calendar_json(request, username):
         entries.append(entry.as_dict())
 
     return JsonResponse(entries, safe=False)
+
+
+@staff_member_required
+def check_overlap(request, username):
+    teacher = get_object_or_404(Teacher, user__username=username)
+    entry = TimelineEntry()
+
+    start = request.GET.get('start')
+    end = request.GET.get('end')
+
+    entry_id = request.GET.get('entry')
+
+    if entry_id:
+        entry = get_object_or_404(TimelineEntry, pk=entry_id)
+
+    entry.teacher = teacher
+    entry.start = start
+    entry.end = end
+
+    return JsonResponse(entry.is_overlapping(), safe=False)
