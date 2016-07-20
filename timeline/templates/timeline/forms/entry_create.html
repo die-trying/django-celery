@@ -2,7 +2,12 @@
 {% load i18n %}
 
 <div class="panel panel-default timeline-entry-form">
-    <div class="panel-heading"><h3 class="panel-title">{% trans 'Timeline event' %}</h3></div>
+    <div class="panel-heading">
+        <h3 class="panel-title">
+            {% trans 'Timeline event' %}
+            <button type="button" class="close user-calendar__close_popup"><span>&times;</span></button>
+        </h3>
+    </div>
     <div class="panel-body">
         {% for field, errors in form.errors.items %}
             {% for error in errors %}

@@ -10,8 +10,8 @@ $.fn.load_user_calendar = () ->
 
       url = sprintf '/timeline/%s/create/', $popup.attr('data-username')
       $popup.load url, null, popupLoaded
+      $popup.removeClass 'hidden'
       $popup.css
-        display: 'block'
         top: jsEvent.pageY,
         left: jsEvent.pageX
 
@@ -25,6 +25,9 @@ $.fn.load_user_calendar = () ->
 
 # TODO — escape and click outside a popup should close the popup
 
+close_popup = () ->
+  $('.user-calendar__add-popup').addClass 'hidden'
+
 popupLoaded = () ->
   $('.timeline-entry-form form').each () ->
     $form        = $ this
@@ -34,6 +37,7 @@ popupLoaded = () ->
     $time        = $ '#id_start_1', $form
     $date        = $ '#id_start_0', $form
     $calendar    = $ '.user-calendar'
+    $close_btn   = $ '.user-calendar__close_popup'
 
     $date.val $calendar.data('clickedDay').format 'L' if $calendar.data 'clickedDay'
 
@@ -85,6 +89,15 @@ popupLoaded = () ->
     $('option:first-child', $lesson_type).text('Choose lesson type')
 
     $lesson_type.change() if $lesson_type.val()
+
+    # autoclose popup
+    $close_btn.on 'click', close_popup
+
+    $(document).on 'keyup', (e) ->  # close on ESC
+      return if e.keyCode isnt 27
+      $(document).off 'keyup'
+      close_popup()
+
 
 $(document).ready ->
   $('.user-calendar').load_user_calendar()
