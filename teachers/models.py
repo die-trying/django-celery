@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+import iso8601
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -7,8 +8,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-import iso8601
 from elk.utils.date import day_range
+
+
+class SlotsList(list):
+    def as_dict(self):
+        return [i.strftime('%H:%M') for i in self]
 
 
 class TeacherManager(models.Manager):
@@ -74,7 +79,7 @@ class Teacher(models.Model):
         """
         TimelineEntry = apps.get_model('timeline.entry')
 
-        slots = []
+        slots = SlotsList()
         for entry in TimelineEntry.objects.filter(teacher=self, lesson_type=lesson_type, start__range=day_range(date)):
             slots.append(entry.start)
         return slots
@@ -86,7 +91,7 @@ class Teacher(models.Model):
 
         Returns an iterable of slots as datetime objects.
         """
-        slots = []
+        slots = SlotsList()
         slot = start
         while slot + period <= end:
             if not self.__check_overlap(slot, period):

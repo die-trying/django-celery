@@ -1,12 +1,11 @@
-import json
 from datetime import datetime, timedelta
 
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
+from mixer.backend.django import mixer
 
 import lessons.models as lessons
-from elk.utils.test import ClientTestCase, test_teacher
-from mixer.backend.django import mixer
+from elk.utils.test import test_teacher
 from teachers.models import Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry
 
@@ -156,33 +155,15 @@ class TestFreeSlots(TestCase):
         self.assertEquals(len(free_teachers), 0)  # there is no master classes. planned on 2016-07-20
 
 
-class TestWorkingHours(ClientTestCase):
-    def setUp(self):
-        self.teacher = test_teacher()
-        super().setUp()
+class TestSlotsIterable(TestCase):
+    def _generate_slots(self):
+        teacher = test_teacher()
+        mixer.blend(WorkingHours, teacher=teacher, weekday=0, start='13:00', end='15:00')
+        return teacher.find_free_slots(date='2016-07-18')
 
-    def test_hours_JSON(self):
-        """
-        Test for generated json with teacher's working hours.
-        """
-        mocked_hours = {}
-
-        for i in range(0, 7):
-            hours = mixer.blend(WorkingHours, teacher=self.teacher, weekday=i)
-            hours.save()
-            mocked_hours[hours.pk] = hours
-            print(hours)
-
-        response = self.c.get('/teachers/%s/hours.json' % self.teacher.user.username)
-        self.assertEquals(response.status_code, 200)
-
-        got_hours = json.loads(response.content.decode('utf-8'))
-
-        self.assertEqual(len(got_hours), 7)
-
-        for i in got_hours:
-            id = i['id']
-            got_mocked_hours = mocked_hours[id]
-            self.assertEqual(i['weekday'], got_mocked_hours.weekday)
-            self.assertEqual(i['start'], str(got_mocked_hours.start))
-            self.assertEqual(i['end'], str(got_mocked_hours.end))
+    def test_as_dict(self):
+        slots = self._generate_slots()
+        slots_list = slots.as_dict()
+        self.assertEquals(len(slots_list), 4)
+        self.assertEquals(slots_list[0], '13:00')
+        self.assertEquals(slots_list[-1], '14:30')
