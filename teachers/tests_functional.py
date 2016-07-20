@@ -1,9 +1,13 @@
 import json
+from datetime import datetime
 
+from django.contrib.contenttypes.models import ContentType
 from mixer.backend.django import mixer
 
+import lessons.models as lessons
 from elk.utils.test import ClientTestCase, test_teacher
 from teachers.models import WorkingHours
+from timeline.models import Entry as TimelineEntry
 
 
 class TestWorkingHours(ClientTestCase):
@@ -36,3 +40,66 @@ class TestWorkingHours(ClientTestCase):
             self.assertEqual(i['weekday'], got_mocked_hours.weekday)
             self.assertEqual(i['start'], str(got_mocked_hours.start))
             self.assertEqual(i['end'], str(got_mocked_hours.end))
+
+
+class TestSlotsJson(ClientTestCase):
+    def setUp(self):
+        self.teacher = test_teacher()
+        mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
+        mixer.blend(WorkingHours, teacher=self.teacher, weekday=1, start='17:00', end='19:00')  # thursday
+
+        super().setUp()
+
+    def test_404(self):
+        response = self.c.get('/teachers/%s/2016-07-20/slots.json' % self.teacher.user.username)  # wednesday
+        self.assertEqual(response.status_code, 404)  # our teacher does not work on wednesdays
+
+        response = self.c.get('/teachers/%s/2016-07-18/slots.json?lesson_type=100500' % self.teacher.user.username)
+        self.assertEqual(response.status_code, 404)  # non-existent lesson_type
+
+        response = self.c.get('/teachers/%s/2016-07-18/slots.json?lesson_id=100500' % self.teacher.user.username)
+        self.assertEqual(response.status_code, 404)  # non-existent lesson_id
+
+    def test_all_slots(self):
+        response = self.c.get('/teachers/%s/2016-07-18/slots.json' % self.teacher.user.username)  # monday
+        self.assertEqual(response.status_code, 200)
+
+        slots = json.loads(response.content.decode('utf-8'))
+        self.assertEquals(len(slots), 4)
+        self.assertEquals(slots[0], '13:00')
+        self.assertEquals(slots[-1], '14:30')
+
+    def test_filter_by_lesson_type(self):
+        master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
+        entry = TimelineEntry(teacher=self.teacher,
+                              lesson=master_class,
+                              start=datetime(2016, 7, 21, 14, 10),
+                              end=datetime(2016, 7, 21, 14, 40)
+                              )
+        entry.save()
+        master_class_type = ContentType.objects.get_for_model(master_class)
+
+        response = self.c.get(
+            '/teachers/%s/2016-07-21/slots.json?lesson_type=%d' % (self.teacher.user.username, master_class_type.pk)
+        )
+        self.assertEquals(response.status_code, 200)
+        slots = json.loads(response.content.decode('utf-8'))
+        self.assertEquals(len(slots), 1)
+        self.assertEquals(slots[0], '14:10')
+
+    def test_filter_by_lesson(self):
+        master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
+        entry = TimelineEntry(teacher=self.teacher,
+                              lesson=master_class,
+                              start=datetime(2016, 7, 21, 14, 10),
+                              end=datetime(2016, 7, 21, 14, 40)
+                              )
+        entry.save()
+
+        response = self.c.get(
+            '/teachers/%s/2016-07-21/slots.json?lesson_id=%d' % (self.teacher.user.username, master_class.pk)
+        )
+        self.assertEquals(response.status_code, 200)
+        slots = json.loads(response.content.decode('utf-8'))
+        self.assertEquals(len(slots), 1)
+        self.assertEquals(slots[0], '14:10')
