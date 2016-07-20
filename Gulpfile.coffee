@@ -43,7 +43,7 @@ gulp.task 'js', ['js:vendor'], () ->
   .pipe $.coffeelint.reporter()
   .pipe $.coffee()
   .pipe $.concat 'app.js'
-  .pipe $.if config.production, $.uglify()
+  .pipe $.uglify()
   .pipe $.if !config.production, $.sourcemaps.write()
   .pipe gulp.dest './elk/static/js/'
 
