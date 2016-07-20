@@ -73,7 +73,7 @@ class HostedLesson(Lesson):
     Abstract class for generic lesson, that requires a host, i.e. Master class
     or ELK Happy hour
     """
-    host = models.ForeignKey(Teacher, limit_choices_to={'is_staff': 1}, related_name='+', null=True)
+    host = models.ForeignKey(Teacher, related_name='+', null=True)
 
     @property
     def timeline_entry_required(self):
