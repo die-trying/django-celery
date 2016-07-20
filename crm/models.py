@@ -69,6 +69,14 @@ class Customer(models.Model):
     def last_name(self):
         return self._get_user_property('last_name')
 
+    def get_profile_photo(self):
+        """
+        Get, if exists, profile photo link
+        """
+        if self.profile_photo:
+            return self.profile_photo.url
+        return ''
+
     def _get_user_property(self, property):
         """
         Some properties are stored in the stock Django user model. This method

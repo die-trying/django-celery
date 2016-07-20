@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django_markdown.models import MarkdownField
 
 from elk.utils.date import day_range
 
@@ -52,10 +53,13 @@ class Teacher(models.Model):
 
     acceptable_lessons = models.ManyToManyField(ContentType, related_name='+', limit_choices_to={'app_label': 'lessons'})
 
+    description = MarkdownField()
+
     def as_dict(self):
         return {
             'name': str(self.user),
-            # 'profile_photo': self.user.crm.profile_photo.url,
+            'description': self.description,
+            'profile_photo': self.user.crm.get_profile_photo(),
         }
 
     def __str__(self):
