@@ -4,10 +4,11 @@ from django.http import Http404, JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
 
 from teachers.models import Teacher, WorkingHours
+from timeline.models import ALLOWED_TIMELINE_FILTERS
 
 
 @staff_member_required
-def hours_json(request, username):
+def teacher_hours_json(request, username):
     teacher = get_object_or_404(Teacher, user__username=username)
 
     hours_list = []
@@ -19,7 +20,7 @@ def hours_json(request, username):
 
 
 @login_required
-def slots_json(request, username, date):
+def teacher_slots_json(request, username, date):
     """
     Get free time slots for a particular teacher. The used method is
     :model:`teachers.Teacher`.find_free_slots, filtering is done via
@@ -28,7 +29,7 @@ def slots_json(request, username, date):
     teacher = get_object_or_404(Teacher, user__username=username)
 
     kwargs = {}
-    for i in ('lesson_type', 'lesson_id'):
+    for i in ALLOWED_TIMELINE_FILTERS:
         if request.GET.get(i):
             kwargs[i] = request.GET.get(i)
 
@@ -38,3 +39,23 @@ def slots_json(request, username, date):
         raise Http404('No slots found')
 
     return JsonResponse(slots.as_dict(), safe=False)
+
+
+@login_required
+def all_slots_json(request, date):
+    kwargs = {}
+    for i in ALLOWED_TIMELINE_FILTERS:
+        if request.GET.get(i):
+            kwargs[i] = request.GET.get(i)
+
+    teachers_with_slots = Teacher.objects.find_free(date=date, **kwargs)
+    if not teachers_with_slots:
+        raise Http404('No free teachers found')
+
+    teachers = []
+    for teacher in teachers_with_slots:
+        teacher_dict = teacher.as_dict()
+        teacher_dict['slots'] = teacher.free_slots.as_dict()
+        teachers.append(teacher_dict)
+
+    return JsonResponse(teachers, safe=False)

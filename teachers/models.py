@@ -52,6 +52,12 @@ class Teacher(models.Model):
 
     acceptable_lessons = models.ManyToManyField(ContentType, related_name='+', limit_choices_to={'app_label': 'lessons'})
 
+    def as_dict(self):
+        return {
+            'name': str(self.user),
+            # 'profile_photo': self.user.crm.profile_photo.url,
+        }
+
     def __str__(self):
         return '%s (%s)' % (self.user.crm.full_name, self.user.username)
 

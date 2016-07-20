@@ -9,6 +9,8 @@ from crm.models import Customer
 from lessons.models import Lesson
 from teachers.models import Teacher
 
+ALLOWED_TIMELINE_FILTERS = ('lesson_type', 'lesson_id')  # list of filters, allowed for ordinary users through get parameters
+
 
 class EntryManager(models.Manager):
 

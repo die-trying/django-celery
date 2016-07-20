@@ -43,6 +43,9 @@ class TestWorkingHours(ClientTestCase):
 
 
 class TestSlotsJson(ClientTestCase):
+    """
+    Getting time slots of distinct teacher
+    """
     def setUp(self):
         self.teacher = test_teacher()
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
@@ -103,3 +106,71 @@ class TestSlotsJson(ClientTestCase):
         slots = json.loads(response.content.decode('utf-8'))
         self.assertEquals(len(slots), 1)
         self.assertEquals(slots[0], '14:10')
+
+
+class testTeacherSlotsJSON(ClientTestCase):
+    """
+    Getting timeslots of any available teacher.
+
+    We do not test getting teacher for particular lesson, because frontend should
+    use teacher_slots_json view when it knows the particular teacher.
+    """
+    def setUp(self):
+        self.first_teacher = test_teacher()
+        mixer.blend(WorkingHours, teacher=self.first_teacher, weekday=0, start='13:00', end='15:00')  # monday
+        mixer.blend(WorkingHours, teacher=self.first_teacher, weekday=1, start='17:00', end='19:00')  # thursday
+
+        self.second_teacher = test_teacher()
+        mixer.blend(WorkingHours, teacher=self.second_teacher, weekday=0, start='13:00', end='15:00')  # monday
+        mixer.blend(WorkingHours, teacher=self.second_teacher, weekday=4, start='17:00', end='19:00')  # thursday
+
+        super().setUp()
+
+    def test_404(self):
+        response = self.c.get('/teachers/2016-07-20/slots.json')  # wednesday
+        self.assertEqual(response.status_code, 404)  # no one works on wednesdays
+
+        response = self.c.get('/teachers/2016-07-18/slots.json?lesson_type=100500')
+        self.assertEqual(response.status_code, 404)  # non-existent lesson_type
+
+        response = self.c.get('/teachers/2016-07-18/slots.json?lesson_id=100500')
+        self.assertEqual(response.status_code, 404)  # non-existent lesson_id
+
+    def test_all_slots(self):
+        response = self.c.get('/teachers/2016-07-18/slots.json')  # monday, 2 teachers
+        self.assertEqual(response.status_code, 200)
+
+        teachers = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(len(teachers), 2)
+        self.assertEqual(len(teachers[0]['slots']), 4)
+
+        self.assertEqual(teachers[0]['name'], str(self.first_teacher.user))
+        self.assertEqual(teachers[0]['slots'][0], '13:00')
+        self.assertEqual(teachers[0]['slots'][-1], '14:30')
+
+    def test_filter_by_lesson_type(self):
+        first_master_class = mixer.blend(lessons.MasterClass, host=self.first_teacher)
+        second_master_class = mixer.blend(lessons.MasterClass, host=self.second_teacher)
+        entry = TimelineEntry(teacher=self.first_teacher,
+                              lesson=first_master_class,
+                              start=datetime(2016, 7, 21, 14, 10),
+                              end=datetime(2016, 7, 21, 14, 40)
+                              )
+        entry.save()
+        entry = TimelineEntry(teacher=self.second_teacher,
+                              lesson=second_master_class,
+                              start=datetime(2016, 7, 21, 14, 15),
+                              end=datetime(2016, 7, 21, 14, 45)
+                              )
+        entry.save()
+        master_class_type = ContentType.objects.get_for_model(first_master_class)
+
+        response = self.c.get('/teachers/2016-07-21/slots.json?lesson_type=%d' % master_class_type.pk)
+        self.assertEquals(response.status_code, 200)
+
+        teachers = json.loads(response.content.decode('utf-8'))
+        self.assertEquals(len(teachers), 2)
+        self.assertEquals(len(teachers[0]['slots']), 1)
+
+        self.assertEquals(teachers[0]['slots'][0], '14:10')
+        self.assertEquals(teachers[1]['slots'][0], '14:15')
