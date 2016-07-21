@@ -3,6 +3,4 @@
 {% block content %}
 <div class="user-calendar" data-calendar="{% url 'timeline:timeline.json' username=object.user.username%}"></div>
 <div class="user-calendar__add-popup hidden" data-username="{{ object.user.username }}"></div>
-
-div>
 {% endblock %}

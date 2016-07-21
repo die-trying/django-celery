@@ -41,7 +41,7 @@ class TestLessonsFunctional(ClientTestCase):
 
         lesson_type_id = ContentType.objects.get_for_model(klass).pk
 
-        response = self.c.get('/lessons/%s/available.json?lesson_id=%d' % (self.teacher.user.username, lesson_type_id))
+        response = self.c.get('/lessons/%s/available.json?lesson_type=%d' % (self.teacher.user.username, lesson_type_id))
 
         self.assertEquals(response.status_code, 200)
         got_lessons = json.loads(response.content.decode('utf-8'))

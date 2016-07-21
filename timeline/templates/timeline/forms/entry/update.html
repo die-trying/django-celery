@@ -1,0 +1,38 @@
+{% extends 'timeline/forms/entry/base.html' %}
+{% load i18n %}
+{% load format_entry_date %}
+
+{% block form %}
+        <form method = "POST" class="form"  action="{% url 'timeline:timeline_update' username=teacher.user.username pk=object.pk %}" data-lessons="{% url 'lessons:available_json' username=teacher.user.username %}">
+            <input type="hidden" id="teacher" name="teacher" value="{{ teacher.pk }}">
+            <input type="hidden" id="initial_lesson" value="{{ form.lesson_id.value }}">
+            {% csrf_token %}
+            <div class="timeline-entry-form__lesson">
+                <div class="form-group">
+                    <select name="lesson_type" id="{{ form.lesson_type.id_for_label }}" class="form-control">
+                    {% for value, name in form.fields.lesson_type.choices %}
+                        <option value = "{{ value }}" {% if form.lesson_type.value == value %} selected {% endif %}>{{ name }}</option>
+                    {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select name="lesson_id" id="{{ form.lesson_id.id_for_label }}" class="form-control">
+                        <option rv-each-lesson="model.lessons" rv-value="lesson.id" rv-text="lesson.name" rv-selected="lesson.selected"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="timeline-entry-form__time">
+                <div class="form-group">
+                    <label for="id_start_0">{% trans 'Start:' %}</label>
+                    {{ form.start | format_entry_date}}
+                </div>
+                <div class="form-group">
+                    <label for="id_duration">{% trans 'Duration:' %}</label>
+                    <input readonly maxlength=5 placeholder='HH:MM' type="text" class="form-control", id="id_duration" name="duration" rv-value="model.lesson.duration">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-default timeline-entry-form__submit">{% trans 'Update entry' %}</button>
+            <p class="timeline-entry-form__delete">or <a class="text-danger" href="{% url 'timeline:timeline_delete' username=teacher.user.username pk=object.pk %}">delete</a> it.</p>
+        </form>
+
+{% endblock %}

@@ -2,6 +2,7 @@
     "jquery/dist/jquery.min.js",
     "sprintfjs/sprintf.js",
     "moment/min/moment.min.js",
+    "rivets/dist/rivets.bundled.min.js",
     "fullcalendar/dist/fullcalendar.min.js",
     "bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js",
     "jquery-timepicker/jquery.timepicker.min.js",

@@ -9,8 +9,6 @@ SITE_ROOT = root()
 USE_L10N = True
 USE_i18N = True
 
-LANGUAGE_CODE = 'EN'
-
 DEBUG = env('DEBUG')    # False if not in os.environ
 
 DATABASES = {
@@ -34,7 +32,6 @@ INSTALLED_APPS = [
     'django_user_agents',
     'social.apps.django_app.default',
     'django_nose',
-    'bootstrapform',
     'django.contrib.admindocs',
     'suit',
     'django.contrib.admin',
@@ -48,6 +45,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

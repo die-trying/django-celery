@@ -26,7 +26,7 @@ class TeacherCtxMixin():
 
 
 class calendar_create(TeacherCtxMixin, CreateView):
-    template_name = 'timeline/forms/entry_create.html'
+    template_name = 'timeline/forms/entry/create.html'
     form_class = TimelineEntryForm
 
     def get_success_url(self):
@@ -34,7 +34,7 @@ class calendar_create(TeacherCtxMixin, CreateView):
 
 
 class calendar_update(TeacherCtxMixin, UpdateView):
-    template_name = 'timeline/forms/entry_update.html'
+    template_name = 'timeline/forms/entry/update.html'
     form_class = TimelineEntryForm
     model = TimelineEntry
 

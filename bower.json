@@ -11,7 +11,8 @@
     "bootstrap-datepicker": "^1.6.1",
     "bower": "*",
     "install": "^1.0.4",
-    "bootstrap-select": "^1.10.0"
+    "bootstrap-select": "^1.10.0",
+    "rivets": "^0.9.0"
   },
   "private": "true"
 }

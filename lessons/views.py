@@ -7,12 +7,12 @@ from django.shortcuts import get_list_or_404, get_object_or_404
 
 @staff_member_required
 def available_lessons_json(request, username):
-    lesson_id = request.GET.get('lesson_id')
+    lesson_type = request.GET.get('lesson_type')
 
     # We don't limit lessons to you users. If you need it sometimes, fill free
     # to filter your query
     user = get_object_or_404(User, username=username)  # NOQA
-    Model = ContentType.objects.get(app_label='lessons', pk=lesson_id).model_class()
+    Model = ContentType.objects.get(app_label='lessons', pk=lesson_type).model_class()
 
     lessons = []
     for lesson in get_list_or_404(Model):

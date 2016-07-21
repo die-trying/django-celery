@@ -1,0 +1,35 @@
+{% extends 'timeline/forms/entry/base.html' %}
+{% load i18n %}
+{% load format_entry_date %}
+
+{% block form %}
+        <form method = "POST" class="form"  action="{% url 'timeline:timeline_create' username=teacher.user.username %}" data-lessons="{% url 'lessons:available_json' username=teacher.user.username %}">
+            <input type="hidden" id="teacher" name="teacher" value="{{ teacher.pk }}">
+            {% csrf_token %}
+            <div class="timeline-entry-form__lesson">
+                <div class="form-group">
+                    <select required name="lesson_type" id="{{ form.lesson_type.id_for_label }}" class="form-control">
+                    {% for value, name in form.fields.lesson_type.choices %}
+                        <option value = "{{ value }}">{{ name }}</option>
+                    {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select required name="lesson_id" id="{{ form.lesson_id.id_for_label }}" class="form-control">
+                        <option rv-each-lesson="model.lessons" rv-value="lesson.id" rv-text="lesson.name"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="timeline-entry-form__time">
+                <div class="form-group">
+                    <label for="id_start_0">{% trans 'Start:' %}</label>
+                    {{ form.start | format_entry_date}}
+                </div>
+                <div class="form-group">
+                    <label for="id_duration">{% trans 'Duration'%}:</label>
+                    <input readonly maxlength=5 placeholder='HH:MM' type="text" class="form-control", id="id_duration" name="duration" rv-value="model.lesson.duration">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-default">{% trans 'Create entry' %}</input>
+        </form>
+{% endblock %}
