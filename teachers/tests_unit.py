@@ -92,10 +92,10 @@ class TestFreeSlots(TestCase):
         entry.save()
         lesson_type = ContentType.objects.get_for_model(master_class)
 
-        slots = self.teacher.find_free_slots(date='2016-07-18', lesson_type=lesson_type)
+        slots = self.teacher.find_free_slots(date='2016-07-18', lesson_type=lesson_type.pk)
         self.assertEquals(len(slots), 1)
 
-        slots = self.teacher.find_free_slots(date='2016-07-20', lesson_type=lesson_type)
+        slots = self.teacher.find_free_slots(date='2016-07-20', lesson_type=lesson_type.pk)
         self.assertEquals(len(slots), 0)  # there is no master classes, planned on 2016-07-20
 
     def test_free_slots_for_lesson(self):
@@ -139,7 +139,7 @@ class TestFreeSlots(TestCase):
         entry.save()
         lesson_type = ContentType.objects.get_for_model(master_class)
 
-        slots = self.teacher.find_free_slots(date='2016-07-18', lesson_type=lesson_type)
+        slots = self.teacher.find_free_slots(date='2016-07-18', lesson_type=lesson_type.pk)
         self.assertEquals(len(slots), 0)  # should not return anything — we are checking slots for self.teacher, not other_teacher
 
     def test_find_teacher_by_date(self):
@@ -175,10 +175,10 @@ class TestFreeSlots(TestCase):
                                      )
         second_entry.save()
         lesson_type = ContentType.objects.get_for_model(first_master_class)
-        free_teachers = Teacher.objects.find_free(date='2016-07-18', lesson_type=lesson_type)
+        free_teachers = Teacher.objects.find_free(date='2016-07-18', lesson_type=lesson_type.pk)
         self.assertEquals(len(free_teachers), 2)
 
-        free_teachers = Teacher.objects.find_free(date='2016-07-20', lesson_type=lesson_type)
+        free_teachers = Teacher.objects.find_free(date='2016-07-20', lesson_type=lesson_type.pk)
         self.assertEquals(len(free_teachers), 0)  # there is no master classes. planned on 2016-07-20
 
     def test_get_teachers_by_lesson(self):
@@ -203,6 +203,12 @@ class TestFreeSlots(TestCase):
         self.assertEquals(len(free_teachers), 1)
         free_teachers = Teacher.objects.find_free(date='2016-07-20', lesson_id=first_master_class.pk)
         self.assertEquals(len(free_teachers), 0)
+
+    def test_get_teachers_by_lesson_that_does_not_require_a_timeline_entry(self):
+        ordinary_lesson_type = ContentType.objects.get_for_model(lessons.OrdinaryLesson)
+        teachers = Teacher.objects.find_free(date='2016-07-18', lesson_type=ordinary_lesson_type.pk)
+        self.assertEquals(len(teachers), 1)
+        self.assertEquals(len(teachers[0].free_slots), 4)  # should find all timeline entries because ordinary lesson does not require a timeline entry
 
 
 class TestSlotsIterable(TestCase):

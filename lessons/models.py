@@ -35,8 +35,8 @@ class Lesson(models.Model):
     def __str__(self):
         return self.internal_name
 
-    @property
-    def timeline_entry_required(self):
+    @classmethod
+    def timeline_entry_required(cls):
         """
         Does this lesson type require a timeline entry
         """
@@ -75,8 +75,8 @@ class HostedLesson(Lesson):
     """
     host = models.ForeignKey(Teacher, related_name='+', null=True)
 
-    @property
-    def timeline_entry_required(self):
+    @classmethod
+    def timeline_entry_required(cls):
         """
         All hosted lessons require planning
         """

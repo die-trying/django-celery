@@ -19,8 +19,11 @@
 
 <div class="row">
     <div class="col-sm-1">
-        <button type="button" class="btn btn-primary load_schedule_popup" data-toggle="modal" data-target="#schedule-popup">Schedule a lesson</button>
+        <button type="button" class="btn btn-primary load_schedule_popup" data-toggle="modal" data-target=".schedule-popup-container">Schedule a lesson</button>
     </div>
 </div>
-<div class="modal fade" id="schedule-popup" role="dialog"></div>
+
+<div class="modal fade schedule-popup-container" role="dialog">
+    {% include 'hub/schedule_popup/step_01.html' %}
+</div>
 {% endblock %}

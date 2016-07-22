@@ -72,6 +72,10 @@ class Teacher(models.Model):
 
         Returns an iterable of available slots in format ['15:00', '15:30', '16:00']
         """
+        self.__check_if_lesson_requires_timeline_entry(kwargs)
+
+        # if the only kwarg was lesson_type and previous method had deleted it,
+        # we'll return all available time for the teacher
         if len(kwargs.keys()):
             return self.__find_timeline_entries(date=date, **kwargs)
 
@@ -123,6 +127,24 @@ class Teacher(models.Model):
             end=start + period,
         )
         return entry.is_overlapping()
+
+    def __check_if_lesson_requires_timeline_entry(self, kwargs):
+        """
+        Check if lesson class, passed as filter to free_slots() requires a timeline
+        slot. If not — delete this filter argument from kwargs.
+        """
+        lesson_type = kwargs.get('lesson_type')
+        if lesson_type is None:
+            return
+
+        try:
+            Lesson_model = ContentType.objects.get(pk=lesson_type).model_class()
+        except ContentType.DoesNotExist:
+            return
+
+        if not Lesson_model.timeline_entry_required():
+            del kwargs['lesson_type']
+            print('deleted', list(kwargs.keys()))
 
 
 class WorkingHoursManager(models.Manager):
