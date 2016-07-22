@@ -1,0 +1,62 @@
+{% load i18n %}
+{% load staticfiles %}
+<div class="modal-dialog schedule-popup">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            <h3 class="modal-title">{% trans 'Schedule a lesson' %}</h3>
+        </div>
+        <div class="modal-body">
+            <div class="row schedule-popup__filters">
+                <div class="col-md-8 lesson_type">
+                    <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-primary active">
+                            <input type="radio" name="lesson_type" value="4" autocomplete="off" checked>Curator sessions</input>
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="lesson_type" value="5" autocomplete="off">Native speakers</input>
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="lesson_type" value="6" autocomplete="off">Master classes</input>
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="lesson_type" value="7" autocomplete="off">Happy hours</input>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 schedule-popup__date-selector">
+                    <div class="form-group">
+                        <select name="date" class="selectpicker">
+                            <option value="2016-07-18">July, 18th</option>
+                            <option value="2016-07-19">July, 19th</option>
+                            <option value="2016-07-20">July, 29th</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="schedule-popup__content">
+                <div rv-each-teacher="model.teachers" class="row schedule-popup__record">
+                    <div class="col-md-1">
+                        <img class="img-circle" rv-if="teacher.profile_photo" rv-src="teacher.profile_photo">
+                        <img class="img-circle" rv-unless="teacher.profile_photo" src="{% static 'no-photo.jpg' %}">
+                    </div>
+                    <div class="col-md-5 teacher">
+                        <h5 rv-text="teacher.name"></h5>
+                        <p rv-text="teacher.description"></p>
+                    </div>
+                    <div class="col-md-6 slots">
+                        <div class="btn-group" data-toggle="buttons">
+                            <label rv-each-slot="teacher.slots" class="btn btn-default">
+                                <input class="schedule-popup__time-selector" type="radio" rv-name="slot.id"></input>
+                                <span rv-text="slot.time"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

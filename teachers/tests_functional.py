@@ -144,7 +144,7 @@ class testTeacherSlotsJSON(ClientTestCase):
         self.assertEqual(len(teachers), 2)
         self.assertEqual(len(teachers[0]['slots']), 4)
 
-        self.assertEqual(teachers[0]['name'], str(self.first_teacher.user))
+        self.assertEqual(teachers[0]['name'], str(self.first_teacher.user.crm))
         self.assertEqual(teachers[0]['slots'][0], '13:00')
         self.assertEqual(teachers[0]['slots'][-1], '14:30')
 

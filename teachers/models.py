@@ -57,7 +57,8 @@ class Teacher(models.Model):
 
     def as_dict(self):
         return {
-            'name': str(self.user),
+            'id': self.pk,
+            'name': str(self.user.crm),
             'description': self.description,
             'profile_photo': self.user.crm.get_profile_photo(),
         }
