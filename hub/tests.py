@@ -194,7 +194,7 @@ class ScheduleTestCase(TestCase):
         self.assertFalse(bought_class.is_scheduled)
 
 
-class testBuyableProductMixin(TestCase):
+class testBuyableProduct(TestCase):
     fixtures = ('crm', 'lessons', 'products')
     TEST_PRODUCT_ID = 1
 
@@ -223,3 +223,25 @@ class testBuyableProductMixin(TestCase):
         c.save()
 
         self.assertEqual(c.name_for_user, lesson.name)
+
+
+class TestAvailableLessons(TestCase):
+    fixtures = ('crm', 'lessons', 'products')
+    TEST_PRODUCT_ID = 1
+
+    def setUp(self):
+        self.customer = test_customer()
+        product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
+        s = Subscription(
+            customer=self.customer,
+            product=product,
+            buy_price=150,
+        )
+        s.request = mock_request()
+        s.save()
+
+    def test_available_lesson_types(self):
+        lesson_types = self.customer.classes.bought_lesson_types()
+        self.assertEquals(len(lesson_types), 5)
+
+        self.assertIn(lessons.OrdinaryLesson.contenttype(), lesson_types)

@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load staticfiles %}
+{% load hub.schedule_popup %}
 <div class="modal-dialog schedule-popup">
     <div class="modal-content">
         <div class="modal-header">
@@ -10,18 +11,9 @@
             <div class="row schedule-popup__filters">
                 <div class="col-md-8 lesson_type">
                     <div class="btn-group" data-toggle="buttons">
-                        <label class="btn btn-primary active">
-                            <input type="radio" name="lesson_type" value="4" autocomplete="off" checked>Curator sessions</input>
-                        </label>
-                        <label class="btn btn-primary">
-                            <input type="radio" name="lesson_type" value="5" autocomplete="off">Native speakers</input>
-                        </label>
-                        <label class="btn btn-primary">
-                            <input type="radio" name="lesson_type" value="6" autocomplete="off">Master classes</input>
-                        </label>
-                        <label class="btn btn-primary">
-                            <input type="radio" name="lesson_type" value="7" autocomplete="off">Happy hours</input>
-                        </label>
+                        {% for lesson_type in user.crm.classes.bought_lesson_types %}
+                            {% lesson_type_filter_btn lesson_type %}
+                        {% endfor %}
                     </div>
                 </div>
                 <div class="col-md-4 schedule-popup__date-selector">

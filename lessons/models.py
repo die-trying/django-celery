@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
 
 from teachers.models import Teacher
@@ -34,6 +35,21 @@ class Lesson(models.Model):
 
     def __str__(self):
         return self.internal_name
+
+    @classmethod
+    def contenttype(cls):
+        """
+        Shortcut for getting ContentType of current lesson
+        """
+        return ContentType.objects.get_for_model(cls)
+
+    @classmethod
+    def can_be_directly_planned(cls):
+        """
+        Can lessons of this type be planned directly by user. For example this is
+        false for Paired lesson — only system can plan them.
+        """
+        return True
 
     @classmethod
     def timeline_entry_required(cls):
@@ -96,45 +112,46 @@ class HostedLesson(Lesson):
             else:
                 super().save(*args, **kwargs)
 
+    @classmethod
+    def get_default(cls):
+        raise NotImplementedError('You can not buy a default master class, sorry')
+
     class Meta:
         abstract = True
 
 
 class OrdinaryLesson(Lesson):
 
-    class Meta:
-        verbose_name = "Usual curated lesson"
+    class Meta(Lesson.Meta):
+        verbose_name = _("Curated session")
 
 
 class LessonWithNative(Lesson):
 
-    class Meta:
-        verbose_name = "Curataed lesson with native speaker"
-        verbose_name_plural = "Curated lessons with native speaker"
+    class Meta(Lesson.Meta):
+        verbose_name = _("Native speaker session")
+        verbose_name_plural = _("Native speakers")
 
 
 class MasterClass(HostedLesson):
 
-    @classmethod
-    def get_default(cls):
-        raise NotImplementedError('You can not buy a default master class, sorry')
-
-    class Meta:
-        verbose_name = "Master Class"
-        verbose_name_plural = "Master Classes"
+    class Meta(HostedLesson.Meta):
+        verbose_name = _("Master Class")
+        verbose_name_plural = _("Master Classes")
 
 
 class HappyHour(HostedLesson):
 
-    @classmethod
-    def get_default(cls):
-        raise NotImplementedError('You can not buy a default master class, sorry')
-
-    class Meta:
-        verbose_name = "Happy Hour"
+    class Meta(HostedLesson.Meta):
+        verbose_name = _("Happy Hour")
 
 
 class PairedLesson(Lesson):
 
-    class Meta:
-        verbose_name = "Paired Lesson"
+    @classmethod
+    def can_be_directly_planned(cls):
+        """ Paired lessons can't be planned by user """
+        return False
+
+    class Meta(Lesson.Meta):
+        verbose_name = _("Paired Lesson")

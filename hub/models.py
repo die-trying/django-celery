@@ -95,6 +95,15 @@ class Subscription(BuyableProduct):
                 lesson.save()
 
 
+class ClassesManager(models.Manager):
+    def bought_lesson_types(self):
+        """
+        Get ContentTypes for lessons, available to user
+        """
+        types = self.get_queryset().filter(timeline_entry__isnull=True).values_list('lesson_type', flat=True).distinct()
+        return ContentType.objects.filter(pk__in=types)
+
+
 class Class(BuyableProduct):
     """
     Represents a single bought lesson. When buying a class, one should
@@ -107,6 +116,8 @@ class Class(BuyableProduct):
         (0, 'Single'),
         (1, 'Subscription')
     )
+
+    objects = ClassesManager()
 
     customer = models.ForeignKey(Customer, related_name='classes')
 
