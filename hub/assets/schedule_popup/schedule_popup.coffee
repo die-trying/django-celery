@@ -39,8 +39,6 @@ class Model extends MicroEvent
 class Step1Controller
   # This controls the first screen — teacher or lesson selection
   constructor: () ->
-    @container = $ '.schedule-popup'
-
     @model = new Model(
       lesson_type = $('.schedule-popup__filters input[name=lesson_type]').val()
       date = $('.schedule-popup__filters select').val()
@@ -52,7 +50,7 @@ class Step1Controller
     @bind_filters()
     @mark_active_lesson()
 
-    @bind_data = rivets.bind($('.schedule-popup__content'), {model: @model})
+    @view = rivets.bind($('.schedule-popup__content'), {model: @model})
 
   bind_filters: () ->
     $('.schedule-popup__filters input').on 'change', (e) =>
@@ -69,13 +67,36 @@ class Step1Controller
       @load_step2(url)
 
   load_step2: (url) ->
-    html = @container.html()
-    @container.load url
+    $('.schedule-popup__step2').load url
+    $('.schedule-popup__step2').removeClass 'schedule-popup__step2-hidden'
+    $('.schedule-popup__filters, .schedule-popup__content').addClass 'hidden'
+
+  load_step1: () ->
+    $('.schedule-popup__step2').html ''
+    .addClass 'schedule-popup__step2-hidden'
+    $('.schedule-popup__filters, .schedule-popup__content').removeClass 'hidden'
 
   mark_active_lesson: () ->
     $('.schedule-popup__filter .btn-group label:first-child input').click()
     $('.schedule-popup__filter .btn-group label:first-child').addClass 'btn-active'
 
+  destroy: () ->
+    # this is for rivets to return DOM to the initial state
+    @model.teachers = []
+    @model.loaded = false
+    @view.unbind()  # Disarm rivets.
+                    # If the popup will be opened one more time, the new controller will arm in one more time
+
+    @load_step1()
+
+    $('.schedule-popup-container').load '/hub/schedule/step01/', () ->
+      $('.selectpicker').selectpicker()  # arm bootstrap-selectpicker in the popup
+
+
+c = ''
 
 $('.schedule-popup-container').on 'show.bs.modal', () ->
   c = new Step1Controller
+
+$('.schedule-popup-container').on 'hidden.bs.modal', () ->
+  c.destroy()

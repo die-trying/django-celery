@@ -9,4 +9,8 @@ urlpatterns = [
         view=views.step02_by_type,
         name='step02_by_type'
         ),
+    url(regex=r'schedule/step01/',
+        view=views.step01,
+        name='step01'
+        ),
 ]
