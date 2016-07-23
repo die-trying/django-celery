@@ -27,7 +27,7 @@ gulp.task 'css', ['css:vendor'], () ->
   .pipe $.stylus
     use: nib()
   .pipe $.concat 'app.css'
-  .pipe $.if config.production, $.uglifycss()
+  .pipe $.uglifycss()
   .pipe $.if !config.production, $.sourcemaps.write()
   .pipe gulp.dest './elk/static/css/'
 
