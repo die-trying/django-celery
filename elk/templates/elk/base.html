@@ -1,7 +1,20 @@
 {% load staticfiles %}
 <!DOCTYPE html>
 <html>
-    {% include 'elk/header/head.html' %}
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>{% block title %}ELK{% endblock %}</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="{% static 'css/vendor.css' %}">
+        {% block css %}
+        {% endblock %}
+        <link rel="stylesheet" href="{% static 'css/app.css' %}">
+
+        <base href = "/">
+    </head>
     <body>
         {% block navbar %}
         {% include 'elk/header/navbar.html' %}
@@ -11,6 +24,8 @@
             {% endblock %}
         </div>
         <script src="{% static 'js/vendor.js' %}"></script>
+        {% block js %} {# pages can require custom javascript files defining this block #}
+        {% endblock %}
         <script src="{% static 'js/app.js' %}"></script>
 
     </body>
