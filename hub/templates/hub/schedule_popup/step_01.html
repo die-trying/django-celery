@@ -11,9 +11,7 @@
             <div class="row schedule-popup__filters">
                 <div class="col-md-8 lesson_type">
                     <div class="btn-group" data-toggle="buttons">
-                        {% for lesson_type in user.crm.classes.bought_lesson_types %}
-                            {% lesson_type_filter_btn lesson_type %}
-                        {% endfor %}
+                        {% lesson_type_filter user.crm.classes.bought_lesson_types %}
                     </div>
                 </div>
                 <div class="col-md-4 schedule-popup__date-selector">
@@ -43,6 +41,11 @@
                                 <span rv-text="slot.time"></span>
                             </label>
                         </div>
+                    </div>
+                </div>
+                <div rv-unless="model.loaded" class="row">
+                    <div class="col-md-12 schedule-popup__not-loaded">
+                        <p class="text-muted not-found">{% trans 'No lessons found ¯\_(ツ)_/¯. Please check another date.' %}</p>
                     </div>
                 </div>
             </div>

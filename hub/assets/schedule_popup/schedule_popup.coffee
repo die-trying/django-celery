@@ -10,13 +10,14 @@ class Model
   from_json: (lesson_type, date) ->
     url = sprintf @url, date, parseInt(lesson_type)
     @teachers = []
-
+    @loaded = false
     $.getJSON url, (data) =>
+      @loaded = true
       for t in data
         teacher = new Teacher(
           name = t.name
           profile_photo = t.profile_photo
-          description = t.description
+          description = t.announce
         )
 
         for s in t.slots
@@ -38,6 +39,12 @@ class Controller
       date = @date
     )
 
+    @bind_events()
+    @mark_active_lesson()
+
+    rivets.bind($('.schedule-popup__content'), {model: @model})
+
+  bind_events: () ->
     $('.schedule-popup__filters input').on 'change', (e) =>
       @lesson_type = e.target.value
       @model.from_json(@lesson_type, @date)
@@ -46,8 +53,9 @@ class Controller
       @date = $('.schedule-popup__filters select').val()
       @model.from_json(@lesson_type, @date)
 
-    rivets.bind($('.schedule-popup__content'), {model: @model})
-
+  mark_active_lesson: () ->
+    $('.schedule-popup__filter .btn-group label:first-child input').click()
+    $('.schedule-popup__filter .btn-group label:first-child').addClass 'btn-active'
 
 $('.schedule-popup-container').on 'show.bs.modal', () ->
   c = new Controller
