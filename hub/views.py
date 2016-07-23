@@ -1,10 +1,11 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect, render
+from moneyed import Money
 
 from hub.models import Class, Subscription
 from lessons.models import OrdinaryLesson
-from moneyed import Money
 from products.models import Product1
+from teachers.models import Teacher
 
 
 @login_required
@@ -29,3 +30,14 @@ def subscription(request):
     s.request = request
     s.save()
     return redirect('/')
+
+
+@login_required
+def step01(request):
+    return render(request, 'hub/schedule_popup/step_01.html')
+
+
+@login_required
+def step02_by_type(request, teacher, id, date, time):
+    teacher = get_object_or_404(Teacher, pk=teacher)
+    return render(request, 'hub/schedule_popup/step_02.html')

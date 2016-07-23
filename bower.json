@@ -12,7 +12,8 @@
     "bower": "*",
     "install": "^1.0.4",
     "bootstrap-select": "^1.10.0",
-    "rivets": "^0.9.0"
+    "rivets": "^0.9.0",
+    "microevent.js": "f213/microevent.js"
   },
   "private": "true"
 }

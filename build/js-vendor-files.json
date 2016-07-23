@@ -7,5 +7,6 @@
     "bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js",
     "jquery-timepicker/jquery.timepicker.min.js",
     "bootstrap-select/dist/js/bootstrap-select.min.js",
+    "microevent.js/microevent.js",
     "bootstrap/dist/js/bootstrap.js"
 ]
