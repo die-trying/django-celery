@@ -10,7 +10,7 @@ def lesson_type_filter(types):
     can be planned directly.
     """
 
-    button = """<label class = "btn btn-primary {classes}"><input type="radio" name="lesson_type" {checked} value = "{val}">{name}</label>"""
+    button = """<label class = "btn btn-default {classes}"><input type="radio" name="lesson_type" {checked} value = "{val}">{name}</label>"""
     first = True
     result = ''
     for lesson_type in types:
