@@ -25,6 +25,7 @@ bower install
 Development host:
 
 ```bash
+./manage.py loaddata crm lessons products
 gulp&
 ./manage.py runserver
 ```
