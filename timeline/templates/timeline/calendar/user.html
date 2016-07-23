@@ -1,6 +1,16 @@
 {% extends 'elk/base.html' %}
 
+{% load staticfiles %}
+
 {% block content %}
 <div class="user-calendar" data-calendar="{% url 'timeline:timeline.json' username=object.user.username%}"></div>
 <div class="user-calendar__add-popup hidden" data-username="{{ object.user.username }}"></div>
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'vendor/fullcalendar/dist/fullcalendar.min.css' %}">
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript" src="{% static 'vendor/fullcalendar/dist/fullcalendar.min.js' %}"></script>
 {% endblock %}
