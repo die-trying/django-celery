@@ -54,11 +54,13 @@ class Teacher(models.Model):
     acceptable_lessons = models.ManyToManyField(ContentType, related_name='+', limit_choices_to={'app_label': 'lessons'})
 
     description = MarkdownField()
+    announce = MarkdownField('Short description')
 
     def as_dict(self):
         return {
             'id': self.pk,
             'name': str(self.user.crm),
+            'announce': self.announce,
             'description': self.description,
             'profile_photo': self.user.crm.get_profile_photo(),
         }
