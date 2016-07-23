@@ -147,7 +147,6 @@ class Teacher(models.Model):
 
         if not Lesson_model.timeline_entry_required():
             del kwargs['lesson_type']
-            print('deleted', list(kwargs.keys()))
 
 
 class WorkingHoursManager(models.Manager):
