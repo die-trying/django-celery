@@ -1,4 +1,5 @@
 from abc import abstractproperty
+from datetime import datetime, timedelta
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -102,6 +103,19 @@ class ClassesManager(models.Manager):
         """
         types = self.get_queryset().filter(timeline_entry__isnull=True).values_list('lesson_type', flat=True).distinct()
         return ContentType.objects.filter(pk__in=types)
+
+    def dates_for_planning(self):
+        """
+        A generator of dates, available for planning for particular user
+
+        Currently retures 7 future days for everyone.
+        """
+        current = datetime.now()
+        end = current + timedelta(days=7)
+
+        while current < end:
+            yield current
+            current += timedelta(days=1)
 
 
 class Class(BuyableProduct):

@@ -1,6 +1,8 @@
 {% load i18n %}
+{% load l10n %}
 {% load staticfiles %}
 {% load hub.schedule_popup %}
+
 <div class="modal-dialog schedule-popup">
     <div class="modal-content">
         <div class="modal-header">
@@ -17,9 +19,9 @@
                 <div class="col-md-4 schedule-popup__date-selector">
                     <div class="form-group">
                         <select name="date" class="selectpicker">
-                            <option value="2016-07-18">July, 18th</option>
-                            <option value="2016-07-19">July, 19th</option>
-                            <option value="2016-07-20">July, 29th</option>
+                            {% for d in user.crm.classes.dates_for_planning %}
+                                <option value="{{ d|date:'Y-m-d' }}">{{ d|date:'F, j' }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>
