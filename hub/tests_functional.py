@@ -3,7 +3,7 @@ from mixer.backend.django import mixer
 
 import lessons.models as lessons
 import products.models as products
-from elk.utils.testing import mock_request, create_customer, create_teacher
+from elk.utils.testing import create_customer, create_teacher, mock_request
 from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from hub.models import Class, Subscription
 from timeline.models import Entry as TimelineEntry
@@ -151,14 +151,26 @@ class ScheduleTestCase(TestCase):
         bought_class.unschedule()
         self.assertEqual(timeline_entry.taken_slots, 0)
 
-    def schedule_2_people_to_a_paired_lesson(self):
+    def test_schedule_2_people_to_a_paired_lesson(self):
         customer1 = create_customer()
         customer2 = create_customer()
 
         paired_lesson = mixer.blend(lessons.PairedLesson, slots=2)
 
-        customer1_class = mixer.blend(Class, customer=customer1, lesson=paired_lesson)
-        customer2_class = mixer.blend(Class, customer=customer2, lesson=paired_lesson)
+        customer1_class = Class(
+            customer=customer1,
+            lesson=paired_lesson
+        )
+        customer1_class.request = mock_request()
+        customer1_class.save()
+
+        customer2_class = Class(
+            customer=customer2,
+            lesson=paired_lesson
+        )
+
+        customer2_class.request = mock_request()
+        customer2_class.save()
 
         timeline_entry = mixer.blend(TimelineEntry, lesson=paired_lesson, teacher=self.host)
 
