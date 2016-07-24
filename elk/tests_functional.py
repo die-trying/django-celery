@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 
-from elk.utils.test import ClientTestCase
+from elk.utils.testing import ClientTestCase
 
 
 class TestNavBar(ClientTestCase):

@@ -7,13 +7,13 @@ from django.utils.dateformat import format
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
-from elk.utils.test import ClientTestCase, test_teacher
+from elk.utils.testing import ClientTestCase, create_teacher
 from timeline.models import Entry as TimelineEntry
 
 
 class EntryCRUDTest(ClientTestCase):
     def setUp(self):
-        self.teacher = test_teacher()
+        self.teacher = create_teacher()
         self.lesson = mixer.blend(lessons.OrdinaryLesson, duration=timedelta(minutes=33))
         self.lesson_type = ContentType.objects.get_for_model(lessons.OrdinaryLesson).pk
 
@@ -92,11 +92,11 @@ class EntryAPITest(ClientTestCase):
         Calendar administration is limited to staff members, so we login
         with a super user here.
         """
-        self.teacher = test_teacher()
+        self.teacher = create_teacher()
 
         super().setUp()
 
-    def test_user_json(self):
+    def create_user_json(self):
         duration = timedelta(minutes=71)
 
         mocked_entries = {}
@@ -124,7 +124,7 @@ class EntryAPITest(ClientTestCase):
                              format(now + duration, 'c')
                              )
 
-    def test_user_json_filter(self):
+    def create_user_json_filter(self):
         x = iso8601.parse_date('2016-01-01')
         for i in range(0, 10):
             entry = mixer.blend(TimelineEntry, teacher=self.teacher, start=x)
@@ -141,7 +141,7 @@ class EntryAPITest(ClientTestCase):
 
 class TestFormAPIHelpers(ClientTestCase):
     def setUp(self):
-        self.teacher = test_teacher()
+        self.teacher = create_teacher()
         self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher)
 
         super().setUp()

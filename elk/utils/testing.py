@@ -19,7 +19,7 @@ def __add_all_lessons(teacher):
         teacher.acceptable_lessons.add(lesson)
 
 
-def test_user():
+def create_user():
     """
     Generate a simple user object.
     """
@@ -28,19 +28,19 @@ def test_user():
     return user
 
 
-def test_customer():
+def create_customer():
     """
     Generate a simple customer object.
     """
-    user = test_user()
+    user = create_user()
     return user.crm
 
 
-def test_teacher(accepts_all_lessons=True):
+def create_teacher(accepts_all_lessons=True):
     """
     Generate a simple teacher object.
     """
-    customer = test_customer()
+    customer = create_customer()
     teacher = mixer.blend('teachers.teacher', user=customer.user)  # second level relations — that is wy i've created this helper
     teacher.user.is_staff = True
     teacher.user.save()
@@ -51,7 +51,7 @@ def test_teacher(accepts_all_lessons=True):
     return teacher
 
 
-def mock_request(customer=test_customer()):
+def mock_request(customer=create_customer()):
     """
     Mock a request object, typicaly used for tests when buying a class
     """

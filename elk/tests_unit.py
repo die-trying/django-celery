@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
 
+import iso8601
 from django.apps import apps
 from django.test import TestCase
 from django.utils.dateformat import format
 
-import iso8601
 from elk.utils.date import ago, day_range, fwd
-from elk.utils.test import test_customer, test_teacher, test_user
+from elk.utils.testing import create_customer, create_teacher, create_user
 
 
 class TestDateUtils(TestCase):
@@ -33,29 +33,29 @@ class TestFixtures(TestCase):
     """
     Test if my fixtures helper generates fixtures with correct relations
     """
-    def test_user(self):
+    def create_user(self):
         User = apps.get_model('auth.user')
-        user = test_user()
+        user = create_user()
         self.assertEquals(User.objects.get(username=user.username), user)
         self.assertIsNotNone(user.crm)
 
-    def test_customer(self):
+    def create_customer(self):
         Customer = apps.get_model('crm.customer')
-        customer = test_customer()
+        customer = create_customer()
 
         self.assertEquals(Customer.objects.get(user__username=customer.user.username), customer)
 
-    def test_teacher(self):
+    def create_teacher(self):
         Teacher = apps.get_model('teachers.teacher')
-        teacher = test_teacher()
+        teacher = create_teacher()
 
         t = Teacher.objects.get(user__username=teacher.user.username)
         self.assertEqual(t, teacher)
         self.assertIsNotNone(t.user.crm)
         self.assertTrue(t.user.is_staff)
 
-    def test_teacher_all_lessons(self):
-        teacher = test_teacher()
+    def create_teacher_all_lessons(self):
+        teacher = create_teacher()
         acceptable_lessons = teacher.acceptable_lessons.all()
         self.assertGreater(acceptable_lessons.count(), 0)
         self.assertEqual(acceptable_lessons[0].app_label, 'lessons')

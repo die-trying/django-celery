@@ -5,14 +5,14 @@ from django.contrib.contenttypes.models import ContentType
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
-from elk.utils.test import ClientTestCase, test_teacher
+from elk.utils.testing import ClientTestCase, create_teacher
 from teachers.models import WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
 class TestWorkingHours(ClientTestCase):
     def setUp(self):
-        self.teacher = test_teacher()
+        self.teacher = create_teacher()
         super().setUp()
 
     def test_hours_JSON(self):
@@ -47,7 +47,7 @@ class TestSlotsJson(ClientTestCase):
     Getting time slots of distinct teacher
     """
     def setUp(self):
-        self.teacher = test_teacher()
+        self.teacher = create_teacher()
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=1, start='17:00', end='19:00')  # thursday
 
@@ -116,11 +116,11 @@ class testTeacherSlotsJSON(ClientTestCase):
     use teacher_slots_json view when it knows the particular teacher.
     """
     def setUp(self):
-        self.first_teacher = test_teacher()
+        self.first_teacher = create_teacher()
         mixer.blend(WorkingHours, teacher=self.first_teacher, weekday=0, start='13:00', end='15:00')  # monday
         mixer.blend(WorkingHours, teacher=self.first_teacher, weekday=1, start='17:00', end='19:00')  # thursday
 
-        self.second_teacher = test_teacher()
+        self.second_teacher = create_teacher()
         mixer.blend(WorkingHours, teacher=self.second_teacher, weekday=0, start='13:00', end='15:00')  # monday
         mixer.blend(WorkingHours, teacher=self.second_teacher, weekday=4, start='17:00', end='19:00')  # thursday
 

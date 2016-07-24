@@ -5,14 +5,14 @@ from django.test import TestCase
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
-from elk.utils.test import test_teacher
+from elk.utils.testing import create_teacher
 from teachers.models import Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
 class TestFreeSlots(TestCase):
     def setUp(self):
-        self.teacher = test_teacher()
+        self.teacher = create_teacher()
 
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=1, start='17:00', end='19:00')  # thursday
@@ -103,7 +103,7 @@ class TestFreeSlots(TestCase):
         Test for getting free time slots for a particular teacher with particular
         lesson
         """
-        other_teacher = test_teacher()
+        other_teacher = create_teacher()
 
         master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
         other_master_class = mixer.blend(lessons.MasterClass, host=other_teacher)
@@ -129,7 +129,7 @@ class TestFreeSlots(TestCase):
         """
         Check if find_free_slots returns only slots of selected teacher
         """
-        other_teacher = test_teacher()
+        other_teacher = create_teacher()
         master_class = mixer.blend(lessons.MasterClass, host=other_teacher)
         entry = TimelineEntry(teacher=other_teacher,
                               lesson=master_class,
@@ -157,7 +157,7 @@ class TestFreeSlots(TestCase):
         Add two timeline entries for two teachers and find their slots by
         lesson_type
         """
-        second_teacher = test_teacher()
+        second_teacher = create_teacher()
         first_master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
         second_master_class = mixer.blend(lessons.MasterClass, host=second_teacher)
 
@@ -213,7 +213,7 @@ class TestFreeSlots(TestCase):
 
 class TestSlotsIterable(TestCase):
     def _generate_slots(self):
-        teacher = test_teacher()
+        teacher = create_teacher()
         mixer.blend(WorkingHours, teacher=teacher, weekday=0, start='13:00', end='15:00')
         return teacher.find_free_slots(date='2016-07-18')
 

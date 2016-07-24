@@ -3,7 +3,7 @@ from mixer.backend.django import mixer
 
 import lessons.models as lessons
 import products.models as products
-from elk.utils.test import mock_request, test_customer, test_teacher
+from elk.utils.testing import mock_request, create_customer, create_teacher
 from hub.models import Class, Subscription
 from timeline.models import Entry as TimelineEntry
 
@@ -13,7 +13,7 @@ class testBuyableProduct(TestCase):
     TEST_PRODUCT_ID = 1
 
     def setUp(self):
-        self.customer = test_customer()
+        self.customer = create_customer()
 
     def test_subscription_name(self):
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
@@ -44,7 +44,7 @@ class TestAvailableLessons(TestCase):
     TEST_PRODUCT_ID = 1
 
     def setUp(self):
-        self.customer = test_customer()
+        self.customer = create_customer()
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
         s = Subscription(
             customer=self.customer,
@@ -66,8 +66,8 @@ class TryToSchedule(TestCase):
     TEST_PRODUCT_ID = 1
 
     def setUp(self):
-        self.customer = test_customer()
-        self.host = test_teacher()
+        self.customer = create_customer()
+        self.host = create_teacher()
 
     def _buy_a_lesson(self, lesson):
         c = Class(

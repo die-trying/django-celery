@@ -6,13 +6,13 @@ from django.test import TestCase
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
-from elk.utils.test import ClientTestCase, test_teacher
+from elk.utils.testing import ClientTestCase, create_teacher
 
 
 class TestLessonsUnit(TestCase):
     def test_planning_unaccaptable_lesson(self):
-        lazy_teacher = test_teacher(accepts_all_lessons=False)  # teacher2 does not accept any lesson, so cannot be planned
-        hard_working_teacher = test_teacher()
+        lazy_teacher = create_teacher(accepts_all_lessons=False)  # teacher2 does not accept any lesson, so cannot be planned
+        hard_working_teacher = create_teacher()
 
         with self.assertRaises(ValidationError):
             mixer.blend(lessons.MasterClass, host=lazy_teacher)
@@ -22,7 +22,7 @@ class TestLessonsUnit(TestCase):
 
 class TestLessonsFunctional(ClientTestCase):
     def setUp(self):
-        self.teacher = test_teacher()
+        self.teacher = create_teacher()
         super().setUp()
 
     def testAvailableLessonsJSON(self):

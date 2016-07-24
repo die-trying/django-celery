@@ -7,7 +7,7 @@ from django.test import TestCase
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
-from elk.utils.test import ClientTestCase, test_customer, test_teacher
+from elk.utils.testing import ClientTestCase, create_customer, create_teacher
 from timeline.models import Entry as TimelineEntry
 
 
@@ -15,8 +15,8 @@ class EntryTestCase(TestCase):
     fixtures = ('crm',)
 
     def setUp(self):
-        self.teacher1 = test_teacher()
-        self.teacher2 = test_teacher()
+        self.teacher1 = create_teacher()
+        self.teacher2 = create_teacher()
 
     def test_entry_naming(self):
         """
@@ -56,7 +56,7 @@ class EntryTestCase(TestCase):
 
         for i in range(0, 5):
             self.assertEqual(entry.taken_slots, i)
-            entry.customers.add(test_customer())
+            entry.customers.add(create_customer())
             entry.save()
 
     def test_event_assigning(self):
@@ -81,14 +81,14 @@ class EntryTestCase(TestCase):
 
         for i in range(0, 10):
             self.assertTrue(entry.is_free)
-            entry.customers.add(test_customer())
+            entry.customers.add(create_customer())
             entry.save()
 
         self.assertFalse(entry.is_free)
 
         """ Let's try to schedule more customers, then event allows """
         with self.assertRaises(ValidationError):
-            entry.customers.add(test_customer())
+            entry.customers.add(create_customer())
             entry.save()
 
     def test_assign_entry_to_a_different_teacher(self):
@@ -105,7 +105,7 @@ class EntryTestCase(TestCase):
 
 class SlotAvailableTest(TestCase):
     def setUp(self):
-        self.teacher = test_teacher()
+        self.teacher = create_teacher()
         self.lesson = mixer.blend(lessons.OrdinaryLesson, teacher=self.teacher)
 
         self.big_entry = mixer.blend(TimelineEntry,
@@ -134,7 +134,7 @@ class SlotAvailableTest(TestCase):
         """
         Check, if it's pohuy, that an entry overlapes entry of the other teacher
         """
-        other_teacher = test_teacher()
+        other_teacher = create_teacher()
         test_entry = TimelineEntry(teacher=other_teacher,
                                    start=iso8601.parse_date('2016-01-03 04:00'),
                                    end=iso8601.parse_date('2016-01-03 04:30'),
@@ -194,7 +194,7 @@ class SlotAvailableTest(TestCase):
 class TestPermissions(ClientTestCase):
     def setUp(self):
         self.user = User.objects.create_user('user', 'te@ss.tt', '123')
-        self.teacher = test_teacher()
+        self.teacher = create_teacher()
 
         super().setUp()
 
@@ -217,7 +217,7 @@ class TestFormContext(ClientTestCase):
     """
 
     def setUp(self):
-        self.teacher = test_teacher()
+        self.teacher = create_teacher()
         super().setUp()
 
     def test_create_context(self):
