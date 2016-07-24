@@ -1,5 +1,5 @@
 class Model extends MicroEvent
-  constructor: (@lesson_type, @date, @after_update) ->
+  constructor: (@lesson_type, @date) ->
     @url = "/teachers/%s/slots.json?lesson_type=%d"
     @from_json()
 
@@ -8,7 +8,7 @@ class Model extends MicroEvent
       @slots = []
 
   from_json: () ->
-    url = sprintf @url, @date, parseInt(@lesson_type)
+    url = sprintf @url, @date, parseInt @lesson_type
     @teachers = []
 
     @loaded = false
@@ -36,7 +36,7 @@ class Model extends MicroEvent
     data.contenttype = 'type'  # flex scope, we support planning only be lesson type yet
     "/hub/schedule/step02/#{ data.teacher }/#{ data.contenttype }/#{ data.lesson }/#{ data.date }/#{ data.time }/"
 
-class Step1Controller
+class Controller
   # This controls the first screen — teacher or lesson selection
   constructor: () ->
     @model = new Model(
@@ -45,12 +45,16 @@ class Step1Controller
     )
 
     @model.bind 'update', () =>
-      @bind_lessons()
+      @bind_slot_buttons()
 
     @bind_filters()
     @mark_active_lesson()
 
-    @view = rivets.bind($('.schedule-popup__content'), {model: @model})
+    @view_main = rivets.bind $('.schedule-popup__content'), {model: @model}
+    @view_footer = rivets.bind $('.schedule-popup__footer'), {c: this}
+
+    @submit = 'disabled'
+    @step2_url = ''
 
   bind_filters: () ->
     $('.schedule-popup__filters input').on 'change', (e) =>
@@ -61,20 +65,12 @@ class Step1Controller
       @model.date = $('.schedule-popup__filters select').val()
       @model.from_json()
 
-  bind_lessons: () ->
+  bind_slot_buttons: () ->
     $('.schedule-popup__time-selector').on 'change', (e) =>
-      url = @model.build_step2_url(e.target.dataset)
-      @load_step2(url)
+      @step2_url = @model.build_step2_url(e.target.dataset)
+      @submit = ''
 
-  load_step2: (url) ->
-    $('.schedule-popup__step2').load url
-    $('.schedule-popup__step2').removeClass 'schedule-popup__step2-hidden'
-    $('.schedule-popup__filters, .schedule-popup__content').addClass 'hidden'
 
-  load_step1: () ->
-    $('.schedule-popup__step2').html ''
-    .addClass 'schedule-popup__step2-hidden'
-    $('.schedule-popup__filters, .schedule-popup__content').removeClass 'hidden'
 
   mark_active_lesson: () ->
     $('.schedule-popup__filter .btn-group label:first-child input').click()
@@ -84,19 +80,19 @@ class Step1Controller
     # this is for rivets to return DOM to the initial state
     @model.teachers = []
     @model.loaded = false
-    @view.unbind()  # Disarm rivets.
-                    # If the popup will be opened one more time, the new controller will arm in one more time
 
-    @load_step1()
+    @viww_footer.unbind()
+    @view_main.unbind()   # Disarm rivets.
+                          # If the popup will be opened one more time, the new controller will arm in one more time
 
-    $('.schedule-popup-container').load '/hub/schedule/step01/', () ->
+    $('.schedule-popup-container').load '/hub/schedule/step1/', () ->
       $('.selectpicker').selectpicker()  # arm bootstrap-selectpicker in the popup
 
 
 c = ''
 
 $('.schedule-popup-container').on 'show.bs.modal', () ->
-  c = new Step1Controller
+  c = new Controller
 
   $(document).on 'keyup', (e) ->  #close popup on ESC
     return if e.keyCode isnt 27
