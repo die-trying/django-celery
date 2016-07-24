@@ -32,9 +32,10 @@ class Model extends MicroEvent
         @teachers.push teacher
         @trigger 'update'
 
-  build_step2_url: (data) ->
+  submit_url: (data) ->
     data.contenttype = 'type'  # flex scope, we support planning only be lesson type yet
-    "/hub/schedule/step02/#{ data.teacher }/#{ data.contenttype }/#{ data.lesson }/#{ data.date }/#{ data.time }/"
+    "/hub/schedule/step2/#{ data.teacher }/#{ data.contenttype }/#{ data.lesson }/#{ data.date }/#{ data.time }/"
+
 
 class Controller
   # This controls the first screen — teacher or lesson selection
@@ -67,14 +68,29 @@ class Controller
 
   bind_slot_buttons: () ->
     $('.schedule-popup__time-selector').on 'change', (e) =>
-      @step2_url = @model.build_step2_url(e.target.dataset)
+      @step2_url = @model.submit_url(e.target.dataset)
       @submit = ''
 
+    $('.schedule-popup__time-selector').on 'change', (e) =>
+      clicked_name = $(e.target).attr 'name'
+      @uncheck_all_slots(clicked_name)  # uncheck all other time slots
 
+    $('.schedule-popup').on 'click', () =>  # uncheck all time slots when clicking outside them
+      @uncheck_all_slots()
 
   mark_active_lesson: () ->
     $('.schedule-popup__filter .btn-group label:first-child input').click()
     $('.schedule-popup__filter .btn-group label:first-child').addClass 'btn-active'
+
+  uncheck_all_slots: (except_one='non-existant-name') ->
+    # trick with parameter is used for ability to uncheck all labels, or except one from unchecking with one method
+
+    @submit = 'disabled' if except_one is 'non-existant-name'  # disable user's submit if we r unchecking all slots
+
+    $(".schedule-popup__time-selector").not("[name=#{ except_one }]").each () ->
+      $(this).parent('label.btn.active').each () ->
+        $(this).button 'toggle'
+        .removeClass 'active'
 
   destroy: () ->
     # this is for rivets to return DOM to the initial state
