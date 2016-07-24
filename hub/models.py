@@ -117,6 +117,36 @@ class ClassesManager(models.Manager):
             yield current
             current += timedelta(days=1)
 
+    def find_class(self, **kwargs):
+        """
+        Find a class to schedule. Accept filters :model:`hub.Class` queryset.
+        """
+        c = self.get_queryset() \
+            .filter(is_scheduled=False, **kwargs) \
+            .order_by('subscription_id', 'buy_date') \
+            .first()
+
+        if c is None:
+            err = "You don't have available lessons"
+            if kwargs.get('lesson_type'):
+                lesson_type = kwargs.get('lesson_type')
+                err = "You don't have available %s" % lesson_type.model_class()._meta.verbose_name_plural.lower()
+                return self.__result(
+                    result=False,
+                    error='E_CLASS_NOT_FOUND',
+                    text=err,
+                )
+
+        return self.__result(True, cl=c)
+
+    def __result(self, result=True, error='E_NONE', text=None, cl=None):
+        return {
+            'result': result,
+            'error': error,
+            'text': text,
+            'class': cl,
+        }
+
 
 class Class(BuyableProduct):
     """
@@ -134,8 +164,9 @@ class Class(BuyableProduct):
     objects = ClassesManager()
 
     customer = models.ForeignKey(Customer, related_name='classes')
-
+    is_scheduled = models.BooleanField(default=False)
     buy_source = models.SmallIntegerField(choices=BUY_SOURCES, default=0)
+    buy_date = models.DateTimeField(auto_now_add=True)
 
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     lesson_id = models.PositiveIntegerField()
@@ -144,6 +175,9 @@ class Class(BuyableProduct):
     timeline_entry = models.ForeignKey(TimelineEntry, null=True, blank=True, related_name='classes')
 
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, null=True, related_name='classes')
+
+    class Meta:
+        get_latest_by = 'buy_date'
 
     @property
     def name_for_user(self):
@@ -165,6 +199,7 @@ class Class(BuyableProduct):
         entry.save()
 
         self.timeline_entry = entry
+        self.is_scheduled = True
 
     def unschedule(self):
         """
@@ -177,16 +212,7 @@ class Class(BuyableProduct):
         self.timeline_entry.customers.remove(self.customer)
         self.timeline_entry.save()
         self.timeline_entry = None
-
-    @property
-    def is_scheduled(self):
-        """
-        Check if class is scheduled — has an assigned timeline entry and other
-        """
-        if self.timeline_entry:
-            return True
-
-        return False
+        self.is_scheduled = False
 
     def can_be_scheduled(self, entry):
         """

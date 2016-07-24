@@ -71,12 +71,20 @@ class Controller
       @step2_url = @model.submit_url(e.target.dataset)
       @submit = ''
 
-    $('.schedule-popup__time-selector').on 'change', (e) =>
       clicked_name = $(e.target).attr 'name'
       @uncheck_all_slots(clicked_name)  # uncheck all other time slots
 
     $('.schedule-popup').on 'click', () =>  # uncheck all time slots when clicking outside them
       @uncheck_all_slots()
+
+    $('.schedule-popup__submit').on 'click', () =>
+      console.log 'submit pressed'
+      @check_server()
+
+  check_server: () ->
+    url = @step2_url + '?check'
+    $.getJSON url, (response) ->
+      console.log response
 
   mark_active_lesson: () ->
     $('.schedule-popup__filter .btn-group label:first-child input').click()
