@@ -64,7 +64,7 @@ class TestAvailableLessons(TestCase):
         self.assertIn(lessons.OrdinaryLesson.contenttype(), lesson_types)
 
 
-class TestNoTimelinePolluting(TestCase):
+class TestNoTimelinePoluting(TestCase):
     """
     This test suite tests, that class schedule method do not polute any teacher's
     timeline till the class is saved
