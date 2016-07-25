@@ -183,12 +183,29 @@ class Class(BuyableProduct):
     def name_for_user(self):
         return self.lesson.name
 
+    def save(self, *args, **kwargs):
+        """
+        If timeline entry is assigned, change attribute is_scheduled to True, and
+        add current customer to the customers list
+        """
+        if self.timeline_entry is not None:
+            self.timeline_entry.save()
+            self.is_scheduled = True
+            if not self.timeline_entry.customers.filter(pk=self.customer.pk).exists():
+                self.timeline_entry.customers.add(self.customer)
+                self.timeline_entry.save()
+
+        else:
+            self.is_scheduled = False
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
         if self.subscription:
             return "#%d %s by %s for %s" % (self.pk, self.lesson, self.subscription.product, self.customer)
         return "#%d %s for %s" % (self.pk, self.lesson, self.customer)
 
-    def schedule(self, entry):
+    def schedule_entry(self, entry):
         """
         Schedule a lesson — assign a timeline entry.
         """
@@ -196,10 +213,23 @@ class Class(BuyableProduct):
             raise CannotBeScheduled('%s %s' % (self, entry))
 
         entry.customers.add(self.customer)
-        entry.save()
 
         self.timeline_entry = entry
-        self.is_scheduled = True
+
+    def schedule(self, teacher, date, allow_overlap=True):
+        """
+        Method for scheduling a lesson that does not require a timeline entry
+        """
+        Lesson = type(self.lesson)
+        if Lesson.timeline_entry_required():  # every lesson model defines, if it requires a timeline entry or not. For details, see :model:`lessons.Lesson`
+            raise CannotBeScheduled("Lesson '%s' requieres a teachers timeline entry" % self.lesson)
+
+        self.timeline_entry = TimelineEntry(
+            teacher=teacher,
+            lesson=self.lesson,
+            start=date,
+            allow_overlap=allow_overlap,
+        )
 
     def unschedule(self):
         """
@@ -212,7 +242,6 @@ class Class(BuyableProduct):
         self.timeline_entry.customers.remove(self.customer)
         self.timeline_entry.save()
         self.timeline_entry = None
-        self.is_scheduled = False
 
     def can_be_scheduled(self, entry):
         """

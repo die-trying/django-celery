@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.test import TestCase
 from mixer.backend.django import mixer
 
@@ -116,15 +118,48 @@ class ScheduleTestCase(TestCase):
         self.assertFalse(bought_class.is_scheduled)
         self.assertTrue(entry.is_free)
 
-        bought_class.schedule(entry)  # schedule a class
+        bought_class.schedule_entry(entry)  # schedule a class
         bought_class.save()
 
         self.assertTrue(bought_class.is_scheduled)
         self.assertFalse(entry.is_free)
+        self.assertEquals(entry.customers.first(), self.customer)
 
         bought_class.unschedule()
+        bought_class.save()
         self.assertFalse(bought_class.is_scheduled)
         self.assertTrue(entry.is_free)
+
+    def test_schedule_auto_entry(self):
+        """
+        Chedule a class without a timeline entry
+        """
+        lesson = products.OrdinaryLesson.get_default()
+        c = self._buy_a_lesson(lesson)
+
+        c.schedule(
+            teacher=self.host,
+            date=datetime(2016, 8, 17, 10, 1)
+        )
+        c.save()
+
+        self.assertIsInstance(c.timeline_entry, TimelineEntry)
+        self.assertEquals(c.timeline_entry.customers.first(), self.customer)  # should save a customer
+        self.assertEquals(c.timeline_entry.start, datetime(2016, 8, 17, 10, 1))  # datetime for entry start should be from parameters
+        self.assertEquals(c.timeline_entry.end, datetime(2016, 8, 17, 10, 1) + lesson.duration)  # duration should be taken from lesson
+
+    def test_cant_automatically_schedule_lesson_that_requires_a_timeline_entry(self):
+        """
+        Scheduling a hosted lesson that requires a timeline entry should fail
+        """
+        master_class = mixer.blend(lessons.MasterClass, host=self.host)
+        c = self._buy_a_lesson(master_class)
+
+        with self.assertRaisesRegexp(CannotBeScheduled, 'timeline entry$'):
+            c.schedule(
+                teacher=self.host,
+                date=datetime(2016, 8, 17, 10, 1)
+            )
 
     def test_schedule_master_class(self):
         """
@@ -142,7 +177,7 @@ class ScheduleTestCase(TestCase):
         bought_class = self._buy_a_lesson(lesson=lesson)
         bought_class.save()
 
-        bought_class.schedule(timeline_entry)
+        bought_class.schedule_entry(timeline_entry)
         bought_class.save()
 
         self.assertTrue(bought_class.is_scheduled)
@@ -174,8 +209,11 @@ class ScheduleTestCase(TestCase):
 
         timeline_entry = mixer.blend(TimelineEntry, lesson=paired_lesson, teacher=self.host)
 
-        customer1_class.schedule(timeline_entry)
-        customer2_class.schedule(timeline_entry)
+        customer1_class.schedule_entry(timeline_entry)
+        customer2_class.schedule_entry(timeline_entry)
+
+        customer1_class.save()
+        customer2_class.save()
 
         self.assertTrue(customer1_class.is_scheduled)
         self.assertTrue(customer2_class.is_scheduled)
@@ -197,6 +235,6 @@ class ScheduleTestCase(TestCase):
         bought_class.save()
 
         with self.assertRaises(CannotBeScheduled):
-            bought_class.schedule(paired_lesson_entry)
+            bought_class.schedule_entry(paired_lesson_entry)
 
         self.assertFalse(bought_class.is_scheduled)

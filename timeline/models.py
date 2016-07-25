@@ -138,7 +138,7 @@ class Entry(models.Model):
 
     def __get_data_from_lesson(self):
         """
-        Timelentry entry can get some attributes (i.e. available student slote)
+        Timelentry entry can get some attributes (i.e. available student slots)
         only when it has an assigned lesson.
         """
         self.slots = self.lesson.slots

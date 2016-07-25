@@ -1,3 +1,6 @@
+from datetime import datetime
+from unittest.mock import MagicMock
+
 from django.test import TestCase
 from mixer.backend.django import mixer
 
@@ -40,7 +43,7 @@ class testBuyableProduct(TestCase):
 
 
 class TestAvailableLessons(TestCase):
-    fixtures = ('crm', 'lessons', 'products')
+    fixtures = ('lessons', 'products')
     TEST_PRODUCT_ID = 1
 
     def setUp(self):
@@ -61,7 +64,50 @@ class TestAvailableLessons(TestCase):
         self.assertIn(lessons.OrdinaryLesson.contenttype(), lesson_types)
 
 
-class TryToSchedule(TestCase):
+class TestNoTimelinePolluting(TestCase):
+    """
+    This test suite tests, that class schedule method do not polute any teacher's
+    timeline till the class is saved
+    """
+    fixtures = ('lessons',)
+
+    def setUp(self):
+        self.customer = create_customer()
+        self.teacher = create_teacher()
+        self.lesson = lessons.OrdinaryLesson.get_default()
+
+    def _buy_a_lesson(self):
+        c = Class(
+            customer=self.customer,
+            lesson=self.lesson
+        )
+        c.request = mock_request(self.customer)
+        c.save()
+        return c
+
+    def test_schedule_entry(self):
+        """ Not poluting timeline with existing timeline entries """
+        c = self._buy_a_lesson()
+        entry = mixer.blend(TimelineEntry, slots=1, lesson=self.lesson, teacher=self.teacher)
+        entry.save = MagicMock(return_value=None)
+
+        c.schedule_entry(entry)
+
+        entry.save.assert_not_called()
+
+    def test_schedule_auto_entry(self):
+        """ Not poluting timeline when generating timeline entry """
+        c = self._buy_a_lesson()
+        c.schedule(
+            teacher=self.teacher,
+            date=datetime(2016, 12, 1, 0, 15)
+        )
+        self.assertIsNone(c.timeline_entry.pk)
+        c.timeline_entry.save = MagicMock(return_value=None)
+        c.timeline_entry.save.assert_not_called()
+
+
+class TestTryToSchedule(TestCase):
     fixtures = ('lessons', 'products')
     TEST_PRODUCT_ID = 1
 
@@ -111,7 +157,7 @@ class TryToSchedule(TestCase):
         entry = mixer.blend(TimelineEntry, lesson=lesson, teacher=self.host, active=1)
         c = self._buy_a_lesson(lesson)
 
-        c.schedule(entry)
+        c.schedule_entry(entry)
         c.save()
 
         res = Class.objects.find_class(
