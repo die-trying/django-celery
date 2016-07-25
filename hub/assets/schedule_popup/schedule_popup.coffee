@@ -30,7 +30,7 @@ class Model extends MicroEvent
           }
           teacher.slots.push slot
         @teachers.push teacher
-        @trigger 'update'
+      @trigger 'update'
 
   submit_url: (data) ->
     data.contenttype = 'type'  # flex scope, we support planning only be lesson type yet
@@ -78,7 +78,6 @@ class Controller
       @uncheck_all_slots()
 
     $('.schedule-popup__submit').on 'click', () =>
-      console.log 'submit pressed'
       @check_server()
 
   check_server: () ->
