@@ -1,4 +1,7 @@
+import iso8601
 from django.contrib.auth.decorators import login_required
+from django.contrib.contenttypes.models import ContentType
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from moneyed import Money
 
@@ -38,6 +41,32 @@ def step01(request):
 
 
 @login_required
-def step02_by_type(request, teacher, id, date, time):
-    teacher = get_object_or_404(Teacher, pk=teacher)
-    return render(request, 'hub/schedule_popup/step_02.html')
+def step2_by_type(request, teacher, type_id, date, time):
+    just_checking = False
+    if 'check' in request.GET.keys():
+        just_checking = True
+
+    lesson_type = get_object_or_404(ContentType, app_label='lessons', pk=type_id)
+
+    found = Class.objects.find_class(
+        customer=request.user.crm,
+        lesson_type=lesson_type
+    )
+    if not found['result']:
+        if just_checking:
+            del found['class']
+            return JsonResponse(found, safe=True)
+        else:
+            return Http404(found['text'])
+
+    found['class'].schedule(
+        teacher=get_object_or_404(Teacher, pk=teacher),
+        date=iso8601.parse_date('%s %s' % (date, time))
+    )
+
+    if just_checking:
+        del found['class']
+        return JsonResponse(found, safe=True)
+
+    found['class'].save()
+    return redirect('/')  # TODO: a page with success story
