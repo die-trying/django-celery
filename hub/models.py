@@ -212,8 +212,6 @@ class Class(BuyableProduct):
         if not self.can_be_scheduled(entry):
             raise CannotBeScheduled('%s %s' % (self, entry))
 
-        entry.customers.add(self.customer)
-
         self.timeline_entry = entry
 
     def schedule(self, teacher, date, allow_overlap=True):
@@ -224,12 +222,14 @@ class Class(BuyableProduct):
         if Lesson.timeline_entry_required():  # every lesson model defines, if it requires a timeline entry or not. For details, see :model:`lessons.Lesson`
             raise CannotBeScheduled("Lesson '%s' requieres a teachers timeline entry" % self.lesson)
 
-        self.timeline_entry = TimelineEntry(
+        entry = TimelineEntry(
             teacher=teacher,
             lesson=self.lesson,
             start=date,
             allow_overlap=allow_overlap,
         )
+
+        self.schedule_entry(entry)
 
     def unschedule(self):
         """
