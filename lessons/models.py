@@ -18,6 +18,14 @@ class Lesson(models.Model):
 
     Represents a lesson type, that user can buy — ordinary lesson, master class,
     etc.
+
+    Lesson types have plenty of class properties, hardcoded for fine inheriting.
+    Here they are:
+
+    - can_be_directly_planned(): lesson, returning False, could not be planned by user
+    - sort_order(): order for sorting lesson types in filters and other. Lessons, not defining order, are not shown.
+    - timeline_entry_required(): lesson requires a specialy crafted entry in teachers timeline. True by defult for all hosted lessons.
+    - get_default(): should return an instance of default lesson of type. By default raises NonImplemented for all hosted lessons.
     """
     ENABLED = (
         (0, 'Inactive'),
@@ -54,7 +62,8 @@ class Lesson(models.Model):
     @classmethod
     def timeline_entry_required(cls):
         """
-        Does this lesson type require a timeline entry
+        Does this lesson type require a timeline entry in teachers timeline. If
+        not, :model:`hub.Class` will create it automatically.
         """
         return False
 
@@ -64,12 +73,23 @@ class Lesson(models.Model):
         Every lesson should have a default record. User happens to buy lesson
         with this id when he buys a generic lesson of a type.
 
-        By default this lesson id is 500.
+        By default this lesson id is 500. All default lessons are located in
+        `lessons.yaml` fixture. When defining a new lesson type, fill free to add
+        it to the fixture.
 
         If a lesson can't be bought this way, it should raise a NotImplementedError,
         for example see `MasterClass` lesson.
         """
         return cls.objects.get(pk=500)
+
+    @classmethod
+    def sort_order(cls):
+        """
+        Every lesson should return an integer of its sorting order, used in filters. etc.
+
+        For usage example, see :model:`hub.Class` manager.
+        """
+        return None
 
     def as_dict(self):
         """Dicitionary representation of a lesson"""
@@ -121,12 +141,18 @@ class HostedLesson(Lesson):
 
 
 class OrdinaryLesson(Lesson):
+    @classmethod
+    def sort_order(cls):
+        return 100
 
     class Meta(Lesson.Meta):
         verbose_name = _("Curated session")
 
 
 class LessonWithNative(Lesson):
+    @classmethod
+    def sort_order(cls):
+        return 200
 
     class Meta(Lesson.Meta):
         verbose_name = _("Native speaker session")
@@ -134,6 +160,9 @@ class LessonWithNative(Lesson):
 
 
 class MasterClass(HostedLesson):
+    @classmethod
+    def sort_order(cls):
+        return 300
 
     class Meta(HostedLesson.Meta):
         verbose_name = _("Master Class")
@@ -141,6 +170,9 @@ class MasterClass(HostedLesson):
 
 
 class HappyHour(HostedLesson):
+    @classmethod
+    def sort_order(cls):
+        return 400
 
     class Meta(HostedLesson.Meta):
         verbose_name = _("Happy Hour")

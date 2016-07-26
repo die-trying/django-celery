@@ -102,7 +102,23 @@ class ClassesManager(models.Manager):
         Get ContentTypes for lessons, available to user
         """
         types = self.get_queryset().filter(timeline_entry__isnull=True).values_list('lesson_type', flat=True).distinct()
-        return ContentType.objects.filter(pk__in=types)
+
+        ContentType.objects.filter(pk__in=types)
+
+        sort_order = {}
+        # Sort found lessons by order, defined in their sort_order() methods.
+        # If a lesson does not implement such method, it will be excluded from
+        # sort results.
+        for t in ContentType.objects.filter(pk__in=types):
+            Model = t.model_class()
+            order = Model.sort_order()
+            if order:
+                sort_order[order] = t
+
+        result = []
+        for i in sorted(sort_order.keys()):
+            result.append(sort_order[i])
+        return result
 
     def dates_for_planning(self):
         """

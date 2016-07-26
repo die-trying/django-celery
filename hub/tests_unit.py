@@ -1,12 +1,13 @@
 from datetime import datetime
 from unittest.mock import MagicMock
 
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
 import products.models as products
-from elk.utils.testing import mock_request, create_customer, create_teacher
+from elk.utils.testing import create_customer, create_teacher, mock_request
 from hub.models import Class, Subscription
 from timeline.models import Entry as TimelineEntry
 
@@ -42,7 +43,7 @@ class testBuyableProduct(TestCase):
         self.assertEqual(c.name_for_user, lesson.name)
 
 
-class TestAvailableLessons(TestCase):
+class TestClassManager(TestCase):
     fixtures = ('lessons', 'products')
     TEST_PRODUCT_ID = 1
 
@@ -59,9 +60,40 @@ class TestAvailableLessons(TestCase):
 
     def test_available_lesson_types(self):
         lesson_types = self.customer.classes.bought_lesson_types()
-        self.assertEquals(len(lesson_types), 5)
+        self.assertEquals(len(lesson_types), 4)  # if you have defined a new lesson, fill free to increase this value, it's ok
 
         self.assertIn(lessons.OrdinaryLesson.contenttype(), lesson_types)
+        self.assertIn(lessons.MasterClass.contenttype(), lesson_types)
+
+    def test_lesson_type_sorting(self):
+        """
+        Planning dates should be sorted with the in-class defined sort order
+        """
+        lesson_types = self.customer.classes.bought_lesson_types()
+
+        sort_order = {}
+        for m in ContentType.objects.filter(app_label='lessons'):
+            Model = m.model_class()
+            order = Model.sort_order()
+            if order:
+                sort_order[order] = Model
+
+        sorted_lessons = []
+        for i in sorted(list(sort_order.keys())):
+            sorted_lessons.append(sort_order[i])
+
+        for lesson_type in lesson_types:
+            ordered_lesson = sorted_lessons.pop(0)
+            self.assertEquals(lesson_type.model_class(), ordered_lesson)
+
+    def test_dates_for_planning(self):
+        dates = [i for i in self.customer.classes.dates_for_planning()]
+        self.assertEquals(len(dates), 7)  # should return seven next days
+
+        for i in dates:
+            self.assertIsInstance(i, datetime)
+
+        self.assertEquals(dates[0].strftime('%Y-%m-%d'), datetime.now().strftime('%Y-%m-%d'))  # the first day should be today
 
 
 class TestNoTimelinePoluting(TestCase):
