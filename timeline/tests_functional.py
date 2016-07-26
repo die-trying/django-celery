@@ -96,7 +96,7 @@ class EntryAPITest(ClientTestCase):
 
         super().setUp()
 
-    def create_user_json(self):
+    def test_create_user_json(self):
         duration = timedelta(minutes=71)
 
         mocked_entries = {}
@@ -124,7 +124,7 @@ class EntryAPITest(ClientTestCase):
                              format(now + duration, 'c')
                              )
 
-    def create_user_json_filter(self):
+    def test_create_user_json_filter(self):
         x = iso8601.parse_date('2016-01-01')
         for i in range(0, 10):
             entry = mixer.blend(TimelineEntry, teacher=self.teacher, start=x)
