@@ -36,7 +36,7 @@ def subscription(request):
 
 
 @login_required
-def step01(request):
+def step1(request):
     return render(request, 'hub/schedule_popup/schedule_popup.html')
 
 
