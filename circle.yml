@@ -27,3 +27,6 @@ test:
 
   post:
     - bash <(curl -s https://codecov.io/bash) -t 8ce25f6b-eaf8-442a-aab4-fb6218384b6e
+    - git rev-parse HEAD > revision.txt
+    - chmod +x ./build/strip-for-production.sh
+    - ./build/strip-for-production.sh
