@@ -1,8 +1,11 @@
+import json
+
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
 from elk.utils.testing import ClientTestCase, create_customer, create_teacher, mock_request
 from hub.models import Class
+from teachers.models import WorkingHours
 
 from . import views
 
@@ -13,6 +16,7 @@ class SchedulingPopupTestCaseBase(ClientTestCase):
     def setUp(self):
         self.customer = create_customer()
         self.host = create_teacher()
+        mixer.blend(WorkingHours, teacher=self.host, weekday=0, start='13:00', end='15:00')  # monday
         super().setUp()
 
     def _buy_a_lesson(self, lesson):
@@ -28,6 +32,19 @@ class SchedulingPopupTestCaseBase(ClientTestCase):
         request = self.factory.get('/hub/schedule/step1/')
         request.user = self.customer.user
         return views.step1(request)
+
+    def _step2(self, just_checking=False, status_code=200, **kwargs):
+        url = '/hub/schedule/step2/'
+        if just_checking:
+            url = url + '?check'
+
+        request = self.factory.get(url)
+        request.user = self.customer.user
+        response = views.step2_by_type(request, teacher=self.host.pk, **kwargs)
+
+        self.assertEquals(response.status_code, status_code)
+        if status_code == 200:
+            return json.loads(response.content.decode('utf-8'))
 
 
 class TestSchedulingPopupHTML(SchedulingPopupTestCaseBase):
@@ -70,4 +87,33 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
     """
     Test server-side checking of available lessons
     """
-    pass
+    def test_schedule_by_type_no_lesson(self):
+        """
+        Try to schedule without a lesson
+        """
+        ordinary_lesson_type = lessons.OrdinaryLesson.contenttype().pk
+        response = self._step2(
+            just_checking=True,
+            date='2016-07-27',  # wednesday
+            time='17:00',
+            type_id=ordinary_lesson_type,
+        )
+        self.assertFalse(response['result'])
+        self.assertEquals(response['error'], 'E_CLASS_NOT_FOUND')
+        self.assertIn('curated session', response['text'])
+
+    def test_schedule_by_type_no_slot(self):
+        """
+        Try to schedule without a teacher slot
+        """
+        ordinary_lesson_type = lessons.OrdinaryLesson.contenttype().pk
+        self._buy_a_lesson(lessons.OrdinaryLesson.get_default())
+
+        response = self._step2(
+            just_checking=True,
+            date='2016-07-27',  # wednesday
+            time='17:00',
+            type_id=ordinary_lesson_type,
+        )
+        self.assertFalse(response['result'])
+        self.assertEquals(response['error'], 'E_CANT_SCHEDULE')
