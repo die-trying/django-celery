@@ -209,7 +209,7 @@ class Class(BuyableProduct):
 
     timeline_entry = models.ForeignKey(TimelineEntry, null=True, blank=True, related_name='classes')
 
-    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, null=True, related_name='classes')
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, null=True, blank=True, related_name='classes')
 
     class Meta:
         get_latest_by = 'buy_date'
