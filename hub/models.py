@@ -165,21 +165,21 @@ class ClassesManager(models.Manager):
                 )
             else:
                 c.assign_entry(entry)
+
         except CannotBeScheduled:  # should not be thrown in normal circumstances
             return self.__result(
                 result=False,
                 error='E_CANT_SCHEDULE',
                 text='Your choice does not fit teachers timeline'
             )
+        return self.__result(result=True, c=c)
 
-        return self.__result(result=True)
-
-    def __result(self, result, error='E_NONE', text=None, cl=None):
+    def __result(self, result, error='E_NONE', text=None, c=None):
         return {
             'result': result,
             'error': error,
             'text': text,
-            'class': cl,
+            'c': c,
         }
 
 

@@ -33,7 +33,7 @@ class SchedulingPopupTestCaseBase(ClientTestCase):
         request.user = self.customer.user
         return views.step1(request)
 
-    def _step2(self, just_checking=False, status_code=200, **kwargs):
+    def _step2(self, just_checking=False, **kwargs):
         url = '/hub/schedule/step2/'
         if just_checking:
             url = url + '?check'
@@ -42,8 +42,8 @@ class SchedulingPopupTestCaseBase(ClientTestCase):
         request.user = self.customer.user
         response = views.step2_by_type(request, teacher=self.host.pk, **kwargs)
 
-        self.assertEquals(response.status_code, status_code)
-        if status_code == 200:
+        self.assertIn(response.status_code, (200, 302))
+        if len(response.content):
             return json.loads(response.content.decode('utf-8'))
 
 
@@ -117,3 +117,20 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         )
         self.assertFalse(response['result'])
         self.assertEquals(response['error'], 'E_CANT_SCHEDULE')
+
+    def test_schedule_an_ordinary_lesson(self):
+        """
+        Buy an ordinary lesson and try to schedule it via by for the time, when
+        teacher is available
+        """
+        ordinary_lesson_type = lessons.OrdinaryLesson.contenttype().pk
+        c = self._buy_a_lesson(lessons.OrdinaryLesson.get_default())
+        self.assertFalse(c.is_scheduled)
+
+        self._step2(
+            date='2032-05-03',  # monday
+            time='14:00',
+            type_id=ordinary_lesson_type,
+        )
+        c = Class.objects.get(pk=c.pk)
+        self.assertTrue(c.is_scheduled)

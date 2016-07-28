@@ -206,7 +206,7 @@ class WorkingHours(models.Model):
         return False
 
     def __str__(self):
-        return '%s: day %d' % (self.teacher.user.username, self.weekday)
+        return '%s: day %d %s—%s' % (self.teacher.user.username, self.weekday, self.start, self.end)
 
     class Meta:
         unique_together = ('teacher', 'weekday')

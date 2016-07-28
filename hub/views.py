@@ -53,12 +53,12 @@ def step2_by_type(request, teacher, type_id, date, time):
     )
 
     if just_checking:
-        del result['class']
+        del result['c']
         return JsonResponse(result, safe=True)
 
     if not result['result']:
-        return Http404('%s: %s' % (result['err'], result['text']))
+        return Http404('%s: %s' % (result['error'], result['text']))
 
-    result['class'].save()
+    result['c'].save()
 
     return redirect('/')  # TODO: a page with success story
