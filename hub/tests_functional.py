@@ -118,7 +118,7 @@ class ScheduleTestCase(TestCase):
         self.assertFalse(bought_class.is_scheduled)
         self.assertTrue(entry.is_free)
 
-        bought_class.schedule_entry(entry)  # schedule a class
+        bought_class.assign_entry(entry)  # schedule a class
         bought_class.save()
 
         self.assertTrue(bought_class.is_scheduled)
@@ -136,10 +136,10 @@ class ScheduleTestCase(TestCase):
         """
         lesson = products.OrdinaryLesson.get_default()
         c = self._buy_a_lesson(lesson)
-
         c.schedule(
             teacher=self.host,
-            date=datetime(2016, 8, 17, 10, 1)
+            date=datetime(2016, 8, 17, 10, 1),
+            allow_besides_working_hours=True,
         )
         c.save()
 
@@ -177,7 +177,7 @@ class ScheduleTestCase(TestCase):
         bought_class = self._buy_a_lesson(lesson=lesson)
         bought_class.save()
 
-        bought_class.schedule_entry(timeline_entry)
+        bought_class.assign_entry(timeline_entry)
         bought_class.save()
 
         self.assertTrue(bought_class.is_scheduled)
@@ -209,8 +209,8 @@ class ScheduleTestCase(TestCase):
 
         timeline_entry = mixer.blend(TimelineEntry, lesson=paired_lesson, teacher=self.host)
 
-        customer1_class.schedule_entry(timeline_entry)
-        customer2_class.schedule_entry(timeline_entry)
+        customer1_class.assign_entry(timeline_entry)
+        customer2_class.assign_entry(timeline_entry)
 
         customer1_class.save()
         customer2_class.save()
@@ -235,6 +235,6 @@ class ScheduleTestCase(TestCase):
         bought_class.save()
 
         with self.assertRaises(CannotBeScheduled):
-            bought_class.schedule_entry(paired_lesson_entry)
+            bought_class.assign_entry(paired_lesson_entry)
 
         self.assertFalse(bought_class.is_scheduled)

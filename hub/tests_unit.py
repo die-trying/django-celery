@@ -8,7 +8,9 @@ from mixer.backend.django import mixer
 import lessons.models as lessons
 import products.models as products
 from elk.utils.testing import create_customer, create_teacher, mock_request
+from hub.exceptions import CannotBeScheduled
 from hub.models import Class, Subscription
+from teachers.models import WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
@@ -96,17 +98,14 @@ class TestClassManager(TestCase):
         self.assertEquals(dates[0].strftime('%Y-%m-%d'), datetime.now().strftime('%Y-%m-%d'))  # the first day should be today
 
 
-class TestNoTimelinePoluting(TestCase):
-    """
-    This test suite tests, that class schedule method do not polute any teacher's
-    timeline till the class is saved
-    """
+class TestScheduleLowLevel(TestCase):
     fixtures = ('lessons',)
 
     def setUp(self):
         self.customer = create_customer()
         self.teacher = create_teacher()
         self.lesson = lessons.OrdinaryLesson.get_default()
+        mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
 
     def _buy_a_lesson(self):
         c = Class(
@@ -117,13 +116,13 @@ class TestNoTimelinePoluting(TestCase):
         c.save()
         return c
 
-    def test_schedule_entry(self):
+    def test_assign_entry(self):
         """ Not poluting timeline with existing timeline entries """
         c = self._buy_a_lesson()
         entry = mixer.blend(TimelineEntry, slots=1, lesson=self.lesson, teacher=self.teacher)
         entry.save = MagicMock(return_value=None)
 
-        c.schedule_entry(entry)
+        c.assign_entry(entry)
 
         entry.save.assert_not_called()
 
@@ -132,11 +131,21 @@ class TestNoTimelinePoluting(TestCase):
         c = self._buy_a_lesson()
         c.schedule(
             teacher=self.teacher,
-            date=datetime(2016, 12, 1, 0, 15)
+            date=datetime(2016, 12, 1, 7, 25),  # monday
+            allow_besides_working_hours=True,
         )
         self.assertIsNone(c.timeline_entry.pk)
         c.timeline_entry.save = MagicMock(return_value=None)
         c.timeline_entry.save.assert_not_called()
+
+    def test_schedule_auto_entry_only_within_working_hours(self):
+        c = self._buy_a_lesson()
+        with self.assertRaises(CannotBeScheduled):
+            c.schedule(
+                teacher=self.teacher,
+                date=datetime(2016, 12, 1, 7, 27)  # wednesday
+            )
+            c.save()
 
 
 class TestTryToSchedule(TestCase):
@@ -172,31 +181,28 @@ class TestTryToSchedule(TestCase):
             customer=self.customer,
             lesson_type=lessons.OrdinaryLesson.contenttype()
         )
-        self.assertFalse(res['result'])
-        self.assertEquals(res['error'], 'E_CLASS_NOT_FOUND')
-        self.assertIn('curated session', res['text'])  # err text should contain name of the lesson
+        self.assertIsNone(res)
 
         self._buy_a_lesson(lessons.OrdinaryLesson.get_default())
         res = Class.objects.find_class(
             customer=self.customer,
             lesson_type=lessons.OrdinaryLesson.contenttype()
         )
-        self.assertTrue(res['result'])  # should find now
-        self.assertIsInstance(res['class'], Class)
+        self.assertIsInstance(res, Class)
 
     def test_find_only_active_classes(self):
         lesson = lessons.OrdinaryLesson.get_default()
         entry = mixer.blend(TimelineEntry, lesson=lesson, teacher=self.host, active=1)
         c = self._buy_a_lesson(lesson)
 
-        c.schedule_entry(entry)
+        c.assign_entry(entry)
         c.save()
 
         res = Class.objects.find_class(
             customer=self.customer,
             lesson_type=lessons.OrdinaryLesson.contenttype()
         )
-        self.assertFalse(res['result'])  # we already have scheduled the only class we could
+        self.assertIsNone(res)  # we already have scheduled the only class we could
 
     def test_find_the_subscription_class_first(self):
         """
@@ -214,5 +220,4 @@ class TestTryToSchedule(TestCase):
             customer=self.customer,
             lesson_type=lessons.OrdinaryLesson.contenttype()
         )
-        self.assertTrue(res['result'])
-        self.assertEquals(res['class'], first_lesson_by_subscription)
+        self.assertEquals(res, first_lesson_by_subscription)

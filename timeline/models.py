@@ -7,7 +7,7 @@ from django.utils.translation import ugettext as _
 
 from crm.models import Customer
 from lessons.models import Lesson
-from teachers.models import Teacher
+from teachers.models import Teacher, WorkingHours
 
 ALLOWED_TIMELINE_FILTERS = ('lesson_type', 'lesson_id')  # list of filters, allowed for ordinary users through get parameters
 
@@ -69,6 +69,7 @@ class Entry(models.Model):
     start = models.DateTimeField()
     end = models.DateTimeField()
     allow_overlap = models.BooleanField(default=True)
+    allow_besides_working_hours = models.BooleanField(default=True)
 
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
     lesson_id = models.PositiveIntegerField(null=True, blank=True)
@@ -104,6 +105,9 @@ class Entry(models.Model):
         if not self.allow_overlap and self.is_overlapping():
             raise ValidationError('Entry time overlapes with some other entry of this teacher')
 
+        if not self.allow_besides_working_hours and not self.is_fitting_working_hours():
+            raise ValidationError('Entry time does not fit teachers working hours')
+
         if self.pk:
             self.__update_slots()  # update free slot count, check if no customers added when no slots are free
 
@@ -121,6 +125,24 @@ class Entry(models.Model):
         if concurent_entries.count():
             return True
         return False
+
+    def is_fitting_working_hours(self):
+        """
+        Check if timeline entry is within its teachers working hours.
+        """
+        try:
+            hours_start = self.teacher.working_hours.get(weekday=self.start.weekday())
+            hours_end = self.teacher.working_hours.get(weekday=self.end.weekday())
+
+        except WorkingHours.DoesNotExist:  # no working hours found for start date or end date
+            return False
+
+        if not hours_start.does_fit(self.start.time()):
+            return False
+        if not hours_end.does_fit(self.end.time()):
+            return False
+
+        return True
 
     def as_dict(self):
         """

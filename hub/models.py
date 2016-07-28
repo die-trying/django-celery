@@ -137,25 +137,44 @@ class ClassesManager(models.Manager):
         """
         Find a class to schedule. Accept filters :model:`hub.Class` queryset.
         """
-        c = self.get_queryset() \
+        return self.get_queryset() \
             .filter(is_scheduled=False, **kwargs) \
             .order_by('subscription_id', 'buy_date') \
             .first()
 
-        if c is None:
+    def try_to_schedule(self, teacher, date, entry=None, **kwargs):  # NOQA
+        """
+        Try to schedule a lesson, return a hash with errors or lesson otherwise
+        """
+        c = self.find_class(**kwargs)
+        if not c:
             err = "You don't have available lessons"
             if kwargs.get('lesson_type'):
                 lesson_type = kwargs.get('lesson_type')
-                err = "You don't have available %s" % lesson_type.model_class()._meta.verbose_name_plural.lower()
+                err = "You don't have available " + lesson_type.model_class()._meta.verbose_name_plural.lower()
                 return self.__result(
                     result=False,
                     error='E_CLASS_NOT_FOUND',
                     text=err,
                 )
+        try:
+            if entry is None:
+                c.schedule(
+                    teacher=teacher,
+                    date=date
+                )
+            else:
+                c.assign_entry(entry)
+        except CannotBeScheduled:  # should not be thrown in normal circumstances
+            return self.__result(
+                result=False,
+                error='E_CANT_SCHEDULE',
+                text='Your choice does not fit teachers timeline'
+            )
 
-        return self.__result(True, cl=c)
+        return self.__result(result=True)
 
-    def __result(self, result=True, error='E_NONE', text=None, cl=None):
+    def __result(self, result, error='E_NONE', text=None, cl=None):
         return {
             'result': result,
             'error': error,
@@ -167,7 +186,7 @@ class ClassesManager(models.Manager):
 class Class(BuyableProduct):
     """
     Represents a single bought lesson. When buying a class, one should
-    store request in the `request` property of this instance. This is neeed for
+    store request in the `request` property of this instance. This is neeeded for
     the log entry to contain request data requeired for futher analysis.
 
     The property is accessed later in the history.signals module.
@@ -221,31 +240,33 @@ class Class(BuyableProduct):
             return "#%d %s by %s for %s" % (self.pk, self.lesson, self.subscription.product, self.customer)
         return "#%d %s for %s" % (self.pk, self.lesson, self.customer)
 
-    def schedule_entry(self, entry):
+    def assign_entry(self, entry):
         """
-        Schedule a lesson — assign a timeline entry.
+        Assign a timeline entry.
         """
         if not self.can_be_scheduled(entry):
             raise CannotBeScheduled('%s %s' % (self, entry))
 
         self.timeline_entry = entry
 
-    def schedule(self, teacher, date, allow_overlap=True):
+    def schedule(self, teacher, date, allow_overlap=True, allow_besides_working_hours=False):
         """
-        Method for scheduling a lesson that does not require a timeline entry
+        Method for scheduling a lesson that does not require a timeline entry.
+        allow_besides_working_hours should be set to True only when testing.
         """
         Lesson = type(self.lesson)
-        if Lesson.timeline_entry_required():  # every lesson model defines, if it requires a timeline entry or not. For details, see :model:`lessons.Lesson`
+        if Lesson.timeline_entry_required():  # every lesson model should define if it requires a timeline entry or not. For details, see :model:`lessons.Lesson`
             raise CannotBeScheduled("Lesson '%s' requieres a teachers timeline entry" % self.lesson)
 
         entry = TimelineEntry(
             teacher=teacher,
             lesson=self.lesson,
             start=date,
+            allow_besides_working_hours=allow_besides_working_hours,
             allow_overlap=allow_overlap,
         )
 
-        self.schedule_entry(entry)
+        self.assign_entry(entry)
 
     def unschedule(self):
         """
@@ -270,6 +291,9 @@ class Class(BuyableProduct):
             return False
 
         if self.lesson_type != entry.lesson_type:
+            return False
+
+        if not entry.allow_besides_working_hours and not entry.is_fitting_working_hours():
             return False
 
         return True

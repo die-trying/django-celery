@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 
-import iso8601
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.utils.dateparse import parse_date
 from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
 
@@ -155,7 +155,7 @@ class WorkingHoursManager(models.Manager):
         Returns an iterable of date objects for start of working time and end of
         working time for the distinct date.
         """
-        date = iso8601.parse_date(date)
+        date = parse_date(date)
         try:
             hours = self.get(teacher=teacher, weekday=date.weekday())
         except ObjectDoesNotExist:
@@ -190,6 +190,14 @@ class WorkingHours(models.Model):
             'start': str(self.start),
             'end': str(self.end)
         }
+
+    def does_fit(self, time):
+        """
+        Check if time fits within working hours
+        """
+        if time >= self.start and time <= self.end:
+            return True
+        return False
 
     def __str__(self):
         return '%s: day %d' % (self.teacher.user.username, self.weekday)

@@ -1,8 +1,8 @@
-import iso8601
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.dateparse import parse_datetime
 from moneyed import Money
 
 from hub.models import Class, Subscription
@@ -46,27 +46,19 @@ def step2_by_type(request, teacher, type_id, date, time):
     if 'check' in request.GET.keys():
         just_checking = True
 
-    lesson_type = get_object_or_404(ContentType, app_label='lessons', pk=type_id)
-
-    found = Class.objects.find_class(
-        customer=request.user.crm,
-        lesson_type=lesson_type
-    )
-    if not found['result']:
-        if just_checking:
-            del found['class']
-            return JsonResponse(found, safe=True)
-        else:
-            return Http404(found['text'])
-
-    found['class'].schedule(
+    result = Class.objects.try_to_schedule(
         teacher=get_object_or_404(Teacher, pk=teacher),
-        date=iso8601.parse_date('%s %s' % (date, time))
+        lesson_type=get_object_or_404(ContentType, app_label='lessons', pk=type_id),
+        date=parse_datetime(date + ' ' + time)
     )
 
     if just_checking:
-        del found['class']
-        return JsonResponse(found, safe=True)
+        del result['class']
+        return JsonResponse(result, safe=True)
 
-    found['class'].save()
+    if not result['result']:
+        return Http404('%s: %s' % (result['err'], result['text']))
+
+    result['class'].save()
+
     return redirect('/')  # TODO: a page with success story

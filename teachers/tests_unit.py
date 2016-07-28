@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
+from django.utils.dateparse import parse_time
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
@@ -10,7 +11,7 @@ from teachers.models import Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
-class TestFreeSlots(TestCase):
+class TestWorkingHours(TestCase):
     def setUp(self):
         self.teacher = create_teacher()
 
@@ -28,6 +29,21 @@ class TestFreeSlots(TestCase):
 
         working_hours_wed = WorkingHours.objects.for_date(teacher=self.teacher, date='2016-07-20')
         self.assertIsNone(working_hours_wed)  # should not throw DoesNotExist
+
+    def test_working_hours_fits(self):
+        hours = mixer.blend(WorkingHours, teacher=self.teacher, start='12:00', end='13:00', weekday=7)
+
+        def test_fit(t):
+            return hours.does_fit(
+                parse_time(t)
+            )
+
+        self.assertFalse(test_fit('11:30'))
+        self.assertFalse(test_fit('13:30'))
+
+        self.assertTrue(test_fit('12:00'))
+        self.assertTrue(test_fit('13:00'))
+        self.assertTrue(test_fit('12:30'))
 
     def test_get_free_slots(self):
         """

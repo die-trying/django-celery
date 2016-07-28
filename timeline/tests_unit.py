@@ -8,6 +8,7 @@ from mixer.backend.django import mixer
 
 import lessons.models as lessons
 from elk.utils.testing import ClientTestCase, create_customer, create_teacher
+from teachers.models import WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
@@ -141,7 +142,7 @@ class SlotAvailableTest(TestCase):
                                    )
         self.assertFalse(test_entry.is_overlapping())
 
-    def test_two_equal_entryes(self):
+    def test_two_equal_entries(self):
         """
         Two equal entries should overlap each other
         """
@@ -158,7 +159,7 @@ class SlotAvailableTest(TestCase):
                                      )
         self.assertTrue(second_entry.is_overlapping())
 
-    def test_cant_save(self):
+    def test_cant_save_due_to_overlap(self):
         """
         We should not have posibillity to save a timeline entry, that can not
         be created
@@ -174,7 +175,7 @@ class SlotAvailableTest(TestCase):
 
     def test_save_again_entry_that_does_not_allow_overlapping(self):
         """
-        Create and entry that does not allow overlapping and the save it again
+        Create an entry that does not allow overlapping and the save it again
         """
         entry = TimelineEntry(
             teacher=self.teacher,
@@ -189,6 +190,74 @@ class SlotAvailableTest(TestCase):
         entry.save()
 
         self.assertIsNotNone(entry)  # should not throw anything
+
+    def test_working_hours(self):
+        mixer.blend(WorkingHours, teacher=self.teacher, start='12:00', end='13:00', weekday=0)
+        entry_besides_hours = TimelineEntry(teacher=self.teacher,
+                                            start=iso8601.parse_date('2016-07-25 04:00'),
+                                            end=iso8601.parse_date('2016-07-25 04:30'),
+                                            )
+        self.assertFalse(entry_besides_hours.is_fitting_working_hours())
+
+        entry_within_hours = TimelineEntry(teacher=self.teacher,
+                                           start=iso8601.parse_date('2016-07-25 12:30'),
+                                           end=iso8601.parse_date('2016-07-25 13:00'),
+                                           )
+        self.assertTrue(entry_within_hours.is_fitting_working_hours())
+
+    def test_working_hours_multidate(self):
+        """
+        Test checking working hours when lesson starts in one day, and ends on
+        another. This will be frequent situations, because our teachers are
+        in different timezones.
+        """
+        mixer.blend(WorkingHours, teacher=self.teacher, start='23:00', end='23:59', weekday=0)
+        mixer.blend(WorkingHours, teacher=self.teacher, start='00:00', end='02:00', weekday=1)
+
+        entry_besides_hours = TimelineEntry(teacher=self.teacher,
+                                            start=iso8601.parse_date('2016-07-25 22:00'),  # does not fit
+                                            end=iso8601.parse_date('2016-07-26 00:30'),
+                                            )
+        self.assertFalse(entry_besides_hours.is_fitting_working_hours())
+
+        entry_besides_hours.start = iso8601.parse_date('2016-07-25 23:30')  # fits
+        entry_besides_hours.end = iso8601.parse_date('2016-07-26 02:30')    # does not fit
+        self.assertFalse(entry_besides_hours.is_fitting_working_hours())
+
+        entry_within_hours = TimelineEntry(teacher=self.teacher,
+                                           start=iso8601.parse_date('2016-07-25 23:30'),
+                                           end=iso8601.parse_date('2016-07-26 00:30'),
+                                           )
+        self.assertTrue(entry_within_hours.is_fitting_working_hours())
+
+        # flex scope
+        #
+        # entry_within_hours.end = iso8601.parse_date('2016-07-25 00:00')
+        # self.assertTrue(entry_within_hours.is_fitting_working_hours())
+
+    def test_working_hours_nonexistant(self):
+        entry = TimelineEntry(teacher=self.teacher,
+                              start=iso8601.parse_date('2016-07-25 22:00'),  # does not fit
+                              end=iso8601.parse_date('2016-07-26 00:30'),
+                              )
+        self.assertFalse(entry.is_fitting_working_hours())  # should not throw anything
+
+    def test_cant_save_due_to_not_fitting_working_hours(self):
+        """
+        Create an entry that does not fit into teachers working hours
+        """
+        entry = TimelineEntry(
+            teacher=self.teacher,
+            lesson=self.lesson,
+            start=iso8601.parse_date('2016-07-25 13:30'),  # monday
+            end=iso8601.parse_date('2016-07-25 14:00'),
+            allow_besides_working_hours=False
+        )
+        with self.assertRaises(ValidationError):
+            entry.save()
+        mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
+        entry.save()
+        self.assertIsNotNone(entry.pk)  # should be saved now
 
 
 class TestPermissions(ClientTestCase):
