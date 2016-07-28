@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.utils.dateformat import format
 
 from elk.utils.date import ago, day_range, fwd
+from elk.utils.filters import request_filters
 from elk.utils.testing import create_customer, create_teacher, create_user
 
 
@@ -59,3 +60,19 @@ class TestFixtures(TestCase):
         acceptable_lessons = teacher.acceptable_lessons.all()
         self.assertGreater(acceptable_lessons.count(), 0)
         self.assertEqual(acceptable_lessons[0].app_label, 'lessons')
+
+
+class TestRequestFilters(TestCase):
+    def test_request_filter(self):
+        class r:
+            GET = {
+                'first': 'val1',
+                'second': 'val2',
+                'third': 'val3'
+            }
+        allowed = ('first', 'third')
+
+        result = request_filters(r(), allowed)
+
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result['third'], 'val3')

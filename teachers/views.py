@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
 
+from elk.utils.filters import request_filters
 from teachers.models import Teacher, WorkingHours
 from timeline.models import ALLOWED_TIMELINE_FILTERS
 
@@ -28,10 +29,7 @@ def teacher_slots_json(request, username, date):
     """
     teacher = get_object_or_404(Teacher, user__username=username)
 
-    kwargs = {}
-    for i in ALLOWED_TIMELINE_FILTERS:
-        if request.GET.get(i):
-            kwargs[i] = request.GET.get(i)
+    kwargs = request_filters(request, ALLOWED_TIMELINE_FILTERS)
 
     slots = teacher.find_free_slots(date=date, **kwargs)
 
@@ -43,10 +41,7 @@ def teacher_slots_json(request, username, date):
 
 @login_required
 def all_slots_json(request, date):
-    kwargs = {}
-    for i in ALLOWED_TIMELINE_FILTERS:
-        if request.GET.get(i):
-            kwargs[i] = request.GET.get(i)
+    kwargs = request_filters(request, ALLOWED_TIMELINE_FILTERS)
 
     teachers_with_slots = Teacher.objects.find_free(date=date, **kwargs)
     if not teachers_with_slots:
