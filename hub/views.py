@@ -9,6 +9,7 @@ from hub.models import Class, Subscription
 from lessons.models import OrdinaryLesson
 from products.models import Product1
 from teachers.models import Teacher
+from timeline.models import Entry as TimelineEntry
 
 
 @login_required
@@ -61,4 +62,26 @@ def step2_by_type(request, teacher, type_id, date, time):
 
     result['c'].save()
 
+    return redirect('/')  # TODO: a page with success story
+
+
+@login_required
+def step2_by_entry(request, teacher, entry_id):
+    just_checking = False
+    if 'check' in request.GET.keys():
+        just_checking = True
+
+    result = Class.objects.try_to_schedule(
+        teacher=get_object_or_404(Teacher, pk=teacher),
+        entry=get_object_or_404(TimelineEntry, pk=entry_id),
+    )
+
+    if just_checking:
+        del result['c']
+        return JsonResponse(result, safe=True)
+
+    if not result['result']:
+        return Http404('%s: %s' % (result['error'], result['text']))
+
+    result['c'].save()
     return redirect('/')  # TODO: a page with success story

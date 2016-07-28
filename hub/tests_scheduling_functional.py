@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from mixer.backend.django import mixer
 
@@ -6,6 +7,7 @@ import lessons.models as lessons
 from elk.utils.testing import ClientTestCase, create_customer, create_teacher, mock_request
 from hub.models import Class
 from teachers.models import WorkingHours
+from timeline.models import Entry as TimelineEntry
 
 from . import views
 
@@ -33,14 +35,14 @@ class SchedulingPopupTestCaseBase(ClientTestCase):
         request.user = self.customer.user
         return views.step1(request)
 
-    def _step2(self, just_checking=False, **kwargs):
+    def _step2(self, view, just_checking=False, **kwargs):
         url = '/hub/schedule/step2/'
         if just_checking:
             url = url + '?check'
 
         request = self.factory.get(url)
         request.user = self.customer.user
-        response = views.step2_by_type(request, teacher=self.host.pk, **kwargs)
+        response = view(request, teacher=self.host.pk, **kwargs)
 
         self.assertIn(response.status_code, (200, 302))
         if len(response.content):
@@ -93,6 +95,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         """
         ordinary_lesson_type = lessons.OrdinaryLesson.contenttype().pk
         response = self._step2(
+            view=views.step2_by_type,
             just_checking=True,
             date='2032-05-05',  # wednesday
             time='17:00',
@@ -102,6 +105,22 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         self.assertEquals(response['error'], 'E_CLASS_NOT_FOUND')
         self.assertIn('curated session', response['text'])
 
+        master_class = mixer.blend(lessons.MasterClass, host=self.host)
+        entry = mixer.blend(TimelineEntry,
+                            teacher=self.host,
+                            start=datetime(2032, 5, 3, 14, 0),
+                            end=datetime(2032, 5, 3, 14, 30),
+                            lesson=master_class
+                            )
+        response = self._step2(
+            view=views.step2_by_entry,
+            just_checking=True,
+            entry_id=entry.pk,
+        )
+        self.assertFalse(response['result'])
+        self.assertEquals(response['error'], 'E_CLASS_NOT_FOUND')
+        self.assertIn('master class', response['text'])
+
     def test_schedule_by_type_no_slot(self):
         """
         Try to schedule without a teacher slot
@@ -110,6 +129,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         self._buy_a_lesson(lessons.OrdinaryLesson.get_default())
 
         response = self._step2(
+            view=views.step2_by_type,
             just_checking=True,
             date='2032-05-05',  # wednesday
             time='17:00',
@@ -128,9 +148,31 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         self.assertFalse(c.is_scheduled)
 
         self._step2(
+            view=views.step2_by_type,
             date='2032-05-03',  # monday
             time='14:00',
             type_id=ordinary_lesson_type,
         )
+        c = Class.objects.get(pk=c.pk)
+        self.assertTrue(c.is_scheduled)
+
+    def test_schedule_a_master_class(self):
+        """
+        Buy a master class, create a timeline entry for it and schedule it
+        """
+        master_class = mixer.blend(lessons.MasterClass, host=self.host)
+        entry = mixer.blend(TimelineEntry,
+                            teacher=self.host,
+                            start=datetime(2032, 5, 3, 14, 0),
+                            end=datetime(2032, 5, 3, 14, 30),
+                            lesson=master_class
+                            )
+        c = self._buy_a_lesson(master_class)
+
+        self._step2(
+            view=views.step2_by_entry,
+            entry_id=entry.pk,
+        )
+
         c = Class.objects.get(pk=c.pk)
         self.assertTrue(c.is_scheduled)

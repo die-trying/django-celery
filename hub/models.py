@@ -142,7 +142,7 @@ class ClassesManager(models.Manager):
             .order_by('subscription_id', 'buy_date') \
             .first()
 
-    def try_to_schedule(self, teacher, date, entry=None, **kwargs):  # NOQA
+    def try_to_schedule(self, teacher, date=None, entry=None, **kwargs):  # NOQA
         """
         Try to schedule a lesson, return a hash with errors or lesson otherwise
         """
@@ -152,11 +152,16 @@ class ClassesManager(models.Manager):
             if kwargs.get('lesson_type'):
                 lesson_type = kwargs.get('lesson_type')
                 err = "You don't have available " + lesson_type.model_class()._meta.verbose_name_plural.lower()
-                return self.__result(
-                    result=False,
-                    error='E_CLASS_NOT_FOUND',
-                    text=err,
-                )
+            elif entry:
+                err = "You don't have available " + entry.lesson._meta.verbose_name_plural.lower()
+
+            return self.__result(
+                result=False,
+                error='E_CLASS_NOT_FOUND',
+                text=err,
+            )
+
+        """ If a class (bought lesson) is found, the try to schedule it."""
         try:
             if entry is None:
                 c.schedule(
