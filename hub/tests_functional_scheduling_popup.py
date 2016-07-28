@@ -94,7 +94,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         ordinary_lesson_type = lessons.OrdinaryLesson.contenttype().pk
         response = self._step2(
             just_checking=True,
-            date='2016-07-27',  # wednesday
+            date='2032-05-05',  # wednesday
             time='17:00',
             type_id=ordinary_lesson_type,
         )
@@ -111,7 +111,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
 
         response = self._step2(
             just_checking=True,
-            date='2016-07-27',  # wednesday
+            date='2032-05-05',  # wednesday
             time='17:00',
             type_id=ordinary_lesson_type,
         )

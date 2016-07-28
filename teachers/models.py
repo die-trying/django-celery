@@ -112,8 +112,11 @@ class Teacher(models.Model):
         slot = start
         while slot + period <= end:
             if not self.__check_overlap(slot, period):
-                slots.append(slot)
+                if slot >= self.__today():
+                    slots.append(slot)
+
             slot += period
+
         return slots
 
     def __check_overlap(self, start, period):
@@ -147,6 +150,9 @@ class Teacher(models.Model):
 
         if not Lesson_model.timeline_entry_required():
             del kwargs['lesson_type']
+
+    def __today(self):
+        return datetime.now()
 
 
 class WorkingHoursManager(models.Manager):

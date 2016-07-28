@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
@@ -12,6 +13,11 @@ from timeline.models import Entry as TimelineEntry
 
 
 class TestWorkingHours(TestCase):
+    """
+    By default, working hours return hours only in future, so your testing
+    dates should be in remote future, see http://www.timeanddate.com/calendar/?year=2032&country=1
+
+    """
     def setUp(self):
         self.teacher = create_teacher()
 
@@ -22,12 +28,12 @@ class TestWorkingHours(TestCase):
         """
         Get datetime.datetime objects for start and end working hours
         """
-        working_hours_monday = WorkingHours.objects.for_date(teacher=self.teacher, date='2016-07-18')
+        working_hours_monday = WorkingHours.objects.for_date(teacher=self.teacher, date='2032-05-03')
         self.assertIsNotNone(working_hours_monday)
-        self.assertEqual(working_hours_monday.start.strftime('%Y-%m-%d %H:%M'), '2016-07-18 13:00')
-        self.assertEqual(working_hours_monday.end.strftime('%Y-%m-%d %H:%M'), '2016-07-18 15:00')
+        self.assertEqual(working_hours_monday.start.strftime('%Y-%m-%d %H:%M'), '2032-05-03 13:00')
+        self.assertEqual(working_hours_monday.end.strftime('%Y-%m-%d %H:%M'), '2032-05-03 15:00')
 
-        working_hours_wed = WorkingHours.objects.for_date(teacher=self.teacher, date='2016-07-20')
+        working_hours_wed = WorkingHours.objects.for_date(teacher=self.teacher, date='2016-05-05')
         self.assertIsNone(working_hours_wed)  # should not throw DoesNotExist
 
     def test_working_hours_fits(self):
@@ -49,7 +55,7 @@ class TestWorkingHours(TestCase):
         """
         Simple unit test for fetching free slots
         """
-        slots = self.teacher.find_free_slots(date='2016-07-18')
+        slots = self.teacher.find_free_slots(date='2032-05-03')
         self.assertEquals(len(slots), 4)
 
         def time(slot):
@@ -58,13 +64,13 @@ class TestWorkingHours(TestCase):
         self.assertEqual(time(slots[0]), '13:00')
         self.assertEqual(time(slots[-1]), '14:30')
 
-        slots = self.teacher.find_free_slots(date='2016-07-18', period=timedelta(minutes=20))
+        slots = self.teacher.find_free_slots(date='2032-05-03', period=timedelta(minutes=20))
         self.assertEquals(len(slots), 6)
         self.assertEqual(time(slots[0]), '13:00')
         self.assertEqual(time(slots[1]), '13:20')
         self.assertEqual(time(slots[-1]), '14:40')
 
-        slots = self.teacher.find_free_slots(date='2016-07-20')
+        slots = self.teacher.find_free_slots(date='2032-05-05')
         self.assertIsNone(slots)  # should not throw DoesNotExist
 
     def test_get_free_slots_event_bypass(self):
@@ -74,11 +80,11 @@ class TestWorkingHours(TestCase):
         """
         entry = TimelineEntry(teacher=self.teacher,
                               lesson=mixer.blend(lessons.OrdinaryLesson),
-                              start=datetime(2016, 7, 18, 14, 0),
-                              end=datetime(2016, 7, 18, 14, 30),
+                              start=datetime(2032, 5, 3, 14, 0),
+                              end=datetime(2032, 5, 3, 14, 30),
                               )
         entry.save()
-        slots = self.teacher.find_free_slots(date='2016-07-18')
+        slots = self.teacher.find_free_slots(date='2032-05-03')
         self.assertEquals(len(slots), 3)
 
     def test_get_free_slots_offset_event_bypass(self):
@@ -88,12 +94,25 @@ class TestWorkingHours(TestCase):
         """
         entry = TimelineEntry(teacher=self.teacher,
                               lesson=mixer.blend(lessons.OrdinaryLesson),
-                              start=datetime(2016, 7, 18, 14, 10),
-                              end=datetime(2016, 7, 18, 14, 40)
+                              start=datetime(2032, 5, 3, 14, 10),
+                              end=datetime(2032, 5, 3, 14, 40)
                               )
         entry.save()
-        slots = self.teacher.find_free_slots(date='2016-07-18')
+        slots = self.teacher.find_free_slots(date='2032-05-03')
         self.assertEquals(len(slots), 2)
+
+    def test_get_free_slots_2002(self):
+        """
+        Make sure, that timeline slots are not returned from distant past
+        """
+        slots = self.teacher.find_free_slots(date='2002-02-04')  # monday, but 12 years ago
+        self.assertEquals(len(slots), 0)  # should not return any
+
+    def test_get_free_slots_today(self):
+        with patch('teachers.models.Teacher._Teacher__today') as mocked_date:
+            mocked_date.return_value = datetime(2016, 7, 25, 14, 0)  # monday
+            slots = self.teacher.find_free_slots(date='2016-07-25')
+            self.assertEquals(len(slots), 2)  # should return 2 slots instead of 4, because current time is 14:00
 
     def test_free_slots_for_lesson_type(self):
         """
@@ -102,17 +121,17 @@ class TestWorkingHours(TestCase):
         master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
         entry = TimelineEntry(teacher=self.teacher,
                               lesson=master_class,
-                              start=datetime(2016, 7, 18, 14, 10),
-                              end=datetime(2016, 7, 18, 14, 40)
+                              start=datetime(2032, 5, 3, 14, 10),
+                              end=datetime(2032, 5, 3, 14, 40)
                               )
         entry.save()
         lesson_type = ContentType.objects.get_for_model(master_class)
 
-        slots = self.teacher.find_free_slots(date='2016-07-18', lesson_type=lesson_type.pk)
+        slots = self.teacher.find_free_slots(date='2032-05-03', lesson_type=lesson_type.pk)
         self.assertEquals(len(slots), 1)
 
-        slots = self.teacher.find_free_slots(date='2016-07-20', lesson_type=lesson_type.pk)
-        self.assertEquals(len(slots), 0)  # there is no master classes, planned on 2016-07-20
+        slots = self.teacher.find_free_slots(date='2032-05-05', lesson_type=lesson_type.pk)
+        self.assertEquals(len(slots), 0)  # there is no master classes, planned on 2032-05-05
 
     def test_free_slots_for_lesson(self):
         """
@@ -126,19 +145,19 @@ class TestWorkingHours(TestCase):
 
         entry = TimelineEntry(teacher=self.teacher,
                               lesson=master_class,
-                              start=datetime(2016, 7, 18, 14, 10),
-                              end=datetime(2016, 7, 18, 14, 40)
+                              start=datetime(2032, 5, 3, 14, 10),
+                              end=datetime(2032, 5, 3, 14, 40)
                               )
         entry.save()
         other_entry = TimelineEntry(teacher=other_teacher,
                                     lesson=other_master_class,
-                                    start=datetime(2016, 7, 18, 14, 10),
-                                    end=datetime(2016, 7, 18, 14, 40)
+                                    start=datetime(2032, 5, 3, 14, 10),
+                                    end=datetime(2032, 5, 3, 14, 40)
                                     )
         other_entry.save()
-        slots = self.teacher.find_free_slots(date='2016-07-18', lesson_id=master_class.pk)
+        slots = self.teacher.find_free_slots(date='2032-05-03', lesson_id=master_class.pk)
         self.assertEquals(len(slots), 1)
-        slots = self.teacher.find_free_slots(date='2016-07-18', lesson_id=other_master_class.pk)
+        slots = self.teacher.find_free_slots(date='2032-05-03', lesson_id=other_master_class.pk)
         self.assertEquals(len(slots), 0)
 
     def test_two_teachers_for_single_slot(self):
@@ -149,20 +168,20 @@ class TestWorkingHours(TestCase):
         master_class = mixer.blend(lessons.MasterClass, host=other_teacher)
         entry = TimelineEntry(teacher=other_teacher,
                               lesson=master_class,
-                              start=datetime(2016, 7, 18, 14, 10),
-                              end=datetime(2016, 7, 18, 14, 40)
+                              start=datetime(2032, 5, 3, 14, 10),
+                              end=datetime(2032, 5, 3, 14, 40)
                               )
         entry.save()
         lesson_type = ContentType.objects.get_for_model(master_class)
 
-        slots = self.teacher.find_free_slots(date='2016-07-18', lesson_type=lesson_type.pk)
+        slots = self.teacher.find_free_slots(date='2032-05-03', lesson_type=lesson_type.pk)
         self.assertEquals(len(slots), 0)  # should not return anything — we are checking slots for self.teacher, not other_teacher
 
     def test_find_teacher_by_date(self):
         """
         Find a teacher that can work for distinct date without a specific event
         """
-        free_teachers = Teacher.objects.find_free(date='2016-07-18')
+        free_teachers = Teacher.objects.find_free(date='2032-05-03')
         self.assertEquals(free_teachers[0], self.teacher)
 
         free_teachers = Teacher.objects.find_free(date='2017-07-20')
@@ -179,23 +198,23 @@ class TestWorkingHours(TestCase):
 
         first_entry = TimelineEntry(teacher=self.teacher,
                                     lesson=first_master_class,
-                                    start=datetime(2016, 7, 18, 14, 10),
-                                    end=datetime(2016, 7, 18, 14, 40)
+                                    start=datetime(2032, 5, 3, 14, 10),
+                                    end=datetime(2032, 5, 3, 14, 40)
                                     )
         first_entry.save()
 
         second_entry = TimelineEntry(teacher=second_teacher,
                                      lesson=second_master_class,
-                                     start=datetime(2016, 7, 18, 14, 10),
-                                     end=datetime(2016, 7, 18, 14, 40)
+                                     start=datetime(2032, 5, 3, 14, 10),
+                                     end=datetime(2032, 5, 3, 14, 40)
                                      )
         second_entry.save()
         lesson_type = ContentType.objects.get_for_model(first_master_class)
-        free_teachers = Teacher.objects.find_free(date='2016-07-18', lesson_type=lesson_type.pk)
+        free_teachers = Teacher.objects.find_free(date='2032-05-03', lesson_type=lesson_type.pk)
         self.assertEquals(len(free_teachers), 2)
 
-        free_teachers = Teacher.objects.find_free(date='2016-07-20', lesson_type=lesson_type.pk)
-        self.assertEquals(len(free_teachers), 0)  # there is no master classes. planned on 2016-07-20
+        free_teachers = Teacher.objects.find_free(date='2032-05-05', lesson_type=lesson_type.pk)
+        self.assertEquals(len(free_teachers), 0)  # there is no master classes. planned on 2032-05-05
 
     def test_get_teachers_by_lesson(self):
         """
@@ -205,24 +224,24 @@ class TestWorkingHours(TestCase):
         second_master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
         first_entry = TimelineEntry(teacher=self.teacher,
                                     lesson=first_master_class,
-                                    start=datetime(2016, 7, 18, 14, 10),
-                                    end=datetime(2016, 7, 18, 14, 40)
+                                    start=datetime(2032, 5, 3, 14, 10),
+                                    end=datetime(2032, 5, 3, 14, 40)
                                     )
         first_entry.save()
         second_entry = TimelineEntry(teacher=self.teacher,
                                      lesson=second_master_class,
-                                     start=datetime(2016, 7, 18, 14, 10),
-                                     end=datetime(2016, 7, 18, 14, 40)
+                                     start=datetime(2032, 5, 3, 14, 10),
+                                     end=datetime(2032, 5, 3, 14, 40)
                                      )
         second_entry.save()
-        free_teachers = Teacher.objects.find_free(date='2016-07-18', lesson_id=first_master_class.pk)
+        free_teachers = Teacher.objects.find_free(date='2032-05-03', lesson_id=first_master_class.pk)
         self.assertEquals(len(free_teachers), 1)
-        free_teachers = Teacher.objects.find_free(date='2016-07-20', lesson_id=first_master_class.pk)
+        free_teachers = Teacher.objects.find_free(date='2032-05-05', lesson_id=first_master_class.pk)
         self.assertEquals(len(free_teachers), 0)
 
     def test_get_teachers_by_lesson_that_does_not_require_a_timeline_entry(self):
         ordinary_lesson_type = ContentType.objects.get_for_model(lessons.OrdinaryLesson)
-        teachers = Teacher.objects.find_free(date='2016-07-18', lesson_type=ordinary_lesson_type.pk)
+        teachers = Teacher.objects.find_free(date='2032-05-03', lesson_type=ordinary_lesson_type.pk)
         self.assertEquals(len(teachers), 1)
         self.assertEquals(len(teachers[0].free_slots), 4)  # should find all timeline entries because ordinary lesson does not require a timeline entry
 
@@ -231,7 +250,7 @@ class TestSlotsIterable(TestCase):
     def _generate_slots(self):
         teacher = create_teacher()
         mixer.blend(WorkingHours, teacher=teacher, weekday=0, start='13:00', end='15:00')
-        return teacher.find_free_slots(date='2016-07-18')
+        return teacher.find_free_slots(date='2032-05-03')
 
     def test_as_dict(self):
         slots = self._generate_slots()

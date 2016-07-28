@@ -54,17 +54,17 @@ class TestSlotsJson(ClientTestCase):
         super().setUp()
 
     def test_404(self):
-        response = self.c.get('/teachers/%s/2016-07-20/slots.json' % self.teacher.user.username)  # wednesday
+        response = self.c.get('/teachers/%s/2032-05-05/slots.json' % self.teacher.user.username)  # wednesday
         self.assertEqual(response.status_code, 404)  # our teacher does not work on wednesdays
 
-        response = self.c.get('/teachers/%s/2016-07-18/slots.json?lesson_type=100500' % self.teacher.user.username)
+        response = self.c.get('/teachers/%s/2032-05-03/slots.json?lesson_type=100500' % self.teacher.user.username)
         self.assertEqual(response.status_code, 404)  # non-existent lesson_type
 
-        response = self.c.get('/teachers/%s/2016-07-18/slots.json?lesson_id=100500' % self.teacher.user.username)
+        response = self.c.get('/teachers/%s/2032-05-03/slots.json?lesson_id=100500' % self.teacher.user.username)
         self.assertEqual(response.status_code, 404)  # non-existent lesson_id
 
     def test_all_slots(self):
-        response = self.c.get('/teachers/%s/2016-07-18/slots.json' % self.teacher.user.username)  # monday
+        response = self.c.get('/teachers/%s/2032-05-03/slots.json' % self.teacher.user.username)  # monday
         self.assertEqual(response.status_code, 200)
 
         slots = json.loads(response.content.decode('utf-8'))
@@ -76,14 +76,14 @@ class TestSlotsJson(ClientTestCase):
         master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
         entry = TimelineEntry(teacher=self.teacher,
                               lesson=master_class,
-                              start=datetime(2016, 7, 21, 14, 10),
-                              end=datetime(2016, 7, 21, 14, 40)
+                              start=datetime(2032, 5, 6, 14, 10),
+                              end=datetime(2032, 5, 6, 14, 40)
                               )
         entry.save()
         master_class_type = ContentType.objects.get_for_model(master_class)
 
         response = self.c.get(
-            '/teachers/%s/2016-07-21/slots.json?lesson_type=%d' % (self.teacher.user.username, master_class_type.pk)
+            '/teachers/%s/2032-05-06/slots.json?lesson_type=%d' % (self.teacher.user.username, master_class_type.pk)
         )
         self.assertEquals(response.status_code, 200)
         slots = json.loads(response.content.decode('utf-8'))
@@ -94,13 +94,13 @@ class TestSlotsJson(ClientTestCase):
         master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
         entry = TimelineEntry(teacher=self.teacher,
                               lesson=master_class,
-                              start=datetime(2016, 7, 21, 14, 10),
-                              end=datetime(2016, 7, 21, 14, 40)
+                              start=datetime(2032, 5, 6, 14, 10),
+                              end=datetime(2032, 5, 6, 14, 40)
                               )
         entry.save()
 
         response = self.c.get(
-            '/teachers/%s/2016-07-21/slots.json?lesson_id=%d' % (self.teacher.user.username, master_class.pk)
+            '/teachers/%s/2032-05-06/slots.json?lesson_id=%d' % (self.teacher.user.username, master_class.pk)
         )
         self.assertEquals(response.status_code, 200)
         slots = json.loads(response.content.decode('utf-8'))
@@ -127,17 +127,17 @@ class testTeacherSlotsJSON(ClientTestCase):
         super().setUp()
 
     def test_404(self):
-        response = self.c.get('/teachers/2016-07-20/slots.json')  # wednesday
+        response = self.c.get('/teachers/2032-05-05/slots.json')  # wednesday
         self.assertEqual(response.status_code, 404)  # no one works on wednesdays
 
-        response = self.c.get('/teachers/2016-07-18/slots.json?lesson_type=100500')
+        response = self.c.get('/teachers/2032-05-03/slots.json?lesson_type=100500')
         self.assertEqual(response.status_code, 404)  # non-existent lesson_type
 
-        response = self.c.get('/teachers/2016-07-18/slots.json?lesson_id=100500')
+        response = self.c.get('/teachers/2032-05-03/slots.json?lesson_id=100500')
         self.assertEqual(response.status_code, 404)  # non-existent lesson_id
 
     def test_all_slots(self):
-        response = self.c.get('/teachers/2016-07-18/slots.json')  # monday, 2 teachers
+        response = self.c.get('/teachers/2032-05-03/slots.json')  # monday, 2 teachers
         self.assertEqual(response.status_code, 200)
 
         teachers = json.loads(response.content.decode('utf-8'))
@@ -153,19 +153,19 @@ class testTeacherSlotsJSON(ClientTestCase):
         second_master_class = mixer.blend(lessons.MasterClass, host=self.second_teacher)
         entry = TimelineEntry(teacher=self.first_teacher,
                               lesson=first_master_class,
-                              start=datetime(2016, 7, 21, 14, 10),
-                              end=datetime(2016, 7, 21, 14, 40)
+                              start=datetime(2032, 5, 6, 14, 10),
+                              end=datetime(2032, 5, 6, 14, 40)
                               )
         entry.save()
         entry = TimelineEntry(teacher=self.second_teacher,
                               lesson=second_master_class,
-                              start=datetime(2016, 7, 21, 14, 15),
-                              end=datetime(2016, 7, 21, 14, 45)
+                              start=datetime(2032, 5, 6, 14, 15),
+                              end=datetime(2032, 5, 6, 14, 45)
                               )
         entry.save()
         master_class_type = ContentType.objects.get_for_model(first_master_class)
 
-        response = self.c.get('/teachers/2016-07-21/slots.json?lesson_type=%d' % master_class_type.pk)
+        response = self.c.get('/teachers/2032-05-06/slots.json?lesson_type=%d' % master_class_type.pk)
         self.assertEquals(response.status_code, 200)
 
         teachers = json.loads(response.content.decode('utf-8'))

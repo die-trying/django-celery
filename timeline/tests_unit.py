@@ -194,14 +194,14 @@ class SlotAvailableTest(TestCase):
     def test_working_hours(self):
         mixer.blend(WorkingHours, teacher=self.teacher, start='12:00', end='13:00', weekday=0)
         entry_besides_hours = TimelineEntry(teacher=self.teacher,
-                                            start=iso8601.parse_date('2016-07-25 04:00'),
-                                            end=iso8601.parse_date('2016-07-25 04:30'),
+                                            start=iso8601.parse_date('2032-05-03 04:00'),
+                                            end=iso8601.parse_date('2032-05-03 04:30'),
                                             )
         self.assertFalse(entry_besides_hours.is_fitting_working_hours())
 
         entry_within_hours = TimelineEntry(teacher=self.teacher,
-                                           start=iso8601.parse_date('2016-07-25 12:30'),
-                                           end=iso8601.parse_date('2016-07-25 13:00'),
+                                           start=iso8601.parse_date('2032-05-03 12:30'),
+                                           end=iso8601.parse_date('2032-05-03 13:00'),
                                            )
         self.assertTrue(entry_within_hours.is_fitting_working_hours())
 
@@ -215,29 +215,29 @@ class SlotAvailableTest(TestCase):
         mixer.blend(WorkingHours, teacher=self.teacher, start='00:00', end='02:00', weekday=1)
 
         entry_besides_hours = TimelineEntry(teacher=self.teacher,
-                                            start=iso8601.parse_date('2016-07-25 22:00'),  # does not fit
+                                            start=iso8601.parse_date('2032-05-03 22:00'),  # does not fit
                                             end=iso8601.parse_date('2016-07-26 00:30'),
                                             )
         self.assertFalse(entry_besides_hours.is_fitting_working_hours())
 
-        entry_besides_hours.start = iso8601.parse_date('2016-07-25 23:30')  # fits
+        entry_besides_hours.start = iso8601.parse_date('2032-05-03 23:30')  # fits
         entry_besides_hours.end = iso8601.parse_date('2016-07-26 02:30')    # does not fit
         self.assertFalse(entry_besides_hours.is_fitting_working_hours())
 
         entry_within_hours = TimelineEntry(teacher=self.teacher,
-                                           start=iso8601.parse_date('2016-07-25 23:30'),
+                                           start=iso8601.parse_date('2032-05-03 23:30'),
                                            end=iso8601.parse_date('2016-07-26 00:30'),
                                            )
         self.assertTrue(entry_within_hours.is_fitting_working_hours())
 
         # flex scope
         #
-        # entry_within_hours.end = iso8601.parse_date('2016-07-25 00:00')
+        # entry_within_hours.end = iso8601.parse_date('2032-05-03 00:00')
         # self.assertTrue(entry_within_hours.is_fitting_working_hours())
 
     def test_working_hours_nonexistant(self):
         entry = TimelineEntry(teacher=self.teacher,
-                              start=iso8601.parse_date('2016-07-25 22:00'),  # does not fit
+                              start=iso8601.parse_date('2032-05-03 22:00'),  # does not fit
                               end=iso8601.parse_date('2016-07-26 00:30'),
                               )
         self.assertFalse(entry.is_fitting_working_hours())  # should not throw anything
@@ -249,8 +249,8 @@ class SlotAvailableTest(TestCase):
         entry = TimelineEntry(
             teacher=self.teacher,
             lesson=self.lesson,
-            start=iso8601.parse_date('2016-07-25 13:30'),  # monday
-            end=iso8601.parse_date('2016-07-25 14:00'),
+            start=iso8601.parse_date('2032-05-03 13:30'),  # monday
+            end=iso8601.parse_date('2032-05-03 14:00'),
             allow_besides_working_hours=False
         )
         with self.assertRaises(ValidationError):
