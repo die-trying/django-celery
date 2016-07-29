@@ -42,7 +42,7 @@ class SchedulingPopupTestCaseBase(ClientTestCase):
 
         request = self.factory.get(url)
         request.user = self.customer.user
-        response = view(request, teacher=self.host.pk, **kwargs)
+        response = view(request, **kwargs)
 
         self.assertIn(response.status_code, (200, 302))
         if len(response.content):
@@ -96,8 +96,9 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         """
         ordinary_lesson_type = lessons.OrdinaryLesson.contenttype().pk
         response = self._step2(
-            view=views.step2_by_type,
+            view=views.step2_by_teacher,
             just_checking=True,
+            teacher=self.host.pk,
             date='2032-05-05',  # wednesday
             time='17:00',
             type_id=ordinary_lesson_type,
@@ -114,7 +115,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
                             lesson=master_class
                             )
         response = self._step2(
-            view=views.step2_by_entry,
+            view=views.step2_by_lesson,
             just_checking=True,
             entry_id=entry.pk,
         )
@@ -130,8 +131,9 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         self._buy_a_lesson(lessons.OrdinaryLesson.get_default())
 
         response = self._step2(
-            view=views.step2_by_type,
+            view=views.step2_by_teacher,
             just_checking=True,
+            teacher=self.host.pk,
             date='2032-05-05',  # wednesday
             time='17:00',
             type_id=ordinary_lesson_type,
@@ -149,7 +151,8 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         self.assertFalse(c.is_scheduled)
 
         self._step2(
-            view=views.step2_by_type,
+            view=views.step2_by_teacher,
+            teacher=self.host.pk,
             date='2032-05-03',  # monday
             time='14:00',
             type_id=ordinary_lesson_type,
@@ -171,7 +174,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         c = self._buy_a_lesson(master_class)
 
         self._step2(
-            view=views.step2_by_entry,
+            view=views.step2_by_lesson,
             entry_id=entry.pk,
         )
 
