@@ -9,7 +9,7 @@ from timeline.models import ALLOWED_TIMELINE_FILTERS
 
 
 @staff_member_required
-def teacher_hours_json(request, username):
+def teacher_hours(request, username):
     teacher = get_object_or_404(Teacher, user__username=username)
 
     hours_list = []
@@ -21,7 +21,7 @@ def teacher_hours_json(request, username):
 
 
 @login_required
-def teacher_slots_json(request, username, date):
+def slots_by_teacher(request, username, date):
     """
     Get free time slots for a particular teacher. The used method is
     :model:`teachers.Teacher`.find_free_slots, filtering is done via
@@ -40,7 +40,11 @@ def teacher_slots_json(request, username, date):
 
 
 @login_required
-def all_slots_json(request, date):
+def slots_by_date(request, date):
+    """
+    Return of JSON of time slots, avaialbe for planning. The used method is
+    :model:`teachers.Teacher`.find_free, filtering is done via :model:`timeline.Entry`.
+    """
     kwargs = request_filters(request, ALLOWED_TIMELINE_FILTERS)
 
     teachers_with_slots = Teacher.objects.find_free(date=date, **kwargs)

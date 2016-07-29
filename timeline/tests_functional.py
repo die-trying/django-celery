@@ -35,7 +35,7 @@ class EntryCRUDTest(ClientTestCase):
         })
         self.assertEqual(response.status_code, 302)
 
-        self.added_entry = self.__get_entry_from_json()
+        self.added_entry = self.__get_entry_from()
 
         self.assertEqual(self.added_entry['end'], '2016-06-29T15:33:00')
         self.assertEqual(self.added_entry['title'], self.lesson.name)
@@ -56,7 +56,7 @@ class EntryCRUDTest(ClientTestCase):
         })
         self.assertEqual(response.status_code, 302)
 
-        self.added_entry = self.__get_entry_from_json()
+        self.added_entry = self.__get_entry_from()
 
         self.assertEqual(self.added_entry['end'], '2016-06-29T16:33:00')
         self.assertEqual(self.added_entry['title'], self.lesson.name)
@@ -74,7 +74,7 @@ class EntryCRUDTest(ClientTestCase):
             with self.assertRaises(TimelineEntry.DoesNotExist):  # should be deleted now
                 TimelineEntry.objects.get(pk=pk)
 
-    def __get_entry_from_json(self):
+    def __get_entry_from(self):
         response = self.c.get('/timeline/%s.json?start=2016-06-28&end=2016-06-30' % self.teacher.user.username)
         self.assertEqual(response.status_code, 200)
         entries = json.loads(response.content.decode('utf-8'))
@@ -96,7 +96,7 @@ class EntryAPITest(ClientTestCase):
 
         super().setUp()
 
-    def test_create_user_json(self):
+    def test_create_user(self):
         duration = timedelta(minutes=71)
 
         mocked_entries = {}
@@ -124,7 +124,7 @@ class EntryAPITest(ClientTestCase):
                              format(now + duration, 'c')
                              )
 
-    def test_create_user_json_filter(self):
+    def test_create_user_filter(self):
         x = iso8601.parse_date('2016-01-01')
         for i in range(0, 10):
             entry = mixer.blend(TimelineEntry, teacher=self.teacher, start=x)

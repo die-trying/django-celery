@@ -30,9 +30,9 @@ class TestLessonsFunctional(ClientTestCase):
         Fetch JSON with lessons of certain type, available to generated user
         """
         for lesson in (lessons.OrdinaryLesson, lessons.MasterClass, lessons.HappyHour):
-            self.__test_lesson_JSON(lesson)
+            self.__test_lesson(lesson)
 
-    def __test_lesson_JSON(self, klass):
+    def __test_lesson(self, klass):
         mocked_lessons = {}
 
         for i in range(0, 55):
@@ -52,4 +52,4 @@ class TestLessonsFunctional(ClientTestCase):
             mocked_lesson = mocked_lessons[i['id']]
             self.assertEqual(i['name'], mocked_lesson.internal_name)
             self.assertEqual(i['duration'], str(mocked_lesson.duration))
-            self.assertEqual(i['slots'], mocked_lesson.slots)
+            self.assertEqual(i['required_slots'], mocked_lesson.slots)

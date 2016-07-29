@@ -109,6 +109,10 @@ class TestWorkingHours(TestCase):
         self.assertEquals(len(slots), 0)  # should not return any
 
     def test_get_free_slots_today(self):
+        """
+        Set the clock to the middle of teacher working interval — available
+        slots count should be reduced.
+        """
         with patch('teachers.models.Teacher._Teacher__today') as mocked_date:
             mocked_date.return_value = datetime(2016, 7, 25, 14, 0)  # monday
             slots = self.teacher.find_free_slots(date='2016-07-25')
@@ -159,6 +163,10 @@ class TestWorkingHours(TestCase):
         self.assertEquals(len(slots), 1)
         slots = self.teacher.find_free_slots(date='2032-05-03', lesson_id=other_master_class.pk)
         self.assertEquals(len(slots), 0)
+
+    def find_lessons(self):
+        found = Teacher.find_lessons(date='2032-05-03', lesson_type=lessons.MasterClass.contenttype().pk)
+        self.assertIsNone(found)
 
     def test_two_teachers_for_single_slot(self):
         """

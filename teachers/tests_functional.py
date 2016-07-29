@@ -15,7 +15,7 @@ class TestWorkingHours(ClientTestCase):
         self.teacher = create_teacher()
         super().setUp()
 
-    def test_hours_JSON(self):
+    def test_hours(self):
         """
         Test for generated json with teacher's working hours.
         """
@@ -67,7 +67,8 @@ class TestSlotsJson(ClientTestCase):
         response = self.c.get('/teachers/%s/2032-05-03/slots.json' % self.teacher.user.username)  # monday
         self.assertEqual(response.status_code, 200)
 
-        slots = json.loads(response.content.decode('utf-8'))
+        response = json.loads(response.content.decode('utf-8'))
+        slots = response[0]['slots']
         self.assertEquals(len(slots), 4)
         self.assertEquals(slots[0], '13:00')
         self.assertEquals(slots[-1], '14:30')
@@ -86,7 +87,8 @@ class TestSlotsJson(ClientTestCase):
             '/teachers/%s/2032-05-06/slots.json?lesson_type=%d' % (self.teacher.user.username, master_class_type.pk)
         )
         self.assertEquals(response.status_code, 200)
-        slots = json.loads(response.content.decode('utf-8'))
+        response = json.loads(response.content.decode('utf-8'))
+        slots = response[0]['slots']
         self.assertEquals(len(slots), 1)
         self.assertEquals(slots[0], '14:10')
 
@@ -103,7 +105,8 @@ class TestSlotsJson(ClientTestCase):
             '/teachers/%s/2032-05-06/slots.json?lesson_id=%d' % (self.teacher.user.username, master_class.pk)
         )
         self.assertEquals(response.status_code, 200)
-        slots = json.loads(response.content.decode('utf-8'))
+        response = json.loads(response.content.decode('utf-8'))
+        slots = response[0]['slots']
         self.assertEquals(len(slots), 1)
         self.assertEquals(slots[0], '14:10')
 
@@ -113,7 +116,7 @@ class testTeacherSlotsJSON(ClientTestCase):
     Getting timeslots of any available teacher.
 
     We do not test getting teacher for particular lesson, because frontend should
-    use teacher_slots_json view when it knows the particular teacher.
+    use teacher_slots view when it knows the particular teacher.
     """
     def setUp(self):
         self.first_teacher = create_teacher()

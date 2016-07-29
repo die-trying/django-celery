@@ -35,6 +35,24 @@ class TeacherManager(models.Manager):
                 teachers.append(teacher)
         return teachers
 
+    def find_lessons(self, date, **kwargs):
+        """
+        Find all lessons, that are planned to a date. Accepts keyword agruments
+        for filtering output of :model:`timeline.Entry`.
+        """
+        TimelineEntry = apps.get_model('timeline.entry')
+
+        lessons = [i.lesson for i in TimelineEntry.objects.filter(start__range=day_range(date), **kwargs).distinct('lesson_id')]
+
+        for lesson in lessons:
+            lesson.free_slots = SlotsList()
+            for entry in TimelineEntry.objects.filter(lesson_id=lesson.pk):
+                if entry.is_free:
+                    lesson.free_slots.append(entry.start)
+                    lesson.available_slots_count = entry.slots - entry.taken_slots
+
+        return lessons
+
 
 class Teacher(models.Model):
     """
@@ -70,18 +88,19 @@ class Teacher(models.Model):
 
     def find_free_slots(self, date, period=timedelta(minutes=30), **kwargs):
         """
-        Get datetime.datetime objects for free slots for a date. Accepts kwargs
-        for filtering output of :model:`timeline.Entry`.
+        Get datetime.datetime objects for free slots for a date. Accepts keyword
+        arguments for filtering output of :model:`timeline.Entry`.
 
         Returns an iterable of available slots in format ['15:00', '15:30', '16:00']
         """
-        self.__check_if_lesson_requires_timeline_entry(kwargs)
+        self.__delete_lesson_types_that_dont_require_a_timeline_entry(kwargs)
 
-        # if the only kwarg was lesson_type and previous method had deleted it,
-        # we'll return all available time for the teacher
+        # if there are any filters left — find timeline entries
         if len(kwargs.keys()):
             return self.__find_timeline_entries(date=date, **kwargs)
 
+        # otherwise — return all available time
+        # based on working hours
         hours = WorkingHours.objects.for_date(teacher=self, date=date)
         if hours is None:
             return None
@@ -134,7 +153,7 @@ class Teacher(models.Model):
         )
         return entry.is_overlapping()
 
-    def __check_if_lesson_requires_timeline_entry(self, kwargs):
+    def __delete_lesson_types_that_dont_require_a_timeline_entry(self, kwargs):
         """
         Check if lesson class, passed as filter to free_slots() requires a timeline
         slot. If not — delete this filter argument from kwargs.

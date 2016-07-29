@@ -59,7 +59,7 @@ def calendar_delete(request, username, pk):
 
 
 @staff_member_required
-def calendar_json(request, username):
+def calendar(request, username):
     teacher = get_object_or_404(Teacher, user__username=username)
     entries = []
     start = request.GET.get('start', date.ago(days=16))

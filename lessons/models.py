@@ -35,6 +35,7 @@ class Lesson(models.Model):
     internal_name = models.CharField(max_length=140)
 
     duration = models.DurationField(default=timedelta(minutes=30))
+    announce = MarkdownField()
     description = MarkdownField()
 
     slots = models.SmallIntegerField(default=1)
@@ -93,12 +94,18 @@ class Lesson(models.Model):
 
     def as_dict(self):
         """Dicitionary representation of a lesson"""
-        return {
+        d = {
             'id': self.pk,
             'name': self.internal_name,
-            'slots': self.slots,
+            'required_slots': self.slots,
             'duration': str(self.duration)
         }
+
+        if hasattr(self, 'available_slots_count'):  # set externaly, i.e in Teachers.objects.find_lessons()
+            d['available_slots_count'] = self.available_slots_count
+            # TODO unittest it
+
+        return d
 
     class Meta:
         abstract = True
@@ -131,6 +138,15 @@ class HostedLesson(Lesson):
 
             else:
                 super().save(*args, **kwargs)
+
+    def as_dict(self):
+        """
+        Add host information to dictionary representation.
+        """
+        result = super().as_dict()
+        if self.host:  # TODO: unittest it
+            result['host'] = self.host.as_dict()
+        return result
 
     @classmethod
     def get_default(cls):
