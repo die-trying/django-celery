@@ -1,8 +1,8 @@
 from datetime import timedelta
 
 from django.db import models
-
 from djmoney.models.fields import MoneyField
+
 from lessons.models import HappyHour, LessonWithNative, MasterClass, OrdinaryLesson, PairedLesson
 
 

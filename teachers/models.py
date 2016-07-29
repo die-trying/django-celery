@@ -12,7 +12,7 @@ from django_markdown.models import MarkdownField
 from elk.utils.date import day_range
 
 
-class SlotsList(list):
+class SlotList(list):
     def as_dict(self):
         return [i.strftime('%H:%M') for i in self]
 
@@ -45,7 +45,7 @@ class TeacherManager(models.Manager):
         lessons = [i.lesson for i in TimelineEntry.objects.filter(start__range=day_range(date), **kwargs).distinct('lesson_id')]
 
         for lesson in lessons:
-            lesson.free_slots = SlotsList()
+            lesson.free_slots = SlotList()
             for entry in TimelineEntry.objects.filter(lesson_id=lesson.pk):
                 if entry.is_free:
                     lesson.free_slots.append(entry.start)
@@ -115,7 +115,7 @@ class Teacher(models.Model):
         """
         TimelineEntry = apps.get_model('timeline.entry')
 
-        slots = SlotsList()
+        slots = SlotList()
         for entry in TimelineEntry.objects.filter(teacher=self, start__range=day_range(date), **kwargs):
             slots.append(entry.start)
         return slots
@@ -127,7 +127,7 @@ class Teacher(models.Model):
 
         Returns an iterable of slots as datetime objects.
         """
-        slots = SlotsList()
+        slots = SlotList()
         slot = start
         while slot + period <= end:
             if not self.__check_overlap(slot, period):

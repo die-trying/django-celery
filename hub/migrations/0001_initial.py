@@ -3,9 +3,8 @@ from __future__ import unicode_literals
 
 from decimal import Decimal
 
-from django.db import migrations, models
-
 import djmoney.models.fields
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):

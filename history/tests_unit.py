@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from elk.utils.testing import mock_request, create_customer
+from elk.utils.testing import create_customer, mock_request
 from history.models import PaymentEvent
 from hub.models import Class, Subscription
 from lessons.models import OrdinaryLesson
