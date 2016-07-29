@@ -1,9 +1,8 @@
-
-from django.utils.translation import ugettext_lazy as _
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import F
 from django.utils.dateparse import parse_datetime
+from django.utils.translation import ugettext_lazy as _
 
 from hub.exceptions import CannotBeScheduled
 
@@ -13,6 +12,8 @@ class SortingHat():
     SortingHat is a class for scheduling a lesson. All required parameters should
     be passed to the constructor, like:
 
+        from class.scheduler import SortingHat
+
         hat = SortingHat(
             customer=request.user.crm
             lesson_type=lesson_type,
@@ -21,7 +22,7 @@ class SortingHat():
             time='13:37',
         )
 
-        if hat.do_the_thing():
+        if not hat.do_the_thing():
             # here goes your error logic
             return JsonResponse({
                 err = {
@@ -30,9 +31,10 @@ class SortingHat():
                 }
             })
         else:
-            hat.c.save()  # actualy schedule a user-bought class, found by the hat.
+            hat.c.save()    # actualy schedule a user-bought class, found by the hat.
+                            # 'c' here is an instance of :model:`hub.Class`
 
-    This class is supposed to be a god-objects for further class scheduling logic,
+    This class is supposed to be a god-object for further class scheduling logic,
     so it should be covered by unit-tests (not fucntional, but UNIT) for 100%.
     """
     result = True   # Boolean, defining if all is correct
@@ -68,7 +70,9 @@ class SortingHat():
         self.date = parse_datetime(date + ' ' + time)
 
     def __set_err(self, err='E_NONE', msg=None):
-        """ Set error code """
+        """
+        Set error code
+        """
         if err not in self.errs.keys():
             err = 'E_UNKNOWN'
 
@@ -85,7 +89,8 @@ class SortingHat():
 
     def __get_class(self):
         """
-        Find a bought class for defined customer with defined lesson_type.
+        Find a bought class for defined customer with defined lesson_type, that
+        has not yet been scheduled.
         """
         Class = apps.get_model('hub.Class')
         return Class.objects \
@@ -97,7 +102,8 @@ class SortingHat():
 
     def __get_entry(self):
         """
-        Find a free timeline entry, that can accept defined lesson_type
+        Find a free timeline entry of selected teacher, that can accept defined
+        lesson_type and starts just when user wants it.
         """
         TimelineEntry = apps.get_model('timeline.entry')
         return TimelineEntry.objects \
@@ -109,7 +115,8 @@ class SortingHat():
 
     def find_a_class(self):
         """
-        Find a bought class
+        Find a bought class. When no appropriate bought class found, it means that
+        the user can't schedule his choice.
         """
         c = self.__get_class()
         if c is not None:
@@ -125,7 +132,8 @@ class SortingHat():
 
     def find_an_entry(self):
         """
-        Find a timeline entry
+        Find a timeline entry. If no timeline entry is required for user's lesson,
+        this method simply changes nothing and exits.
         """
         Lesson = self.lesson_type.model_class()
 
@@ -139,6 +147,13 @@ class SortingHat():
         self.__set_err('E_ENTRY_NOT_FOUND')
 
     def schedule_a_class(self):
+        """
+        Actualy assign a timeline entry to the class. If there is not entry, the
+        class will create it by itself by the :model:`hub.Class`.schedule() method.
+
+        The situation where there is not a timeline entry before calling this method
+        is usual: some lessons, like OrdinaryLesson, do not require it.
+        """
         try:
             if self.entry:  # if the entry was created by find_an_entry, that the lesson needs it
                 self.c.assign_entry(self.entry)
