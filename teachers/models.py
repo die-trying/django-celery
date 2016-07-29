@@ -46,7 +46,7 @@ class TeacherManager(models.Manager):
 
         for lesson in lessons:
             lesson.free_slots = SlotList()
-            for entry in TimelineEntry.objects.filter(lesson_id=lesson.pk):
+            for entry in TimelineEntry.objects.filter(lesson_id=lesson.pk, start__range=day_range(date)):
                 if entry.is_free:
                     lesson.free_slots.append(entry.start)
                     lesson.available_slots_count = entry.slots - entry.taken_slots
