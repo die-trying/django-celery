@@ -8,7 +8,7 @@ from mixer.backend.django import mixer
 
 import lessons.models as lessons
 from elk.utils.testing import create_teacher
-from teachers.models import Teacher, WorkingHours
+from teachers.models import SlotList, Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
@@ -262,7 +262,14 @@ class TestSlotsIterable(TestCase):
 
     def test_as_dict(self):
         slots = self._generate_slots()
-        slots_list = slots.as_dict()
-        self.assertEquals(len(slots_list), 4)
-        self.assertEquals(slots_list[0], '13:00')
-        self.assertEquals(slots_list[-1], '14:30')
+        slot_list = slots.as_dict()
+        self.assertEquals(len(slot_list), 4)
+        self.assertEquals(slot_list[0], '13:00')
+        self.assertEquals(slot_list[-1], '14:30')
+
+    def test_sort(self):
+        slots = SlotList()
+        for i in (datetime(2016, 1, 1, 13, 0), datetime(2016, 1, 1, 11, 0), datetime(2016, 1, 1, 11, 1), datetime(2016, 1, 1, 14, 0)):
+            slots.append(i)
+        slot_list = slots.as_dict()
+        self.assertEquals(slot_list, ['11:00', '11:01', '13:00', '14:00'])

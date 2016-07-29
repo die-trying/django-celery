@@ -14,7 +14,7 @@ from elk.utils.date import day_range
 
 class SlotList(list):
     def as_dict(self):
-        return [i.strftime('%H:%M') for i in self]
+        return [i.strftime('%H:%M') for i in sorted(self)]
 
 
 class TeacherManager(models.Manager):
