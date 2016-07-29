@@ -10,12 +10,16 @@ def lesson_type_filter(types):
     can be planned directly.
     """
 
-    button = """<label class = "btn btn-default {classes}"><input type="radio" name="lesson_type" {checked} value = "{val}">{name}</label>"""
+    button = """<label class = "btn btn-default {classes}"><input type="radio" name="lesson_type" {checked} data-query-type="{query_type}" value = "{val}">{name}</label>"""
     first = True
     result = ''
     for lesson_type in types:
         if not lesson_type.model_class().can_be_directly_planned():
             continue
+
+        query_type = 'teachers'
+        if lesson_type.model_class().timeline_entry_required():
+            query_type = 'lessons'
 
         classes = ''
         checked = ''
@@ -28,6 +32,7 @@ def lesson_type_filter(types):
             classes=classes,
             checked=checked,
             val=lesson_type.pk,
+            query_type=query_type,  # what popup should query — available teachers (for regular lessons), or avaialbe slots (for lesson_types)
             name=lesson_type.model_class()._meta.verbose_name_plural
         )
     return result

@@ -2,9 +2,9 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.core.urlresolvers import reverse
 from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404, redirect, render
+from django.utils.dateparse import parse_datetime
 from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView, UpdateView
-from django.utils.dateparse import parse_datetime
 
 from elk.utils import date
 from teachers.models import Teacher
@@ -59,7 +59,7 @@ def calendar_delete(request, username, pk):
 
 
 @staff_member_required
-def calendar(request, username):
+def calendar_json(request, username):
     teacher = get_object_or_404(Teacher, user__username=username)
     entries = []
     start = request.GET.get('start', date.ago(days=16))

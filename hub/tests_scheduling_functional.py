@@ -65,6 +65,7 @@ class TestSchedulingPopupHTML(SchedulingPopupTestCaseBase):
             self.assertEquals(len(categories), 2)  # user has only two lessons bought — Ordinary lesson and a Master class
             for category in categories:
                 self.assertIn(int(category.find('input').attrib.get('value')), [lessons.OrdinaryLesson.contenttype().pk, lessons.MasterClass.contenttype().pk])  # every value of checkbox should be an allowed contenttype
+                self.assertIn(category.find('input').attrib.get('data-query-type'), ['lessons', 'teachers'])  # should have both types, because we have bought two lessons — ordinary (not requiring a planned timeline entry, and a master class)
                 self.assertNotEqual(len(category.text_content()), 0)  # every lesson type should have a NAME, like <label><input type=radio value="1">NAME</label>.
 
     def test_popup_without_bought_lessons(self):

@@ -25,6 +25,6 @@ urlpatterns = [
         view=staff_member_required(views.check_overlap),
         name='check_overlap',
         ),
-    url(r'(?P<username>.+).json', views.calendar, name='timeline.json'),
+    url(r'(?P<username>.+).json', views.calendar_json, name='timeline.json'),
     url(r'(?P<username>.+)/$', views.calendar, name='timeline'),
 ]

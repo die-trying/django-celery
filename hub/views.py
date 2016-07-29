@@ -42,7 +42,7 @@ def step1(request):
 
 
 @login_required
-def step2_by_type(request, teacher, type_id, date, time):
+def step2_by_teacher(request, teacher, type_id, date, time):
     just_checking = False
     if 'check' in request.GET.keys():
         just_checking = True
@@ -66,13 +66,12 @@ def step2_by_type(request, teacher, type_id, date, time):
 
 
 @login_required
-def step2_by_entry(request, teacher, entry_id):
+def step2_by_lesson(request, entry_id):
     just_checking = False
     if 'check' in request.GET.keys():
         just_checking = True
 
     result = Class.objects.try_to_schedule(
-        teacher=get_object_or_404(Teacher, pk=teacher),
         entry=get_object_or_404(TimelineEntry, pk=entry_id),
     )
 

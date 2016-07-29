@@ -98,6 +98,8 @@ class Lesson(models.Model):
             'id': self.pk,
             'name': self.internal_name,
             'required_slots': self.slots,
+            'announce': self.announce,
+            'description': self.description,
             'duration': str(self.duration)
         }
 

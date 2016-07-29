@@ -142,11 +142,21 @@ class ClassesManager(models.Manager):
             .order_by('subscription_id', 'buy_date') \
             .first()
 
-    def try_to_schedule(self, teacher, date=None, entry=None, **kwargs):  # NOQA
+    def try_to_schedule(self, teacher=None, date=None, entry=None, **kwargs):  # NOQA
         """
         Try to schedule a lesson, return a hash with errors or lesson otherwise
+        In spite of its complicity, this method does only to things:
+            1) Searches for bought class, that fits user choice
+            2) Tries to assign it to a teachers timeline entry
+
+        All the logic is for displaying errors.
         """
+
+        """ Find a bought class with a lesson type of entry, trying to schedule """
+        if entry is not None:
+            kwargs['lesson_type'] = entry.lesson.contenttype()
         c = self.find_class(**kwargs)
+
         if not c:
             err = "You don't have available lessons"
             if kwargs.get('lesson_type'):
@@ -171,7 +181,13 @@ class ClassesManager(models.Manager):
             else:
                 c.assign_entry(entry)
 
-        except CannotBeScheduled:  # should not be thrown in normal circumstances
+        except CannotBeScheduled:
+            """
+            Should not be thrown in normal circumstances. When you see this error,
+            check the method :model:`hub.class`.can_be_scheduled() — there are all
+            the reasons, that throw this excpetions. You can comment them one by one
+            any find the reason.
+            """
             return self.__result(
                 result=False,
                 error='E_CANT_SCHEDULE',

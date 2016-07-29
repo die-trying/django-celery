@@ -1,6 +1,10 @@
 class Model extends MicroEvent
   constructor: (@lesson_type, @date) ->
-    @url = "/teachers/%s/slots.json?lesson_type=%d"
+    @urls = {
+      teachers: "/teachers/%s/slots.json?lesson_type=%d"
+      lessons: "/lessons/%s/type/%d/slots.json"
+    }
+    @query_type = 'teachers'
     @from_json()
 
   class Teacher
@@ -8,7 +12,7 @@ class Model extends MicroEvent
       @slots = []
 
   from_json: () ->
-    url = sprintf @url, @date, parseInt @lesson_type
+    url = sprintf @urls[@query_type], @date, parseInt @lesson_type
     @teachers = []
 
     @loaded = false
@@ -33,8 +37,10 @@ class Model extends MicroEvent
       @trigger 'update'
 
   submit_url: (data) ->
-    data.contenttype = 'type'  # flex scope, we support planning only be lesson type yet
-    "/hub/schedule/step2/#{ data.teacher }/#{ data.contenttype }/#{ data.lesson }/#{ data.date }/#{ data.time }/"
+    if @query_type is 'teachers'
+      "/hub/schedule/step2/teacher/#{ data.teacher }/#{ data.lesson }/#{ data.date }/#{ data.time }/"
+    else
+      "/hub/schedule/step2/timeline/#{data.lesson}/"
 
 
 class Controller
@@ -61,6 +67,7 @@ class Controller
   bind_filters: () ->
     $('.schedule-popup__filters input').on 'change', (e) =>
       @model.lesson_type = e.target.value
+      @model.query_type = e.target.dataset.queryType
       @model.from_json()
 
     $('.schedule-popup__filters select').on 'change', (e) =>
