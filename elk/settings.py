@@ -9,6 +9,11 @@ SITE_ROOT = root()
 USE_L10N = True
 USE_i18N = True
 
+# LANGUAGE_CODE = "ru"
+FORMAT_MODULE_PATH = [
+    'elk.formats'
+]
+
 DEBUG = env('DEBUG')    # False if not in os.environ
 
 DATABASES = {
@@ -40,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'debug_toolbar',
 ]
 

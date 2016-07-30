@@ -1,0 +1,2 @@
+
+SHORT_DATE_FORMAT = 'b d'
