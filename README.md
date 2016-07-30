@@ -60,11 +60,17 @@ CoffeeScript has a wonderful protector from polluting global namespace — it w
 So you can't pollute global namespace even if you want it.
 When you really need to publish something globally, you can use the `Project` objects. It is allowed to store Models, Controllers and Helpers there, like this:
 ```coffeescript
-class Model extends MicroEvent:
+class Model extends MicroEvent
     constructor (@a, @b, @c) ->
         # your wonerful code here
 
 Project.Models.YourModel = Model
+
+# later, in the controller
+
+class Controller
+    constructor (@a, @b, @c ) ->
+        @model = new Project.Models.YourModel @a, @b, @c
 ```
 
 #### Local assets
