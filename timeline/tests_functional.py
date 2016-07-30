@@ -174,4 +174,5 @@ class TestFormAPIHelpers(ClientTestCase):
             '/timeline/%s/check_overlap/%s/%s/' % (username, start, end)
         )
         self.assertEqual(response.status_code, 200)
-        return json.loads(response.content.decode('utf-8'))
+        result = json.loads(response.content.decode('utf-8'))
+        return result['is_overlapping']

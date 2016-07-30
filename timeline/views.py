@@ -76,4 +76,6 @@ def check_overlap(request, username, start, end):
         end=parse_datetime(end),
         teacher=get_object_or_404(Teacher, user__username=username),
     )
-    return JsonResponse(entry.is_overlapping(), safe=False)
+    return JsonResponse({
+        'is_overlapping': entry.is_overlapping(),
+    }, safe=False)

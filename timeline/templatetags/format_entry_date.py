@@ -11,9 +11,9 @@ def format_entry_date(fields):
     date.attrs['required'] = 'true'
     time.attrs['required'] = 'true'
 
-    time.attrs['placeholder'] = 'time'
+    time.attrs['placeholder'] = '12:30'
 
-    date.attrs['placeholder'] = 'Date'
+    date.attrs['placeholder'] = 'mm/dd/yy'
     date.format = '%m/%d/%Y'  # flex scope
 
     time.format = '%H:%M'
