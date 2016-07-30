@@ -26,6 +26,13 @@
         <script src="{% static 'js/vendor.js' %}"></script>
         {% block js %} {# pages can require custom javascript files defining this block #}
         {% endblock %}
+        <script type="text/javascript">
+            var Project = {
+                models: {},
+                controllers: {},
+                helpers: {},
+            } // quasi-global namespace
+        </script>
         <script src="{% static 'js/app.js' %}"></script>
 
     </body>
