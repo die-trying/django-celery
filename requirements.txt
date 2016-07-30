@@ -20,7 +20,6 @@ fake-factory==0.5.7
 gnureadline==6.3.3
 ipython==4.2.0
 ipython-genutils==0.1.0
-iso8601==0.1.11
 isort==4.2.5
 lxml==3.6.0
 Markdown==2.6.6

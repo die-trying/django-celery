@@ -1,9 +1,9 @@
 import json
 from datetime import datetime, timedelta
 
-import iso8601
 from django.contrib.contenttypes.models import ContentType
 from django.utils.dateformat import format
+from django.utils.dateparse import parse_date
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
@@ -125,7 +125,7 @@ class EntryAPITest(ClientTestCase):
                              )
 
     def test_create_user_filter(self):
-        x = iso8601.parse_date('2016-01-01')
+        x = parse_date('2016-01-01')
         for i in range(0, 10):
             entry = mixer.blend(TimelineEntry, teacher=self.teacher, start=x)
             x += timedelta(days=1)
