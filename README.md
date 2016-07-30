@@ -41,3 +41,40 @@ Configure your IDE with respect to [`.editorconfig`](http://editorconfig.org).
 All comments and commit messages should be written in English.
 
 Every model and model method should have a docstring.
+
+### Frontend
+
+#### CoffeeScript
+All frontend programming should be done in [CoffeeScript](http://coffeescript.org). You can learn it in 3 hours, and it will save you nearly 30% of code by removing plenty of JS boilerplate. The price is a slightly bigger cognitive load, but the absence of the boilerplate worth it.
+
+#### Stylus
+All CSS is written in Stylus. You event don't need to learn it — just omit everything boilerplate-like: `{`, `}`, `:` and `;`
+
+#### Global namespace
+CoffeeScript has a wonderful protector from polluting global namespace — it wraps every file like this:
+```javascript
+(function(){
+    # your code here
+})()
+```
+So you can't pollute global namespace even if you want it.
+When you really need to publish something globally, you can use the `Project` objects. It is allowed to store Models, Controllers and Helpers there, like this:
+```coffeescript
+class Model extends MicroEvent:
+    constructor (@a, @b, @c) ->
+        # your wonerful code here
+
+Project.Models.YourModel = Model
+```
+
+#### Local assets
+By default all vendor assets, located it `build/js-vendor-filters.json` and `build/css-vendor-files.json` are cross-site. If you need a heavy library, you can include it with templatetags `css` and `js`, like this:
+```django
+{% block css %}
+<link rel="stylesheet" href="{% static 'vendor/fullcalendar/dist/fullcalendar.min.css' %}">
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript" src="{% static 'vendor/fullcalendar/dist/fullcalendar.min.js' %}"></script>
+{% endblock %}
+```
