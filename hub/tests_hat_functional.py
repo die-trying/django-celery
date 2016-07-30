@@ -35,14 +35,16 @@ class SchedulingPopupTestCaseBase(ClientTestCase):
         request.user = self.customer.user
         return views.step1(request)
 
-    def _step2(self, view, just_checking=False, **kwargs):
+    def _step2(self, just_checking=False, **kwargs):
         url = '/hub/schedule/step2/'
         if just_checking:
             url = url + '?check'
 
         request = self.factory.get(url)
         request.user = self.customer.user
-        response = view(request, **kwargs)
+        response = views.step2(request,
+                               teacher=self.host.pk,
+                               **kwargs)
 
         self.assertIn(response.status_code, (200, 302))
         if len(response.content):
@@ -64,7 +66,7 @@ class TestSchedulingPopupHTML(SchedulingPopupTestCaseBase):
         with self.assertHTML(response, '.schedule-popup__filters .lesson_type label') as categories:
             self.assertEquals(len(categories), 2)  # user has only two lessons bought — Ordinary lesson and a Master class
             for category in categories:
-                self.assertIn(int(category.find('input').attrib.get('value')), [lessons.OrdinaryLesson.contenttype().pk, lessons.MasterClass.contenttype().pk])  # every value of checkbox should be an allowed contenttype
+                self.assertIn(int(category.find('input').attrib.get('value')), [lessons.OrdinaryLesson.get_contenttype().pk, lessons.MasterClass.get_contenttype().pk])  # every value of checkbox should be an allowed contenttype
                 self.assertIn(category.find('input').attrib.get('data-query-type'), ['lessons', 'teachers'])  # should have both types, because we have bought two lessons — ordinary (not requiring a planned timeline entry, and a master class)
                 self.assertNotEqual(len(category.text_content()), 0)  # every lesson type should have a NAME, like <label><input type=radio value="1">NAME</label>.
 
@@ -90,34 +92,31 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
     """
     Test server-side checking of available lessons
     """
-    def test_schedule_by_type_no_lesson(self):
+    def test_schedule_by_type_without_a_lesson(self):
         """
-        Try to schedule without a lesson
+        Try to schedule without a lesson (by lesson_type)
         """
-        ordinary_lesson_type = lessons.OrdinaryLesson.contenttype().pk
         response = self._step2(
-            view=views.step2_by_teacher,
             just_checking=True,
-            teacher=self.host.pk,
             date='2032-05-05',  # wednesday
             time='17:00',
-            type_id=ordinary_lesson_type,
+            type_id=lessons.OrdinaryLesson.get_contenttype().pk,
         )
         self.assertFalse(response['result'])
-        self.assertEquals(response['error'], 'E_CLASS_NOT_FOUND')
-        self.assertIn('curated session', response['text'])
 
+    def test_schedule_by_lesson_without_a_lesson(self):
         master_class = mixer.blend(lessons.MasterClass, host=self.host)
-        entry = mixer.blend(TimelineEntry,
-                            teacher=self.host,
-                            start=datetime(2032, 5, 3, 14, 0),
-                            end=datetime(2032, 5, 3, 14, 30),
-                            lesson=master_class
-                            )
+        mixer.blend(TimelineEntry,
+                    teacher=self.host,
+                    start=datetime(2032, 5, 3, 14, 0),
+                    end=datetime(2032, 5, 3, 14, 30),
+                    lesson=master_class
+                    )
         response = self._step2(
-            view=views.step2_by_lesson,
             just_checking=True,
-            entry_id=entry.pk,
+            date='2032-05-03',
+            time='14:00',
+            type_id=master_class.get_contenttype().pk
         )
         self.assertFalse(response['result'])
         self.assertEquals(response['error'], 'E_CLASS_NOT_FOUND')
@@ -127,13 +126,11 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         """
         Try to schedule without a teacher slot
         """
-        ordinary_lesson_type = lessons.OrdinaryLesson.contenttype().pk
+        ordinary_lesson_type = lessons.OrdinaryLesson.get_contenttype().pk
         self._buy_a_lesson(lessons.OrdinaryLesson.get_default())
 
         response = self._step2(
-            view=views.step2_by_teacher,
             just_checking=True,
-            teacher=self.host.pk,
             date='2032-05-05',  # wednesday
             time='17:00',
             type_id=ordinary_lesson_type,
@@ -146,13 +143,11 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         Buy an ordinary lesson and try to schedule it via by for the time, when
         teacher is available
         """
-        ordinary_lesson_type = lessons.OrdinaryLesson.contenttype().pk
+        ordinary_lesson_type = lessons.OrdinaryLesson.get_contenttype().pk
         c = self._buy_a_lesson(lessons.OrdinaryLesson.get_default())
         self.assertFalse(c.is_scheduled)
 
         self._step2(
-            view=views.step2_by_teacher,
-            teacher=self.host.pk,
             date='2032-05-03',  # monday
             time='14:00',
             type_id=ordinary_lesson_type,
@@ -166,17 +161,19 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         """
         master_class = mixer.blend(lessons.MasterClass, host=self.host)
         entry = mixer.blend(TimelineEntry,
-                            teacher=self.host,
                             start=datetime(2032, 5, 3, 14, 0),
                             end=datetime(2032, 5, 3, 14, 30),
-                            lesson=master_class
+                            lesson=master_class,
+                            teacher=self.host,
                             )
         c = self._buy_a_lesson(master_class)
 
         self._step2(
-            view=views.step2_by_lesson,
-            entry_id=entry.pk,
+            date='2032-05-03',
+            time='14:00',
+            type_id=master_class.get_contenttype().pk,
         )
 
         c = Class.objects.get(pk=c.pk)
         self.assertTrue(c.is_scheduled)
+        self.assertEqual(c.timeline_entry, entry)

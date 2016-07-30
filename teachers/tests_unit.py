@@ -165,7 +165,7 @@ class TestWorkingHours(TestCase):
         self.assertEquals(len(slots), 0)
 
     def find_lessons(self):
-        found = Teacher.find_lessons(date='2032-05-03', lesson_type=lessons.MasterClass.contenttype().pk)
+        found = Teacher.find_lessons(date='2032-05-03', lesson_type=lessons.MasterClass.get_contenttype().pk)
         self.assertIsNone(found)
 
     def test_two_teachers_for_single_slot(self):

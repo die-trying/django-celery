@@ -64,8 +64,8 @@ class TestClassManager(TestCase):
         lesson_types = self.customer.classes.bought_lesson_types()
         self.assertEquals(len(lesson_types), 4)  # if you have defined a new lesson, fill free to increase this value, it's ok
 
-        self.assertIn(lessons.OrdinaryLesson.contenttype(), lesson_types)
-        self.assertIn(lessons.MasterClass.contenttype(), lesson_types)
+        self.assertIn(lessons.OrdinaryLesson.get_contenttype(), lesson_types)
+        self.assertIn(lessons.MasterClass.get_contenttype(), lesson_types)
 
     def test_lesson_type_sorting(self):
         """
@@ -146,78 +146,3 @@ class TestScheduleLowLevel(TestCase):
                 date=datetime(2016, 12, 1, 7, 27)  # wednesday
             )
             c.save()
-
-
-class TestTryToSchedule(TestCase):
-    fixtures = ('lessons', 'products')
-    TEST_PRODUCT_ID = 1
-
-    def setUp(self):
-        self.customer = create_customer()
-        self.host = create_teacher()
-
-    def _buy_a_lesson(self, lesson):
-        c = Class(
-            customer=self.customer,
-            lesson=lesson
-        )
-        c.request = mock_request(self.customer)
-        c.save()
-        return c
-
-    def _buy_a_subscription(self):
-        product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
-        s = Subscription(
-            customer=self.customer,
-            product=product,
-            buy_price=150,
-        )
-        s.request = mock_request(self.customer)
-        s.save()
-        return s
-
-    def test_find_class(self):
-        res = Class.objects.find_class(
-            customer=self.customer,
-            lesson_type=lessons.OrdinaryLesson.contenttype()
-        )
-        self.assertIsNone(res)
-
-        self._buy_a_lesson(lessons.OrdinaryLesson.get_default())
-        res = Class.objects.find_class(
-            customer=self.customer,
-            lesson_type=lessons.OrdinaryLesson.contenttype()
-        )
-        self.assertIsInstance(res, Class)
-
-    def test_find_only_active_classes(self):
-        lesson = lessons.OrdinaryLesson.get_default()
-        entry = mixer.blend(TimelineEntry, lesson=lesson, teacher=self.host, active=1)
-        c = self._buy_a_lesson(lesson)
-
-        c.assign_entry(entry)
-        c.save()
-
-        res = Class.objects.find_class(
-            customer=self.customer,
-            lesson_type=lessons.OrdinaryLesson.contenttype()
-        )
-        self.assertIsNone(res)  # we already have scheduled the only class we could
-
-    def test_find_the_subscription_class_first(self):
-        """
-        Return subscription lessons first.
-
-        Buy a single lesson, than buy a subscription an check, that find_class()
-        would return a subscription lesson.
-        """
-        self._buy_a_lesson(lessons.OrdinaryLesson.get_default())
-        subscription = self._buy_a_subscription()
-
-        first_lesson_by_subscription = Class.objects.order_by('buy_date', 'id').filter(subscription=subscription)[0]
-
-        res = Class.objects.find_class(
-            customer=self.customer,
-            lesson_type=lessons.OrdinaryLesson.contenttype()
-        )
-        self.assertEquals(res, first_lesson_by_subscription)

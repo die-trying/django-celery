@@ -99,7 +99,7 @@ class Subscription(BuyableProduct):
 class ClassesManager(models.Manager):
     def bought_lesson_types(self):
         """
-        Get ContentTypes for lessons, available to user
+        Get ContentTypes of lessons, available to user
         """
         types = self.get_queryset().filter(timeline_entry__isnull=True).values_list('lesson_type', flat=True).distinct()
 
@@ -132,76 +132,6 @@ class ClassesManager(models.Manager):
         while current < end:
             yield current
             current += timedelta(days=1)
-
-    def find_class(self, **kwargs):
-        """
-        Find a class to schedule. Accept filters :model:`hub.Class` queryset.
-        """
-        return self.get_queryset() \
-            .filter(is_scheduled=False, **kwargs) \
-            .order_by('subscription_id', 'buy_date') \
-            .first()
-
-    def try_to_schedule(self, teacher=None, date=None, entry=None, **kwargs):  # NOQA
-        """
-        Try to schedule a lesson, return a hash with errors or lesson otherwise
-        In spite of its complicity, this method does only to things:
-            1) Searches for bought class, that fits user choice
-            2) Tries to assign it to a teachers timeline entry
-
-        All the logic is for displaying errors.
-        """
-
-        """ Find a bought class with a lesson type of entry, trying to schedule """
-        if entry is not None:
-            kwargs['lesson_type'] = entry.lesson.contenttype()
-        c = self.find_class(**kwargs)
-
-        if not c:
-            err = "You don't have available lessons"
-            if kwargs.get('lesson_type'):
-                lesson_type = kwargs.get('lesson_type')
-                err = "You don't have available " + lesson_type.model_class()._meta.verbose_name_plural.lower()
-            elif entry:
-                err = "You don't have available " + entry.lesson._meta.verbose_name_plural.lower()
-
-            return self.__result(
-                result=False,
-                error='E_CLASS_NOT_FOUND',
-                text=err,
-            )
-
-        """ If a class (bought lesson) is found, the try to schedule it."""
-        try:
-            if entry is None:
-                c.schedule(
-                    teacher=teacher,
-                    date=date
-                )
-            else:
-                c.assign_entry(entry)
-
-        except CannotBeScheduled:
-            """
-            Should not be thrown in normal circumstances. When you see this error,
-            check the method :model:`hub.class`.can_be_scheduled() — there are all
-            the reasons, that throw this excpetions. You can comment them one by one
-            any find the reason.
-            """
-            return self.__result(
-                result=False,
-                error='E_CANT_SCHEDULE',
-                text='Your choice does not fit teachers timeline'
-            )
-        return self.__result(result=True, c=c)
-
-    def __result(self, result, error='E_NONE', text=None, c=None):
-        return {
-            'result': result,
-            'error': error,
-            'text': text,
-            'c': c,
-        }
 
 
 class Class(BuyableProduct):
