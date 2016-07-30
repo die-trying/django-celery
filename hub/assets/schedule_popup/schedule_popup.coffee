@@ -1,46 +1,49 @@
 class Model extends MicroEvent
+  #  - date — currenlt sealected date
+  #  - lesson_type — the content type of lesson, selected in filters
+  #  - query_type — the type of slots we need to query:
+  #     - 'lessons': for lessons, that do not require planning (default)
+  #     - 'teachers':  for lessons, that require planning (like master classes etc.)
   constructor: (@lesson_type, @date) ->
-    @urls = {
+    @urls = {  # two different urls for query types
       teachers: "/teachers/%s/slots.json?lesson_type=%d"
       lessons: "/lessons/%s/type/%d/slots.json"
     }
     @query_type = 'teachers'
     @from_json()
 
-  class Teacher
-    constructor: (@name, @profile_photo, @description) ->
+  class Record
+    constructor: (@name, @photo, @description) ->
       @slots = []
 
   from_json: () ->
     url = sprintf @urls[@query_type], @date, parseInt @lesson_type
-    @teachers = []
+    @records= []
 
     @loaded = false
     $.getJSON url, (data) =>
       @loaded = true
-      for t in data
-        teacher = new Teacher(
-          name = t.name
-          profile_photo = t.profile_photo
-          description = t.announce
+      for event in data
+        record = new Record(
+          name = event.name
+          photo = event.profile_photo
+          description = event.announce
         )
-
-        for s in t.slots
-          time_for_id = s.replace ':', '_'
+        for time in event.slots
+          time_for_id = time.replace ':', '_'
           slot = {
-            id: "teacher_#{ t.id }_time_#{ time_for_id }"
-            teacher: t.id
-            time: s
+            id: "teacher_#{ event.id }_time_#{ time_for_id }"
+            teacher: if event.host? then event.host.id else event.id
+            time: time
           }
-          teacher.slots.push slot
-        @teachers.push teacher
+          record.slots.push slot
+        console.log record
+
+        @records.push record
       @trigger 'update'
 
   submit_url: (data) ->
-    if @query_type is 'teachers'
-      "/hub/schedule/step2/teacher/#{ data.teacher }/#{ data.lesson }/#{ data.date }/#{ data.time }/"
-    else
-      "/hub/schedule/step2/timeline/#{data.lesson}/"
+    "/hub/schedule/step2/teacher/#{ data.teacher }/#{ data.lesson }/#{ data.date }/#{ data.time }/"
 
 
 class Controller

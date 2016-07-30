@@ -1,15 +1,13 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.contenttypes.models import ContentType
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.dateparse import parse_datetime
 from moneyed import Money
 
 from hub.models import Class, Subscription
+from hub.scheduler import SortingHat
 from lessons.models import OrdinaryLesson
 from products.models import Product1
 from teachers.models import Teacher
-from timeline.models import Entry as TimelineEntry
 
 
 @login_required
@@ -42,45 +40,26 @@ def step1(request):
 
 
 @login_required
-def step2_by_teacher(request, teacher, type_id, date, time):
-    just_checking = False
-    if 'check' in request.GET.keys():
-        just_checking = True
-
-    result = Class.objects.try_to_schedule(
+def step2(request, teacher, type_id, date, time):
+    hat = SortingHat(
+        customer=request.user.crm,
         teacher=get_object_or_404(Teacher, pk=teacher),
-        lesson_type=get_object_or_404(ContentType, app_label='lessons', pk=type_id),
-        date=parse_datetime(date + ' ' + time)
+        lesson_type=type_id,
+        date=date,
+        time=time,
     )
 
-    if just_checking:
-        del result['c']
-        return JsonResponse(result, safe=True)
+    hat.do_the_thing()  # do the actual scheduling
 
-    if not result['result']:
-        return Http404('%s: %s' % (result['error'], result['text']))
-
-    result['c'].save()
-
-    return redirect('/')  # TODO: a page with success story
-
-
-@login_required
-def step2_by_lesson(request, entry_id):
-    just_checking = False
     if 'check' in request.GET.keys():
-        just_checking = True
+        return JsonResponse({
+            'result': hat.result,
+            'error': hat.err,
+            'text': hat.msg,
+        })
 
-    result = Class.objects.try_to_schedule(
-        entry=get_object_or_404(TimelineEntry, pk=entry_id),
-    )
+    if not hat.result:
+        return Http404('%s: %s' % (hat.err, hat.text))
 
-    if just_checking:
-        del result['c']
-        return JsonResponse(result, safe=True)
-
-    if not result['result']:
-        return Http404('%s: %s' % (result['error'], result['text']))
-
-    result['c'].save()
+    hat.c.save()  # save a hat-generated class
     return redirect('/')  # TODO: a page with success story

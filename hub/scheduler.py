@@ -2,7 +2,7 @@ from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import F
 from django.utils.dateparse import parse_datetime
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 
 from hub.exceptions import CannotBeScheduled
 
