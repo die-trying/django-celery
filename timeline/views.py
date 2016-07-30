@@ -3,7 +3,6 @@ from django.core.urlresolvers import reverse
 from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404, redirect, render
 from django.utils.dateparse import parse_datetime
-from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView, UpdateView
 
 from elk.utils import date
@@ -45,10 +44,6 @@ class calendar_update(TeacherCtxMixin, UpdateView):
                        )
 
 
-class schedule_step01(TemplateView):
-    template_name = 'timeline/schedule/step_01.html'
-
-
 @staff_member_required
 def calendar_delete(request, username, pk):
     teacher = get_object_or_404(Teacher, user__username=username)
@@ -75,16 +70,10 @@ def calendar_json(request, username):
 
 
 @staff_member_required
-def check_overlap(request, username):
-    teacher = get_object_or_404(Teacher, user__username=username)
-
-    entry = TimelineEntry()
-    entry_id = request.GET.get('entry')
-    if entry_id:
-        entry = get_object_or_404(TimelineEntry, pk=entry_id)
-    else:
-        entry.start = parse_datetime(request.GET.get('start'))
-        entry.end = parse_datetime(request.GET.get('end'))
-        entry.teacher = teacher
-
+def check_overlap(request, username, start, end):
+    entry = TimelineEntry(
+        start=parse_datetime(start),
+        end=parse_datetime(end),
+        teacher=get_object_or_404(Teacher, user__username=username),
+    )
     return JsonResponse(entry.is_overlapping(), safe=False)

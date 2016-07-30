@@ -143,19 +143,17 @@ class TestFormAPIHelpers(ClientTestCase):
     def setUp(self):
         self.teacher = create_teacher()
         self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher)
-
-        super().setUp()
-
-    def test_check_overlap(self):
-        entry = TimelineEntry(
+        self.entry = TimelineEntry(
             teacher=self.teacher,
             lesson=self.lesson,
             start=datetime(2016, 1, 18, 14, 10),
             end=datetime(2016, 1, 18, 14, 40),
             allow_overlap=False,
         )
-        entry.save()
+        self.entry.save()
+        super().setUp()
 
+    def test_check_overlap_true(self):
         overlaps = self.__get_overlap_response(
             username=self.teacher.user.username,
             start='2016-01-18 14:30',
@@ -163,6 +161,7 @@ class TestFormAPIHelpers(ClientTestCase):
         )
         self.assertTrue(overlaps)
 
+    def test_check_overlap_false(self):
         not_overlaps = self.__get_overlap_response(
             username=self.teacher.user.username,
             start='2016-01-18 14:45',
@@ -170,17 +169,9 @@ class TestFormAPIHelpers(ClientTestCase):
         )
         self.assertFalse(not_overlaps)
 
-        not_overlaps = self.__get_overlap_response(
-            username=self.teacher.user.username,
-            start='2016-01-18 14:30',
-            end='2016-01-18 15:00',
-            query_string_append='&entry=%d' % entry.pk,
-        )
-        self.assertFalse(not_overlaps)
-
-    def __get_overlap_response(self, username, start, end, query_string_append=''):
+    def __get_overlap_response(self, username, start, end):
         response = self.c.get(
-            '/timeline/%s/check_overlap/?start=%s&end=%s%s' % (username, start, end, query_string_append)
+            '/timeline/%s/check_overlap/%s/%s/' % (username, start, end)
         )
         self.assertEqual(response.status_code, 200)
         return json.loads(response.content.decode('utf-8'))

@@ -6,6 +6,8 @@ class Model
     @url =
       create: '/timeline/%s/create/'
       update: '/timeline/%s/%d/update/'
+    @check_overlap_url = '/timeline/%s/check_overlap/%s/%s'
+    @_set_err('none')
 
   get_url: (type) ->
     switch type
@@ -32,24 +34,59 @@ class Model
     @form = $form
     @lesson_type = $('#id_lesson_type', @form).val()
     @initial_lesson_id = parseInt $('#initial_lesson', @form).val()
-
+    @lessons = []
     # update lessons
     @fetch_lessons()
-
-    # update start datetime and duration
-    start = moment $('#id_start_0').val(), ['L', 'DD/MM/YYYY', 'YYYY-MM-DD']
-    @start = start.format('L')
 
   update_fields: () ->
     for lesson in @lessons
       if lesson.id is parseInt $('#id_lesson_id', @form).val()
         @lesson = @_format_duration lesson
+    @check_overlap()
+
+  check_overlap: () ->
+    return if @lesson? and @lesson.id is @initial_lesson_id
+
+    @_set_err('none')
+
+    datetime = $('#id_start_0').val() + ' ' + $('#id_start_1').val()
+    start = moment datetime, ['MM/DD/YYYY hh:mm', 'YYYY-MM-DD hh:mm']
+    return if not start.isValid()
+
+    [h, m] = @_get_duration()
+    end = moment(start)
+    end.add h, 'h'
+    .add m, 'm'
+
+    return if start.isSame end
+    start = start.format 'YYYY-MM-DD HH:mm'
+    end = end.format 'YYYY-MM-DD HH:mm'
+    url = sprintf @check_overlap_url, @username, start, end
+
+    $.getJSON url, (response) =>
+      if response
+        @_set_err('overlap')
+      else
+        @_set_err('none')
 
   _format_duration: (lesson) ->
     [h, m, s] = lesson.duration.split ':'
     h = '0' + h if h.length is 1
     lesson.duration = h + ':' + m
     lesson
+
+  _get_duration: () ->
+    [h, m] = $('#id_duration').val().split ':'
+    [h, m]
+
+  _set_err: (err_type='none') ->
+    if err_type is 'none'
+      @has_err = false
+    else
+      @has_err = true
+      switch err_type
+        when 'overlap' then @is_overlapping = true
+
 
 class Controller
   constructor: () ->
@@ -80,7 +117,10 @@ class Controller
       $('#id_lesson_id').on 'change', () =>  # change other fields (like duration) where the certain lesson is selected
         @model.update_fields()
 
-      @model.update_lessons @form  # toggle update of available lessons in case of lesson_type already has some value
+      @model.update_lessons @form
+
+      $('#id_start_0, #id_start_1').on 'change', () =>
+        @model.check_overlap()
 
       # time and date selector
       $('#id_start_0').applyDatePicker()
@@ -112,9 +152,9 @@ class Controller
     @popup.addClass 'hidden'
     @model = new Model
 
-c = new Controller
 
 $('.user-calendar').each () ->
+  c = new Controller
   $(this).fullCalendar
     events: $(this).attr 'data-calendar' # from JSON
     dayClick: (date, jsEvent, view) ->
