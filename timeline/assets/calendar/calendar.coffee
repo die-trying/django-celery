@@ -1,4 +1,6 @@
 dateFormat = 'L'
+POPUP_WIDTH_PX = 300
+
 class Model
   constructor: () ->
     @url =
@@ -61,6 +63,7 @@ class Controller
     url = @model.get_url type
 
     @popup.load url, () =>
+      [x, y] = @get_popup_coordinates x, y
       @popup
       .removeClass 'hidden'
       .css
@@ -91,6 +94,10 @@ class Controller
 
       @arm_popup_closing_logic()
 
+  get_popup_coordinates: (x, y) ->  # open popup to the left when it is near the right edge of viewport
+    if x + POPUP_WIDTH_PX >= $(window).width()
+      x -= POPUP_WIDTH_PX
+    [x, y]
 
   arm_popup_closing_logic: () ->
     $('.user-calendar__close_popup').on 'click', () =>
