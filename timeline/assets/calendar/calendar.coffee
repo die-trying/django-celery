@@ -24,24 +24,24 @@ class Model
 
       @lesson = @_format_duration(lessons[0])  # set default lesson
       @lessons = lessons
+      @update_fields()
 
-  update_from_form: ($form) ->
+  update_lessons: ($form) ->
     @form = $form
     @lesson_type = $('#id_lesson_type', @form).val()
     @initial_lesson_id = parseInt $('#initial_lesson', @form).val()
 
     # update lessons
     @fetch_lessons()
-    if @lessons
-      for lesson in @lessons
-        if lesson.id = $('#id_lesson_id', @form).val()
-          @lesson = @_format_duration lesson
 
     # update start datetime and duration
-
     start = moment $('#id_start_0').val(), ['L', 'DD/MM/YYYY', 'YYYY-MM-DD']
     @start = start.format('L')
 
+  update_fields: () ->
+    for lesson in @lessons
+      if lesson.id is parseInt $('#id_lesson_id', @form).val()
+        @lesson = @_format_duration lesson
 
   _format_duration: (lesson) ->
     [h, m, s] = lesson.duration.split ':'
@@ -70,8 +70,14 @@ class Controller
 
       # bind all
       rivets.bind(@form, {model: @model})
-      $('.form-control').on 'change', () =>
-        @model.update_from_form @form
+
+      # bind events
+      $('#id_lesson_type').on 'change', () =>  # load lessons of selected type when type changed
+        @model.update_lessons @form
+      $('#id_lesson_id').on 'change', () =>  # change other fields (like duration) where the certain lesson is selected
+        @model.update_fields()
+
+      @model.update_lessons @form  # toggle update of available lessons in case of lesson_type already has some value
 
       # time and date selector
       $('#id_start_0').applyDatePicker()
