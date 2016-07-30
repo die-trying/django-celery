@@ -66,7 +66,7 @@ class TestSchedulingPopupHTML(SchedulingPopupTestCaseBase):
         with self.assertHTML(response, '.schedule-popup__filters .lesson_type label') as categories:
             self.assertEquals(len(categories), 2)  # user has only two lessons bought — Ordinary lesson and a Master class
             for category in categories:
-                self.assertIn(int(category.find('input').attrib.get('value')), [lessons.OrdinaryLesson.contenttype().pk, lessons.MasterClass.contenttype().pk])  # every value of checkbox should be an allowed contenttype
+                self.assertIn(int(category.find('input').attrib.get('value')), [lessons.OrdinaryLesson.get_contenttype().pk, lessons.MasterClass.get_contenttype().pk])  # every value of checkbox should be an allowed contenttype
                 self.assertIn(category.find('input').attrib.get('data-query-type'), ['lessons', 'teachers'])  # should have both types, because we have bought two lessons — ordinary (not requiring a planned timeline entry, and a master class)
                 self.assertNotEqual(len(category.text_content()), 0)  # every lesson type should have a NAME, like <label><input type=radio value="1">NAME</label>.
 
@@ -100,7 +100,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
             just_checking=True,
             date='2032-05-05',  # wednesday
             time='17:00',
-            type_id=lessons.OrdinaryLesson.contenttype().pk,
+            type_id=lessons.OrdinaryLesson.get_contenttype().pk,
         )
         self.assertFalse(response['result'])
 
@@ -116,7 +116,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
             just_checking=True,
             date='2032-05-03',
             time='14:00',
-            type_id=master_class.contenttype().pk
+            type_id=master_class.get_contenttype().pk
         )
         self.assertFalse(response['result'])
         self.assertEquals(response['error'], 'E_CLASS_NOT_FOUND')
@@ -126,7 +126,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         """
         Try to schedule without a teacher slot
         """
-        ordinary_lesson_type = lessons.OrdinaryLesson.contenttype().pk
+        ordinary_lesson_type = lessons.OrdinaryLesson.get_contenttype().pk
         self._buy_a_lesson(lessons.OrdinaryLesson.get_default())
 
         response = self._step2(
@@ -143,7 +143,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         Buy an ordinary lesson and try to schedule it via by for the time, when
         teacher is available
         """
-        ordinary_lesson_type = lessons.OrdinaryLesson.contenttype().pk
+        ordinary_lesson_type = lessons.OrdinaryLesson.get_contenttype().pk
         c = self._buy_a_lesson(lessons.OrdinaryLesson.get_default())
         self.assertFalse(c.is_scheduled)
 
@@ -171,7 +171,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         self._step2(
             date='2032-05-03',
             time='14:00',
-            type_id=master_class.contenttype().pk,
+            type_id=master_class.get_contenttype().pk,
         )
 
         c = Class.objects.get(pk=c.pk)

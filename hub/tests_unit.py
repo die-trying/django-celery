@@ -64,8 +64,8 @@ class TestClassManager(TestCase):
         lesson_types = self.customer.classes.bought_lesson_types()
         self.assertEquals(len(lesson_types), 4)  # if you have defined a new lesson, fill free to increase this value, it's ok
 
-        self.assertIn(lessons.OrdinaryLesson.contenttype(), lesson_types)
-        self.assertIn(lessons.MasterClass.contenttype(), lesson_types)
+        self.assertIn(lessons.OrdinaryLesson.get_contenttype(), lesson_types)
+        self.assertIn(lessons.MasterClass.get_contenttype(), lesson_types)
 
     def test_lesson_type_sorting(self):
         """

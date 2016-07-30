@@ -24,7 +24,7 @@ class TestScheduler(TestCase):
 
     def get_the_hat(self, lesson_type=None, teacher=None, date='2016-01-01', time='13:37'):
         if lesson_type is None:
-            lesson_type = lessons.OrdinaryLesson.contenttype().pk
+            lesson_type = lessons.OrdinaryLesson.get_contenttype().pk
         if teacher is None:
             teacher = self.host
 
@@ -85,14 +85,14 @@ class TestScheduler(TestCase):
 
     def test_find_entry_fail(self):
         s = self.get_the_hat(
-            lesson_type=self.master_class.contenttype().pk
+            lesson_type=self.master_class.get_contenttype().pk
         )
         res = s._SortingHat__get_entry()
         self.assertIsNone(res)
 
     def test_find_entry_ok(self):
         s = self.get_the_hat(
-            lesson_type=self.master_class.contenttype().pk
+            lesson_type=self.master_class.get_contenttype().pk
         )
         entry = TimelineEntry(
             teacher=self.host,
@@ -109,7 +109,7 @@ class TestScheduler(TestCase):
         slots. The hat.__get_entry() should ignore it.
         """
         s = self.get_the_hat(
-            lesson_type=self.master_class.contenttype().pk
+            lesson_type=self.master_class.get_contenttype().pk
         )
         entry = TimelineEntry(
             teacher=self.host,
@@ -137,7 +137,7 @@ class TestScheduler(TestCase):
 
     def test_find_an_entry_fail(self):
         s = self.get_the_hat(
-            lesson_type=self.master_class.contenttype().pk
+            lesson_type=self.master_class.get_contenttype().pk
         )
         s._SortingHat__get_entry = Mock(return_value=None)
         s.find_an_entry()
@@ -152,7 +152,7 @@ class TestScheduler(TestCase):
 
     def test_find_an_entry_ok(self):
         s = self.get_the_hat(
-            lesson_type=self.master_class.contenttype().pk
+            lesson_type=self.master_class.get_contenttype().pk
         )
         s._SortingHat__get_entry = Mock(return_value=100500)
         s.find_an_entry()

@@ -46,7 +46,7 @@ class Lesson(models.Model):
         return self.internal_name
 
     @classmethod
-    def contenttype(cls):
+    def get_contenttype(cls):
         """
         Shortcut for getting ContentType of current lesson
         """
