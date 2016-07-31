@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
@@ -108,6 +109,10 @@ class Lesson(models.Model):
             # TODO unittest it
 
         return d
+
+    @property
+    def admin_url(self):
+        return reverse("admin:lessons_%s_change" % self.__class__.__name__.lower(), args=(self.pk,))
 
     class Meta:
         abstract = True

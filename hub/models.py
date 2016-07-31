@@ -187,9 +187,10 @@ class Class(BuyableProduct):
         super().save(*args, **kwargs)
 
     def __str__(self):
+        s = "{lesson} for {student}".format(lesson=self.lesson.internal_name, student=self.customer)
         if self.subscription:
-            return "#%d %s by %s for %s" % (self.pk, self.lesson, self.subscription.product, self.customer)
-        return "#%d %s for %s" % (self.pk, self.lesson, self.customer)
+            s += " (%s)" % self.subscription.product
+        return s
 
     def assign_entry(self, entry):
         """

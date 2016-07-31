@@ -76,8 +76,8 @@ class Entry(models.Model):
     lesson = GenericForeignKey('lesson_type', 'lesson_id')
     lessons = GenericRelation(Lesson, related_query_name='timeline_entries')
 
-    slots = models.SmallIntegerField(default=1)
-    taken_slots = models.SmallIntegerField(default=0)
+    slots = models.SmallIntegerField('Student slots', default=1)
+    taken_slots = models.SmallIntegerField('Students', default=0)
 
     # TODO — disable assigning of bought classes to inactive entries
     active = models.SmallIntegerField(choices=ENABLED, default=1)
