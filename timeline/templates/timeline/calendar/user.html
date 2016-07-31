@@ -3,6 +3,14 @@
 {% load staticfiles %}
 
 {% block content %}
+<div class="page-header">
+    <h1>Timeline for <select class="selectpicker calendar__teacher-selector">
+        <option value = "{{ object.user.username }}">{{ object.user.crm.full_name }}</option>
+        {% for teacher in others %}
+            <option value = "{{ teacher.user.username }}"">{{ teacher.user.crm.full_name }}</option>
+        {% endfor %}
+    </select></h1>
+</div>
 <div class="user-calendar" data-calendar="{% url 'timeline:timeline.json' username=object.user.username%}"></div>
 <div class="user-calendar__add-popup hidden" data-username="{{ object.user.username }}"></div>
 {% endblock %}

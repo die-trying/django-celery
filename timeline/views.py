@@ -14,7 +14,8 @@ from timeline.models import Entry as TimelineEntry
 @staff_member_required
 def calendar(request, username):
     return render(request, 'timeline/calendar/user.html', context={
-        'object': get_object_or_404(Teacher, user__username=username)
+        'object': get_object_or_404(Teacher, user__username=username),
+        'others': Teacher.objects.exclude(user__username=username).order_by('user__last_name'),
     })
 
 
