@@ -55,8 +55,13 @@ class Controller
       $('#id_start_0').datepicker 'setDate', @model.date
       $('#id_start_0').val @model.date
 
-    # set beauty prompt in the lesson type selector
-    $('#id_lesson_type option:first-child').text '(Lesson type)'
+    # remove django generated unused option
+    $('#id_lesson_type option:first-child').remove()
+
+    # # apply selectpicker
+    $('#id_lesson_type, #id_lesson_id').selectpicker()
+    @model.bind 'lessons_fetched', () ->
+      $('#id_lesson_id').selectpicker 'refresh'
 
   arm_popup_closing_logic: () ->
     $('.user-calendar__close_popup').on 'click', () =>

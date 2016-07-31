@@ -8,14 +8,14 @@
             {% csrf_token %}
             <div class="timeline-entry-form__lesson">
                 <div class="form-group">
-                    <select required name="lesson_type" id="{{ form.lesson_type.id_for_label }}" class="form-control">
+                    <select required name="lesson_type" id="{{ form.lesson_type.id_for_label }}" class="form-control" title="Event type">
                     {% for value, name in form.fields.lesson_type.choices %}
                         <option value = "{{ value }}">{{ name }}</option>
                     {% endfor %}
                     </select>
                 </div>
                 <div class="form-group">
-                    <select required name="lesson_id" id="{{ form.lesson_id.id_for_label }}" class="form-control" placeholder="choose a lesson">
+                    <select required name="lesson_id" id="{{ form.lesson_id.id_for_label }}" class="form-control" title="Choose a lesson">
                         <option rv-each-lesson="model.lessons" rv-value="lesson.id" rv-text="lesson.name"></option>
                     </select>
                 </div>

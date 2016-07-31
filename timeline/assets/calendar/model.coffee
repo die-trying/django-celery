@@ -85,7 +85,6 @@ class Model extends MicroEvent
   _get_end_time: () ->
     # Construct end time from start time and duration
     duration_str = $('#id_duration').val()
-    console.log duration_str
     [h, m] = duration_str.split ':'
     time = moment @start  # make a copy
     time.add h, 'h'
