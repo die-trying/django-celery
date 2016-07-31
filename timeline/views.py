@@ -71,7 +71,7 @@ def calendar_json(request, username):
 
 
 @staff_member_required
-def check_overlap(request, username, start, end):
+def check_entry(request, username, start, end):
     entry = TimelineEntry(
         start=parse_datetime(start),
         end=parse_datetime(end),
@@ -79,4 +79,5 @@ def check_overlap(request, username, start, end):
     )
     return JsonResponse({
         'is_overlapping': entry.is_overlapping(),
+        'is_fitting_hours': entry.is_fitting_working_hours(),
     }, safe=False)

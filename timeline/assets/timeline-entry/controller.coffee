@@ -55,6 +55,11 @@ class Controller
       $('#id_start_0').datepicker 'setDate', @model.date
       $('#id_start_0').val @model.date
 
+    # set default value for the time. It better would be set by now + 1h
+    if not $('#id_start_1').val()
+      $('#id_start_1').val @_default_time()
+
+
     # remove django generated unused option
     $('#id_lesson_type option:first-child').remove()
 
@@ -81,6 +86,11 @@ class Controller
     if x + POPUP_WIDTH_PX >= $(window).width()
       x -= POPUP_WIDTH_PX
     [x, y]
+
+  _default_time: () ->
+    t = moment()
+    t.add 1, 'h'
+    t.format 'HH:30'
 
 $('.user-calendar').each () ->
   c = new Controller

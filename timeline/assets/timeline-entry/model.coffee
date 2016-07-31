@@ -7,16 +7,16 @@ class Model extends MicroEvent
     @urls = {
       create: '/timeline/%s/create/'
       update: '/timeline/%s/%d/update/'
-      check_overlap: '/timeline/%s/check_overlap/%s/%s'
+      check_overlap: '/timeline/%s/check_entry/%s/%s'
     }
     @_set_date(date) if date?
 
     @bind 'lessons_fetched', () =>
       @set_lesson()
-      @check_duration()
+      @check_entry()
 
     @bind 'lesson_set', () =>
-      @check_duration()
+      @check_entry()
 
   update_state: (what_has_changed) ->
 
@@ -26,7 +26,7 @@ class Model extends MicroEvent
     switch what_has_changed
       when 'lesson_type' then @fetch_lessons()
       when 'lesson_id' then @set_lesson()
-      when 'start', 'end' then @check_duration()
+      when 'start', 'end' then @check_entry()
 
   fetch_lessons: () ->
     # Get available lessons from server, based on selected lesson_type
@@ -51,7 +51,7 @@ class Model extends MicroEvent
         @lesson = lesson
         @trigger 'lesson_set'
 
-  check_duration: () ->
+  check_entry: () ->
     # Check with server if current time (start_time, start_date and duration) are
     # overlapping with already existant timeline entries
 
@@ -67,6 +67,8 @@ class Model extends MicroEvent
 
     url = sprintf @urls['check_overlap'], @username, @start, @end
     $.getJSON url, (response) =>
+      if not response.is_fitting_hours
+        @_set_err('besides_hours')
       if response.is_overlapping
         @_set_err('overlap')
 
@@ -109,9 +111,11 @@ class Model extends MicroEvent
     if err_type is 'none'
       @has_err = false
       @overlap = false
+      @besides_hours = false
     else
       @has_err = true
       switch err_type
         when 'overlap' then @overlap = true
+        when 'besides_hours' then @besides_hours = true
 
 Project.models.TimelineEntryModel = Model
