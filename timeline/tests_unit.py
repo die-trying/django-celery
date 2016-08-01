@@ -8,6 +8,7 @@ from mixer.backend.django import mixer
 
 import lessons.models as lessons
 from elk.utils.testing import ClientTestCase, create_customer, create_teacher
+from hub.models import Class
 from teachers.models import WorkingHours
 from timeline.models import Entry as TimelineEntry
 
@@ -50,16 +51,6 @@ class EntryTestCase(TestCase):
 
         self.assertEqual(entry.slots, 10)
 
-    def test_taken_slot_count(self):
-        event = mixer.blend(lessons.MasterClass, slots=10, host=self.teacher1)
-        entry = mixer.blend(TimelineEntry, lesson=event, teacher=self.teacher1)
-        entry.save()
-
-        for i in range(0, 5):
-            self.assertEqual(entry.taken_slots, i)
-            entry.customers.add(create_customer())
-            entry.save()
-
     def test_event_assigning(self):
         """
         Test if timeline entry takes all attributes from the event
@@ -82,14 +73,19 @@ class EntryTestCase(TestCase):
 
         for i in range(0, 10):
             self.assertTrue(entry.is_free)
-            entry.customers.add(create_customer())
+            self.assertEqual(entry.taken_slots, i)  # by the way let's test taken_slots count
+            customer = create_customer()
+            c = mixer.blend(Class, lesson_type=lesson.get_contenttype(), customer=customer)
+            entry.classes.add(c)  # please don't use it in your code! use :model:`hub.Class`.assign_entry() instead
             entry.save()
 
         self.assertFalse(entry.is_free)
 
         """ Let's try to schedule more customers, then event allows """
         with self.assertRaises(ValidationError):
-            entry.customers.add(create_customer())
+            customer = create_customer()
+            c = mixer.blend(Class, lesson_type=lesson.get_contenttype(), customer=customer)
+            entry.classes.add(c)  # please don't use it in your code! use :model:`hub.Class`.assign_entry() instead
             entry.save()
 
     def test_assign_entry_to_a_different_teacher(self):

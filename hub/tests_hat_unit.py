@@ -5,7 +5,7 @@ from django.test import TestCase
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
-from elk.utils.testing import create_customer, create_teacher, mock_request
+from elk.utils.testing import create_customer, create_teacher
 from hub.exceptions import CannotBeScheduled
 from hub.models import Class, Subscription
 from hub.scheduler import SortingHat
@@ -41,7 +41,6 @@ class TestScheduler(TestCase):
             customer=self.customer,
             lesson=lesson
         )
-        c.request = mock_request(self.customer)
         c.save()
         return c
 
@@ -52,7 +51,6 @@ class TestScheduler(TestCase):
             product=product,
             buy_price=150,
         )
-        s.request = mock_request(self.customer)
         s.save()
         return s
 

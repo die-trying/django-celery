@@ -81,7 +81,8 @@ class Subscription(BuyableProduct):
                     buy_price=self.buy_price,
                     buy_source=1,  # store a sign, that class is bought by subscription
                 )
-                c.request = self.request  # bypass request object for later analysis
+                if hasattr(self, 'request'):
+                    c.request = self.request  # bypass request object for later analysis
                 c.save()
 
     def __update_classes(self):
@@ -171,33 +172,36 @@ class Class(BuyableProduct):
 
     def save(self, *args, **kwargs):
         """
-        If timeline entry is assigned, change attribute is_scheduled to True, and
-        add current customer to the customers list
+        If timeline entry is assigned, change attribute is_scheduled to True,
+        and make sure that entry is saved.
         """
         if self.timeline_entry:
-            self.timeline_entry.save()
-            self.is_scheduled = True
-            if not self.timeline_entry.customers.filter(pk=self.customer.pk).exists():
-                self.timeline_entry.customers.add(self.customer)
+            if not self.timeline_entry.pk:  # this happens when the entry is created in current iteration
                 self.timeline_entry.save()
-
+                """
+                We do not use self.assign_entry() method here, because we assume, that
+                all required checks have passed. In future there may be cases, when
+                we should re-save a class with an invalid timeline entry. If we re-run
+                all checks, we will not be able to do this
+                """
+                self.timeline_entry = self.timeline_entry
+            self.is_scheduled = True
         else:
             self.is_scheduled = False
 
-        if self.timeline_entry and not self.timeline_entry.classes.filter(pk=self.pk):
-            """
-            We run into this situation when instance of Class is created in the
-            one iteration with a timeline entry, i.e. when scheduling through the
-            sorting hat.
-
-            We do not use self.assign_entry() method here, because we assume, that
-            all required checks have passed. In future there may be cases, when
-            we should re-save a class with an invalid timeline entry. If we re-run
-            all checks, we will not be able to do this.
-            """
-            self.timeline_entry = self.timeline_entry  # re-assign a timeline entry to save relation
-
         super().save(*args, **kwargs)
+
+        if self.timeline_entry:
+            """
+            Below we run save() on an entry one more time. This is needed for
+            an ability to run save() only on a class, without a need to run save()
+            also on an entry.
+
+            This is usefull when instance of Class is created within the same
+            iteration with a timeline entry, i.e. when scheduling through the
+            sorting hat.
+            """
+            self.timeline_entry.save()
 
     def __str__(self):
         s = "{lesson} for {student}".format(lesson=self.lesson.internal_name, student=self.customer)
@@ -211,7 +215,6 @@ class Class(BuyableProduct):
         """
         if not self.can_be_scheduled(entry):
             raise CannotBeScheduled('%s %s' % (self, entry))
-
         self.timeline_entry = entry
 
     def schedule(self, teacher, date, allow_overlap=True, allow_besides_working_hours=False):
@@ -241,9 +244,10 @@ class Class(BuyableProduct):
             raise CannotBeUnscheduled('%s' % self)
 
         # TODO — check if entry is not completed
-        self.timeline_entry.customers.remove(self.customer)
-        self.timeline_entry.save()
+        entry = self.timeline_entry
+        entry.classes.remove(self)
         self.timeline_entry = None
+        entry.save()
 
     def can_be_scheduled(self, entry):
         """

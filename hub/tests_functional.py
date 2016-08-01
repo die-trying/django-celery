@@ -5,7 +5,7 @@ from mixer.backend.django import mixer
 
 import lessons.models as lessons
 import products.models as products
-from elk.utils.testing import create_customer, create_teacher, mock_request
+from elk.utils.testing import create_customer, create_teacher
 from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from hub.models import Class, Subscription
 from timeline.models import Entry as TimelineEntry
@@ -37,7 +37,6 @@ class BuySubscriptionTestCase(TestCase):
             product=product,
             buy_price=150,
         )
-        s.request = mock_request(self.customer)
         s.save()
 
         active_lessons_count = Class.objects.filter(subscription_id=s.pk).count()
@@ -59,7 +58,6 @@ class BuySubscriptionTestCase(TestCase):
             product=product,
             buy_price=150
         )
-        s.request = mock_request(self.customer)
         s.save()
 
         for c in s.classes.all():
@@ -72,7 +70,6 @@ class BuySubscriptionTestCase(TestCase):
             product=product,
             buy_price=150,
         )
-        s.request = mock_request(self.customer)
         s.save()
 
         for lesson in s.classes.all():
@@ -97,7 +94,6 @@ class ScheduleTestCase(TestCase):
             customer=self.customer,
             lesson=lesson
         )
-        c.request = mock_request(self.customer)
         c.save()
         return c
 
@@ -123,7 +119,7 @@ class ScheduleTestCase(TestCase):
 
         self.assertTrue(bought_class.is_scheduled)
         self.assertFalse(entry.is_free)
-        self.assertEquals(entry.customers.first(), self.customer)
+        self.assertEquals(entry.classes.first().customer, self.customer)
 
         bought_class.unschedule()
         bought_class.save()
@@ -144,7 +140,7 @@ class ScheduleTestCase(TestCase):
         c.save()
 
         self.assertIsInstance(c.timeline_entry, TimelineEntry)
-        self.assertEquals(c.timeline_entry.customers.first(), self.customer)  # should save a customer
+        self.assertEquals(c.timeline_entry.classes.first().customer, self.customer)  # should save a customer
         self.assertEquals(c.timeline_entry.start, datetime(2016, 8, 17, 10, 1))  # datetime for entry start should be from parameters
         self.assertEquals(c.timeline_entry.end, datetime(2016, 8, 17, 10, 1) + lesson.duration)  # duration should be taken from lesson
 
@@ -196,23 +192,20 @@ class ScheduleTestCase(TestCase):
             customer=customer1,
             lesson=paired_lesson
         )
-        customer1_class.request = mock_request()
         customer1_class.save()
 
         customer2_class = Class(
             customer=customer2,
             lesson=paired_lesson
         )
-
-        customer2_class.request = mock_request()
         customer2_class.save()
 
         timeline_entry = mixer.blend(TimelineEntry, lesson=paired_lesson, teacher=self.host)
 
         customer1_class.assign_entry(timeline_entry)
-        customer2_class.assign_entry(timeline_entry)
-
         customer1_class.save()
+
+        customer2_class.assign_entry(timeline_entry)
         customer2_class.save()
 
         self.assertTrue(customer1_class.is_scheduled)

@@ -11,14 +11,16 @@ def log_bought_class(sender, **kwargs):
     Log a fresh-bought class. Logs only single-bought classes. Classes bought
     by subscription are logged by another listener.
 
-    For this signal to work, you should store a `request` property in the sender
-    model. For examples, see tests of the hub app. While testing this property
-    is usually mocked by elk.utils.mockers.mock_request function.
+    For this signal reciever to work, you should store a `request` property in
+    the sender model. For examples, see tests of this app.
     """
     if not kwargs['created']:  # log only new classes
         return
 
     instance = kwargs['instance']
+
+    if not hasattr(instance, 'request'):  # if we don't know a request, probably it's testing
+        return
 
     if instance.buy_source != 0:  # log only single-bought classes
         return
@@ -36,12 +38,18 @@ def log_bought_class(sender, **kwargs):
 @receiver(post_save, sender=Subscription, dispatch_uid='Log_subscription_buy')
 def log_bought_subscription(sender, **kwargs):
     """
-    Log a fresh-bought subscription
+    Log a fresh-bought subscription.
+
+    For this signal reciever to work, you should store a `request` property in
+    the sender model. For examples, see tests of this app.
     """
     if not kwargs['created']:  # log only new subscriptions
         return
 
     instance = kwargs['instance']
+
+    if not hasattr(instance, 'request'):  # if we don't know a request, probably it's testing
+        return
 
     ev = PaymentEvent(
         customer=instance.customer,

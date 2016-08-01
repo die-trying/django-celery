@@ -7,7 +7,7 @@ from mixer.backend.django import mixer
 
 import lessons.models as lessons
 import products.models as products
-from elk.utils.testing import create_customer, create_teacher, mock_request
+from elk.utils.testing import create_customer, create_teacher
 from hub.exceptions import CannotBeScheduled
 from hub.models import Class, Subscription
 from teachers.models import WorkingHours
@@ -28,7 +28,6 @@ class testBuyableProduct(TestCase):
             product=product,
             buy_price=150,
         )
-        s.request = mock_request(self.customer)
         s.save()
 
         self.assertEqual(s.name_for_user, product.name)
@@ -39,7 +38,6 @@ class testBuyableProduct(TestCase):
             customer=self.customer,
             lesson=lesson
         )
-        c.request = mock_request(self.customer)
         c.save()
 
         self.assertEqual(c.name_for_user, lesson.name)
@@ -57,7 +55,6 @@ class TestClassManager(TestCase):
             product=product,
             buy_price=150,
         )
-        s.request = mock_request()
         s.save()
 
     def test_available_lesson_types(self):
@@ -112,7 +109,6 @@ class TestScheduleLowLevel(TestCase):
             customer=self.customer,
             lesson=self.lesson
         )
-        c.request = mock_request(self.customer)
         c.save()
         return c
 

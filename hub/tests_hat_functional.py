@@ -4,7 +4,7 @@ from datetime import datetime
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
-from elk.utils.testing import ClientTestCase, create_customer, create_teacher, mock_request
+from elk.utils.testing import ClientTestCase, create_customer, create_teacher
 from hub.models import Class
 from teachers.models import WorkingHours
 from timeline.models import Entry as TimelineEntry
@@ -26,7 +26,6 @@ class SchedulingPopupTestCaseBase(ClientTestCase):
             customer=self.customer,
             lesson=lesson
         )
-        c.request = mock_request(self.customer)
         c.save()
         return c
 
@@ -140,7 +139,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
 
     def test_schedule_an_ordinary_lesson(self):
         """
-        Buy an ordinary lesson and try to schedule it via by for the time, when
+        Buy an ordinary lesson and try to schedule it by time, when
         teacher is available
         """
         ordinary_lesson_type = lessons.OrdinaryLesson.get_contenttype().pk
@@ -155,6 +154,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         c = Class.objects.get(pk=c.pk)
         self.assertTrue(c.is_scheduled)
         self.assertIsInstance(c.timeline_entry, TimelineEntry)  # assert that timeline entry is correctly created
+        self.assertEqual(c.timeline_entry.taken_slots, 1)
 
     def test_schedule_a_master_class(self):
         """

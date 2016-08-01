@@ -6,7 +6,6 @@ from django.db import models
 from django.utils.dateformat import format
 from django.utils.translation import ugettext as _
 
-from crm.models import Customer
 from lessons.models import Lesson
 from teachers.models import Teacher, WorkingHours
 
@@ -65,8 +64,6 @@ class Entry(models.Model):
 
     teacher = models.ForeignKey(Teacher, related_name='timeline_entries', on_delete=models.PROTECT)
 
-    customers = models.ManyToManyField(Customer, related_name='planned_timeline_entries', blank=True)
-
     start = models.DateTimeField()
     end = models.DateTimeField()
     allow_overlap = models.BooleanField(default=True)
@@ -115,7 +112,7 @@ class Entry(models.Model):
             raise ValidationError('Entry time does not fit teachers working hours')
 
         if self.pk:
-            self.__update_slots()  # update free slot count, check if no customers added when no slots are free
+            self.__update_slots()  # update free slot count, check if no classes added when no slots are free
 
         super().save(*args, **kwargs)
 
@@ -181,11 +178,11 @@ class Entry(models.Model):
 
     def __update_slots(self):
         """
-        Count assigned customers and update available time slots.
+        Count assigned classes and update available time slots.
 
         If there is too much customers — raise an exception
         """
-        self.taken_slots = self.customers.count()
+        self.taken_slots = self.classes.count()
 
         if self.taken_slots > self.slots:
-            raise ValidationError('Trying to assign a customer to event without free slots')
+            raise ValidationError('Trying to assign a class to event without free slots')
