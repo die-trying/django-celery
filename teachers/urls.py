@@ -3,8 +3,8 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-    url(r'(?P<date>[\d\-]+)/slots.json$', views.slots_by_date, name='slots_by_date'),
-    url(r'(?P<username>.+)/(?P<date>[\d\-]+)/slots.json$', views.slots_by_teacher, name='slots_by_teacher'),
+    url(r'(?P<date>[\d\-]+)/type/(?P<lesson_type>\d+)/teachers.json$', views.teachers, name='teachers'),
+    url(r'(?P<date>[\d\-]+)/type/(?P<lesson_type>\d+)/lessons.json$', views.lessons, name='lessons'),
 
-    url(r'(?P<username>.+)/hours.json$', views.teacher_hours, name='teacher_hours'),
+    url(r'(?P<username>.+)/hours.json$', views.hours, name='hours'),
 ]

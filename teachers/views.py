@@ -3,13 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
 
-from elk.utils.filters import request_filters
 from teachers.models import Teacher, WorkingHours
-from timeline.models import ALLOWED_TIMELINE_FILTERS
 
 
 @staff_member_required
-def teacher_hours(request, username):
+def hours(request, username):
     teacher = get_object_or_404(Teacher, user__username=username)
 
     hours_list = []
@@ -21,33 +19,12 @@ def teacher_hours(request, username):
 
 
 @login_required
-def slots_by_teacher(request, username, date):
-    """
-    Get free time slots for a particular teacher. The used method is
-    :model:`teachers.Teacher`.find_free_slots, filtering is done via
-    :model:`timeline.Entry`.
-    """
-    teacher = get_object_or_404(Teacher, user__username=username)
-
-    kwargs = request_filters(request, ALLOWED_TIMELINE_FILTERS)
-
-    slots = teacher.find_free_slots(date=date, **kwargs)
-
-    if not slots:
-        raise Http404('No slots found')
-
-    return JsonResponse(slots.as_dict(), safe=False)
-
-
-@login_required
-def slots_by_date(request, date):
+def teachers(request, date, lesson_type):
     """
     Return of JSON of time slots, avaialbe for planning. The used method is
     :model:`teachers.Teacher`.find_free, filtering is done via :model:`timeline.Entry`.
     """
-    kwargs = request_filters(request, ALLOWED_TIMELINE_FILTERS)
-
-    teachers_with_slots = Teacher.objects.find_free(date=date, **kwargs)
+    teachers_with_slots = Teacher.objects.find_free(date=date, lesson_type=lesson_type)
     if not teachers_with_slots:
         raise Http404('No free teachers found')
 
@@ -58,3 +35,21 @@ def slots_by_date(request, date):
         teachers.append(teacher_dict)
 
     return JsonResponse(teachers, safe=False)
+
+
+@login_required
+def lessons(request, date, lesson_type):
+    """
+    Return a JSON of avaialble time slots for distinct date and lesson_type
+    """
+    lessons = Teacher.objects.find_lessons(date=date, lesson_type=lesson_type)
+    if not lessons:
+        raise Http404('No lessons found on this date')
+
+    result = []
+    for lesson in lessons:
+        lesson_dict = lesson.as_dict()
+        lesson_dict['slots'] = lesson.free_slots.as_dict()
+        result.append(lesson_dict)
+
+    return JsonResponse(result, safe=False)
