@@ -97,7 +97,7 @@ class Lesson(models.Model):
         """Dicitionary representation of a lesson"""
         d = {
             'id': self.pk,
-            'name': self.internal_name,
+            'name': self.name,
             'required_slots': self.slots,
             'announce': self.announce,
             'description': self.description,
