@@ -34,19 +34,19 @@ class TestFixtures(TestCase):
     """
     Test if my fixtures helper generates fixtures with correct relations
     """
-    def create_user(self):
+    def test_create_user(self):
         User = apps.get_model('auth.user')
         user = create_user()
         self.assertEquals(User.objects.get(username=user.username), user)
         self.assertIsNotNone(user.crm)
 
-    def create_customer(self):
+    def test_create_customer(self):
         Customer = apps.get_model('crm.customer')
         customer = create_customer()
 
         self.assertEquals(Customer.objects.get(user__username=customer.user.username), customer)
 
-    def create_teacher(self):
+    def test_create_teacher(self):
         Teacher = apps.get_model('teachers.teacher')
         teacher = create_teacher()
 
@@ -55,7 +55,7 @@ class TestFixtures(TestCase):
         self.assertIsNotNone(t.user.crm)
         self.assertTrue(t.user.is_staff)
 
-    def create_teacher_all_lessons(self):
+    def test_create_teacher_all_lessons(self):
         teacher = create_teacher()
         acceptable_lessons = teacher.acceptable_lessons.all()
         self.assertGreater(acceptable_lessons.count(), 0)
