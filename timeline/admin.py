@@ -80,6 +80,7 @@ class TimelineEntryAdmin(admin.ModelAdmin):
             'fields': ('teacher', 'lesson'),
         }),
     )
+    ordering = ('-start',)
 
     def duration(self, instance):
         d = str(instance.end - instance.start).split(':')

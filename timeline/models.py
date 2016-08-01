@@ -15,7 +15,7 @@ ALLOWED_TIMELINE_FILTERS = ('lesson_type', 'lesson_id')  # list of filters, allo
 class EntryManager(models.Manager):
 
     def get_queryset(self, exclude_void=True):
-        return super(EntryManager, self).get_queryset().exclude(active=0).order_by('-start')
+        return super(EntryManager, self).get_queryset().exclude(active=0)
 
 
 class Entry(models.Model):
