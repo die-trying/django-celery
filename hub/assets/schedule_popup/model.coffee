@@ -13,7 +13,7 @@ class Model extends MicroEvent
     @from_json()
 
   class Record
-    constructor: (@name, @photo, @description) ->
+    constructor: (@name, @photo, @author, @description) ->
       @slots = []
 
   from_json: () ->
@@ -27,6 +27,7 @@ class Model extends MicroEvent
         record = new Record(
           name = event.name
           photo = event.profile_photo
+          author = if event.host? then event.host.name
           description = event.announce
         )
         for time in event.slots
@@ -37,7 +38,6 @@ class Model extends MicroEvent
             time: time
           }
           record.slots.push slot
-        console.log record
 
         @records.push record
       @trigger 'update'
