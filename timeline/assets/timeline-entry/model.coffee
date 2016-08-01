@@ -35,7 +35,6 @@ class Model extends MicroEvent
     @lessons = []
     $.getJSON url, (response) =>
       for lesson in response
-        lesson.name = sprintf "%s | %d ppl.", lesson.name, lesson.slots if lesson.slots? and lesson.slots isnt 1
         lesson.selected = ''
         lesson.selected = ' selected ' if lesson.id is @initial_lesson_id
         lesson.duration = @_format_duration lesson.duration
