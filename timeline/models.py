@@ -1,6 +1,7 @@
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.dateformat import format
 from django.utils.translation import ugettext as _
@@ -85,6 +86,10 @@ class Entry(models.Model):
     @property
     def is_free(self):
         return self.taken_slots < self.slots
+
+    @property
+    def admin_url(self):
+        return reverse('admin:timeline_entry_change', args=(self.pk,))
 
     class Meta:
         verbose_name = 'Planned class'
