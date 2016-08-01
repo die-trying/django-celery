@@ -15,7 +15,7 @@ ALLOWED_TIMELINE_FILTERS = ('lesson_type', 'lesson_id')  # list of filters, allo
 class EntryManager(models.Manager):
 
     def get_queryset(self, exclude_void=True):
-        return super(EntryManager, self).get_queryset().exclude(active=0)
+        return super(EntryManager, self).get_queryset().exclude(active=0).order_by('-start')
 
 
 class Entry(models.Model):
@@ -87,7 +87,8 @@ class Entry(models.Model):
         return self.taken_slots < self.slots
 
     class Meta:
-        verbose_name_plural = 'Entries'
+        verbose_name = 'Planned class'
+        verbose_name_plural = 'Planned classes'
         permissions = (
             ('other_entries', "Can work with other's timeleine entries"),
         )
