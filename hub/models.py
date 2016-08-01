@@ -174,7 +174,7 @@ class Class(BuyableProduct):
         If timeline entry is assigned, change attribute is_scheduled to True, and
         add current customer to the customers list
         """
-        if self.timeline_entry is not None:
+        if self.timeline_entry:
             self.timeline_entry.save()
             self.is_scheduled = True
             if not self.timeline_entry.customers.filter(pk=self.customer.pk).exists():
@@ -183,6 +183,19 @@ class Class(BuyableProduct):
 
         else:
             self.is_scheduled = False
+
+        if self.timeline_entry and not self.timeline_entry.classes.filter(pk=self.pk):
+            """
+            We run into this situation when instance of Class is created in the
+            one iteration with a timeline entry, i.e. when scheduling through the
+            sorting hat.
+
+            We do not use self.assign_entry() method here, because we assume, that
+            all required checks have passed. In future there may be cases, when
+            we should re-save a class with an invalid timeline entry. If we re-run
+            all checks, we will not be able to do this.
+            """
+            self.timeline_entry = self.timeline_entry  # re-assign a timeline entry to save relation
 
         super().save(*args, **kwargs)
 

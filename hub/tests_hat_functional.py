@@ -154,6 +154,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         )
         c = Class.objects.get(pk=c.pk)
         self.assertTrue(c.is_scheduled)
+        self.assertIsInstance(c.timeline_entry, TimelineEntry)  # assert that timeline entry is correctly created
 
     def test_schedule_a_master_class(self):
         """
