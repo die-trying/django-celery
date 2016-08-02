@@ -9,14 +9,17 @@ machine:
 dependencies:
   pre:
     - pip install --upgrade pip
+    - chmod +x ./build/*.sh
 
   post:
     - npm install -g gulp bower
     - bower install
+    - ./build/download_geoip_db.sh
 
   cache_directories:
     - ./node_modules/
     - ./elk/static/vendor/
+    - ./geolite/
 
 test:
   pre:
@@ -27,6 +30,5 @@ test:
 
   post:
     - bash <(curl -s https://codecov.io/bash) -t 8ce25f6b-eaf8-442a-aab4-fb6218384b6e
-    - chmod +x ./build/*.sh
     - ./build/store-build-information.sh
     - ./build/strip-for-production.sh

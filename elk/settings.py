@@ -8,6 +8,8 @@ SITE_ROOT = root()
 
 USE_L10N = True
 USE_i18N = True
+USE_TZ = True
+TIME_ZONE = env('TIME_ZONE')
 
 # LANGUAGE_CODE = "ru"
 FORMAT_MODULE_PATH = [
@@ -36,6 +38,7 @@ INSTALLED_APPS = [
     'django_markdown',
     'django_user_agents',
     'social.apps.django_app.default',
+    'easy_timezones',
     'django_nose',
     'django.contrib.admindocs',
     'suit',
@@ -61,7 +64,9 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
+    'easy_timezones.middleware.EasyTimezoneMiddleware',
 ]
+
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = [
     '--nologcapture'
@@ -137,3 +142,6 @@ SECRET_KEY = env('SECRET_KEY')  # Raises ImproperlyConfigured exception if SECRE
 CACHES = {
     'default': env.cache(),
 }
+
+GEOIP_DATABASE = './geolite/GeoLiteCity.dat'
+GEOIPV6_DATABASE = './geolite/GeoLiteCityv6.dat'
