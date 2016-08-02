@@ -110,7 +110,21 @@ class Entry(models.Model):
             raise ValidationError('Entry time does not fit teachers working hours')
 
         if self.pk:
-            self.__update_slots()  # update free slot count, check if no classes added when no slots are free
+            self.__update_slots()  # update free slot count, check if no classes were added without spare slots for it
+            if self.taken_slots == 0:
+                if self.lesson and not self.lesson.get_contenttype().model_class().timeline_entry_required():
+                    """
+                    If the entry has no taken slots and is attached to a lesson,
+                    that does not require a timeline entry — the entry is unused
+                    and should be deleted.
+
+                    This behaviour is needed to free a teacher slot when the last
+                    student (often — the single), does cancel the class, that
+                    does not require a by-hand planning, i.e. ordinary lesson.
+                    """
+                    self.delete()
+                    return
+
 
         super().save(*args, **kwargs)
 

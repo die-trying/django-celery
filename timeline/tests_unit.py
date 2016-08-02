@@ -318,6 +318,40 @@ class TestCancel(TestCase):
         c.refresh_from_db()
         self.assertFalse(c.is_scheduled)
 
+    def test_entry_autodelete(self):
+        """
+        Entry without taken slots with a lesson, that does not require an entry should delete itself.
+        """
+        lesson = mixer.blend(lessons.OrdinaryLesson)  # blend a lesson, that does not require a timeline entry
+        c = self._buy_a_lesson(lesson)
+        c.schedule(  # go through the simple scheduling process, without a special-crafted timeline entry
+            teacher=self.teacher,
+            date=datetime(2032, 5, 3, 12, 30),
+            allow_besides_working_hours=True
+        )
+        c.save()
+        entry = c.timeline_entry
+        self.assertIsInstance(entry, TimelineEntry)
+        c.delete()
+        self.assertFalse(TimelineEntry.objects.filter(pk=entry.pk).exists())  # during the class saving, entry shouold have deleted itself
+
+    def test_entry_no_autodelete_on_lessons_that_require_a_timeline_entry(self):
+        """
+        Timeline entries for lessons, that require it, should not be deleted event when the class cancles.
+
+        The difference with the previous test is that we buy a master class,
+        which requires a timeline entry.
+        """
+        c = self._buy_a_lesson(self.lesson)  # self.lesson is a master class, so it requires an entry
+        entry = self._create_entry()
+        c.assign_entry(entry)
+        c.save()
+        entry = c.timeline_entry
+        self.assertIsInstance(entry, TimelineEntry)
+
+        c.delete()
+        self.assertTrue(TimelineEntry.objects.filter(pk=entry.pk).exists())  # auto-deletion mechanism should not be engaged
+
 
 class TestFormContext(ClientTestCase):
     """
