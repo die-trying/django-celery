@@ -13,18 +13,21 @@ Configuration is stored in `elk/.env`, for examples see `elk/.env.circle`, used 
 
 This projects requires python3 (i don't test it on python2). For frontend building you need to install Node.JS. I run tests on OS X and Linux (Circle CI), so the project should work on both systems.
 
-```bash
+```sh
 pip install -r requirements.txt
 npm install -g gulp bower
 npm install
 bower install
+./build/download_geoip_db.sh
 ```
+
+For seeing actual bootstrap process you should consider CI building process.
 
 ## Building
 
 Development host:
 
-```bash
+```sh
 ./manage.py loaddata crm lessons products teachers
 gulp&
 ./manage.py runserver
