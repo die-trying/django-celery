@@ -21,7 +21,7 @@ bower install
 ./build/download_geoip_db.sh
 ```
 
-For seeing actual bootstrap process you should consider CI building process.
+For actual bootstrap process please consider CI configuration.
 
 ## Building
 
