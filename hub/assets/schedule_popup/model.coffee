@@ -6,8 +6,8 @@ class Model extends MicroEvent
   #     - 'teachers':  for lessons, that require planning (like master classes etc.)
   constructor: (@lesson_type, @date) ->
     @urls = {  # two different urls for query types
-      teachers: "/teachers/%s/type/%d/teachers.json"
-      lessons: "/teachers/%s/type/%d/lessons.json"
+      teachers: "/hub/%s/type/%d/teachers.json"
+      lessons: "/hub/%s/type/%d/lessons.json"
     }
     @query_type = 'teachers'
     @from_json()
