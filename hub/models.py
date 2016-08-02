@@ -145,9 +145,19 @@ class ClassesManager(models.Manager):
 
 class Class(BuyableProduct):
     """
-    Represents a single bought lesson. When buying a class, one should
-    store request in the `request` property of this instance. This is neeeded for
-    the log entry to contain request data requeired for futher analysis.
+    Represents a single bought lesson.
+
+    Purpose
+    =======
+    Incapsulate all low-level scheduling logic. High level logic is
+    located in the SortingHat — if you want to plan a lesson for the
+    particular student, please use the hat.
+
+    Storing a request
+    =================
+    When buying a class, one should store request in the `request`
+    property of this instance. This is neeeded for the log entry to
+    contain request data requeired for futher analysis.
 
     The property is accessed later in the history.signals module.
 

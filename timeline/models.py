@@ -30,7 +30,7 @@ class Entry(models.Model):
     Please import it like this::
         from timeline.models import Entry as TimelineEntry
 
-    OVERLAPPING ENTRIES
+    Overlapping entries
     ===================
 
     By default timeline entries can overlap each other. You should set
@@ -39,6 +39,29 @@ class Entry(models.Model):
 
     You can check overlapping with the `instance.is_overlapping()` method. Checks will be
     done automaticaly, when save() is invoced and allow_overlap == False
+
+    Self-deleting
+    =============
+    If the entry has no taken slots and is attached to a lesson,
+    that does not require a timeline entry — the entry is unused
+    and should be deleted.
+
+    This behaviour is needed to free a teacher timeline slot when
+    the last student (often — the single), does cancel the class, that
+    does not require a by-hand planning, i.e. ordinary lesson.
+
+    You dont need to save an entry
+    ==============================
+    This model should not incapsulate any scheduling logic. By 'scheduling'
+    i meen a process when particular student registers to a planned event from
+    timeline or to a generated automaticaly slot.
+
+    Low-level scheduling logic is incapsulated in :model:`hub.Class`, and the
+    high-level is the `SortingHat` class. This class's concerns should be about
+    teacher working hours, timeline representation, counting spare student slots etc.
+
+    So, the prefered situation is when entry is saved by the corresponding
+    class, and not by you!
 
     JSON representation
     ===================
