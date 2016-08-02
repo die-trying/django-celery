@@ -91,7 +91,7 @@ class TimelineEntryAdmin(admin.ModelAdmin):
         return '%s:%s' % (d[0], d[1])
 
     def date(self, instance):
-        return capfirst(naturalday(instance.start)) + ', ' + instance.start.strftime('%H:%m')
+        return capfirst(naturalday(instance.start)) + ', ' + instance.start.strftime('%H:%M')
 
     def lesson(self, instance):
         return format_html('<a href = "%s">%s</a>' % (instance.lesson.admin_url, instance.lesson.internal_name))
