@@ -102,3 +102,7 @@ elk/static/js
 /static/
 
 node_modules/
+
+# editor
+elk.sublime-project
+elk.sublime-workspace
