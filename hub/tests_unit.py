@@ -42,6 +42,22 @@ class testBuyableProduct(TestCase):
 
         self.assertEqual(c.name_for_user, lesson.name)
 
+    def test_no_deletion(self):
+        """
+        No buyable product can ever be deleted.
+        """
+        product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
+        s = Subscription(
+            customer=self.customer,
+            product=product,
+            buy_price=150
+        )
+        s.save()
+        self.assertEqual(s.active, 1)
+        s.delete()
+        s.refresh_from_db()
+        self.assertEqual(s.active, 0)
+
 
 class TestClassManager(TestCase):
     fixtures = ('lessons', 'products')
@@ -142,3 +158,35 @@ class TestScheduleLowLevel(TestCase):
                 date=datetime(2016, 12, 1, 7, 27)  # wednesday
             )
             c.save()
+
+    def test_deletion_of_a_scheduled_class(self):
+        """
+        Deletion of a scheduled class should just call it's
+        unscheduling mechanism.
+        """
+        c = self._buy_a_lesson()
+        entry = mixer.blend(TimelineEntry, slots=1, lesson=self.lesson, teacher=self.teacher)
+        c.assign_entry(entry)
+        c.save()
+
+        unschedule = MagicMock(return_value=True)
+        c.unschedule = unschedule
+        c.delete()
+
+        c.refresh_from_db()
+        unschedule.assert_any_call()
+
+    def test_deletion_of_an_unscheduled_class(self):
+        """
+        Deletion of an unscheduled class should be like any other
+        :model:`hub.BuyableProduct`.
+        """
+        c = self._buy_a_lesson()
+        unschedule = MagicMock(return_value=True)
+        c.unschedule = unschedule
+
+        c.delete()
+        c.refresh_from_db()
+
+        unschedule.assert_not_called()
+        self.assertEqual(c.active, 0)

@@ -275,6 +275,50 @@ class TestPermissions(ClientTestCase):
         self.assertEqual(response.status_code, 200)
 
 
+class TestCancel(TestCase):
+    """
+    Actions with timeline entries with attached classes should
+    influence the classes too.
+    """
+    def setUp(self):
+        self.teacher = create_teacher()
+        self.customer = create_customer()
+        self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher)
+
+    def _buy_a_lesson(self, lesson):
+        c = Class(
+            customer=self.customer,
+            lesson=lesson
+        )
+        c.save()
+        return c
+
+    def _create_entry(self, start=datetime(2032, 5, 3, 13, 30), end=datetime(2032, 5, 3, 14, 0)):
+        return mixer.blend(
+            TimelineEntry,
+            teacher=self.teacher,
+            lesson=self.lesson,
+            start=start,
+            end=end,
+        )
+
+    def test_cancel_entry(self):
+        """
+        When deleting a timeline entry class should become unscheduled.
+        """
+        c = self._buy_a_lesson(self.lesson)
+        entry = self._create_entry()
+        c.assign_entry(entry)
+        c.save()
+
+        self.assertTrue(c.is_scheduled)
+
+        entry = TimelineEntry.objects.get(pk=entry.id)
+        entry.delete()
+        c.refresh_from_db()
+        self.assertFalse(c.is_scheduled)
+
+
 class TestFormContext(ClientTestCase):
     """
     Check for a bug: timeline entry edit form should edit entry for the owner

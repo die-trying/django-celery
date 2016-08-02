@@ -1,4 +1,4 @@
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -6,7 +6,6 @@ from django.db import models
 from django.utils.dateformat import format
 from django.utils.translation import ugettext as _
 
-from lessons.models import Lesson
 from teachers.models import Teacher, WorkingHours
 
 ALLOWED_TIMELINE_FILTERS = ('lesson_type', 'lesson_id')  # list of filters, allowed for ordinary users through get parameters
@@ -72,7 +71,6 @@ class Entry(models.Model):
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
     lesson_id = models.PositiveIntegerField(null=True, blank=True)
     lesson = GenericForeignKey('lesson_type', 'lesson_id')
-    lessons = GenericRelation(Lesson, related_query_name='timeline_entries')
 
     slots = models.SmallIntegerField('Student slots', default=1)
     taken_slots = models.SmallIntegerField('Students', default=0)
@@ -115,6 +113,16 @@ class Entry(models.Model):
             self.__update_slots()  # update free slot count, check if no classes added when no slots are free
 
         super().save(*args, **kwargs)
+
+    def delete(self):
+        """
+        Unschedule all attached classes before deletion. Unscheduling a class
+        sets it free — user can plan a new lesson on it.
+        """
+        for c in self.classes.all():
+            c.unschedule()
+            c.save()
+        super().delete()
 
     def is_overlapping(self):
         """

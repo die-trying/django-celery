@@ -29,6 +29,13 @@ class BuyableProduct(models.Model):
     def name_for_user(self):
         pass
 
+    def delete(self):
+        """
+        Disable deletion for any buyable thing
+        """
+        self.active = 0
+        self.save()
+
     class Meta:
         abstract = True
 
@@ -98,6 +105,7 @@ class Subscription(BuyableProduct):
 
 
 class ClassesManager(models.Manager):
+
     def bought_lesson_types(self):
         """
         Get ContentTypes of lessons, available to user
@@ -142,6 +150,15 @@ class Class(BuyableProduct):
     the log entry to contain request data requeired for futher analysis.
 
     The property is accessed later in the history.signals module.
+
+    Deleting a class
+    ================
+    Currently we need posibility to unschedule a class through django-admin.
+    This is done by deleting — the classs delete() method checks, if class is
+    scheduled, and if it is, delete() just un-schedules it.
+
+    For backup purposes, the delete method is redefined in :model:`hub.BuyableProduct`
+    for completely disabling deletion of anything, that anyone has bought for money.
     """
     BUY_SOURCES = (
         (0, 'Single'),
@@ -159,7 +176,7 @@ class Class(BuyableProduct):
     lesson_id = models.PositiveIntegerField()
     lesson = GenericForeignKey('lesson_type', 'lesson_id')
 
-    timeline_entry = models.ForeignKey(TimelineEntry, null=True, blank=True, related_name='classes')
+    timeline_entry = models.ForeignKey(TimelineEntry, null=True, blank=True, on_delete=models.SET_NULL, related_name='classes')
 
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, null=True, blank=True, related_name='classes')
 
@@ -174,7 +191,21 @@ class Class(BuyableProduct):
         """
         If timeline entry is assigned, change attribute is_scheduled to True,
         and make sure that entry is saved.
+
+        If class timeline entry is updated, also update a timeline entry to update
+        its slot count.
         """
+        if kwargs.get('update_fields') and 'timeline_entry' in kwargs['update_fields']:
+            """
+            The lower part is invoked when a timeline entry is deleted from a class. We need
+            this for ability to edit a class from django-admin.
+            """
+            if self.timeline_entry is None:  # timeline entry is deleted
+                old_entry = Class.objects.get(pk=self.pk).timeline_entry
+                super().save(*args, **kwargs)
+                old_entry.save()
+                return
+
         if self.timeline_entry:
             if not self.timeline_entry.pk:  # this happens when the entry is created in current iteration
                 self.timeline_entry.save()
@@ -202,6 +233,19 @@ class Class(BuyableProduct):
             sorting hat.
             """
             self.timeline_entry.save()
+
+    def delete(self):
+        """
+        This method provides an ability to unschedule a class via deletion.
+
+        It may be looking weired, but this is the only way to unschedule a class
+        throught django-admin. For more details see model description and :model:`hub.BuyableProduct`
+        """
+        if self.is_scheduled:
+            self.unschedule()
+            self.save()
+        else:
+            super().delete()
 
     def __str__(self):
         s = "{lesson} for {student}".format(lesson=self.lesson.internal_name, student=self.customer)
