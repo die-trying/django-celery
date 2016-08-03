@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.utils import timezone
 from djmoney.models.fields import MoneyField
 
 from crm.models import Customer
@@ -105,6 +106,25 @@ class Subscription(BuyableProduct):
 
 
 class ClassesManager(models.Manager):
+    """
+    All method implicitly assume, that they are called from a related manager
+    customer.classes, like customer.classes.nearest()
+    """
+    def nearest_scheduled(self, **kwargs):
+        """
+        Return nearest scheduled class
+        """
+        date = timezone.now()
+        if 'date' in kwargs:
+            date = kwargs['date']
+            del kwargs['date']
+
+        a = self.get_queryset() \
+            .filter(is_scheduled=True, timeline_entry__start__gte=date) \
+            .filter(**kwargs) \
+            .order_by('timeline_entry__start')
+        print(a.query)
+        return a.first()
 
     def bought_lesson_types(self):
         """
@@ -309,6 +329,9 @@ class Class(BuyableProduct):
     def can_be_scheduled(self, entry):
         """
         Check if timeline entry can be scheduled
+
+        TODO: This method should raise exceptions for each situation,
+        when a class cannot be scheduled
         """
         if self.is_scheduled:
             return False

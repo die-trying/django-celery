@@ -73,6 +73,54 @@ class TestClassManager(TestCase):
         )
         s.save()
 
+    def _schedule(self, lesson_type=None, date=datetime(2032, 12, 1, 11, 30)):  # By default it will fail in 16 years, sorry
+        if lesson_type is None:
+            lesson_type = lessons.OrdinaryLesson.get_contenttype()
+        c = self.customer.classes.filter(lesson_type=lesson_type, is_scheduled=False).first()
+        """
+        If this test will fail when you change the SortingHat behaviour, just
+        replace the above lines with the SortingHat invocation
+        """
+        c.schedule(
+            teacher=create_teacher(),
+            date=date,
+            allow_besides_working_hours=True,
+        )
+        c.save()
+        self.assertTrue(c.is_scheduled)
+        return c
+
+    def test_nearest_scheduled_ok(self):
+        c = self._schedule()
+        c1 = self.customer.classes.nearest_scheduled()
+        self.assertEqual(c1, c)
+
+    def test_nearest_scheduled_ordering(self):
+        c2 = self._schedule(date=datetime(2020, 12, 1, 11, 30))
+        self._schedule(date=datetime(2032, 12, 1, 11, 30))
+
+        c_found = self.customer.classes.nearest_scheduled()
+        self.assertEquals(c_found, c2)
+
+    def test_nearest_scheduled_fail(self):
+        """
+        Run without any scheduled class
+        """
+        c = self._schedule()
+        c.unschedule()
+        c.save()
+
+        self.assertIsNone(self.customer.classes.nearest_scheduled())  # should not throw anything
+
+    def test_nearest_dont_return_past_classes(self):
+        """
+        Test if clases.nearest_scheduled() does not return classes in the past
+        """
+        self._schedule(date=datetime(2020, 12, 1, 11, 30))
+        c2 = self._schedule(date=datetime(2032, 12, 1, 11, 30))
+        c_found = self.customer.classes.nearest_scheduled(date=datetime(2025, 12, 1, 11, 30))  # 5 years later, then the fist sccheduled class
+        self.assertEquals(c_found, c2)
+
     def test_available_lesson_types(self):
         lesson_types = self.customer.classes.bought_lesson_types()
         self.assertEquals(len(lesson_types), 4)  # if you have defined a new lesson, fill free to increase this value, it's ok
