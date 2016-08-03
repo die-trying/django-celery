@@ -46,6 +46,10 @@ class Lesson(models.Model):
     def __str__(self):
         return self.internal_name
 
+    @property
+    def type_verbose_name(self):
+        return _(self.__class__._meta.verbose_name.lower())
+
     @classmethod
     def get_contenttype(cls):
         """

@@ -1,3 +1,13 @@
 // place some common styles here
 //
 // Please, try your best to use Bootstrap styles first
+
+a.pseudo
+    color black
+    border-bottom: dotted 1px
+    text-decoration: none
+    &:not(:hover)
+        transition color .5s ease
+    &:hover
+        color: #337ab7 // default bootstrap
+        border-color: #337ab7

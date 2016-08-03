@@ -1,4 +1,5 @@
 from django.test import TestCase
+
 from mailer.owl import Owl
 
 

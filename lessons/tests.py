@@ -24,6 +24,10 @@ class TestLessonsUnit(TestCase):
         self.assertIn(str(l.pk), l.admin_url)
         self.assertIn('admin/lessons/masterclass', l.admin_url)
 
+    def test_type_verbose_name(self):
+        l = mixer.blend(lessons.OrdinaryLesson)
+        self.assertEqual(str(l.type_verbose_name), 'curated session')
+
 
 class TestLessonsFunctional(ClientTestCase):
     def setUp(self):

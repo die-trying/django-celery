@@ -1,2 +1,4 @@
 
 SHORT_DATE_FORMAT = 'b d'
+SHORT_DATETIME_FORMAT = ' b d h:m a'
+SHORT_TIME_FORMAT = 'P'

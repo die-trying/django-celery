@@ -107,7 +107,7 @@ class Subscription(BuyableProduct):
 
 class ClassesManager(models.Manager):
     """
-    All method implicitly assume, that they are called from a related manager
+    All this methods assume, that they are called from a related manager
     customer.classes, like customer.classes.nearest()
     """
     def nearest_scheduled(self, **kwargs):
@@ -119,12 +119,11 @@ class ClassesManager(models.Manager):
             date = kwargs['date']
             del kwargs['date']
 
-        a = self.get_queryset() \
+        return self.get_queryset() \
             .filter(is_scheduled=True, timeline_entry__start__gte=date) \
             .filter(**kwargs) \
-            .order_by('timeline_entry__start')
-        print(a.query)
-        return a.first()
+            .order_by('timeline_entry__start') \
+            .first()
 
     def bought_lesson_types(self):
         """
