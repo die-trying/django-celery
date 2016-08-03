@@ -198,51 +198,55 @@ class Class(BuyableProduct):
         return self.lesson.name
 
     def save(self, *args, **kwargs):
-        """
-        If timeline entry is assigned, change attribute is_scheduled to True,
-        and make sure that entry is saved.
+        if self.timeline_entry is None:
+            return self._save_unscheduled(*args, **kwargs)
+        return self._save_scheduled(*args, **kwargs)
 
-        If class timeline entry is updated, also update a timeline entry to update
-        its slot count.
+    def _save_scheduled(self, *args, **kwargs):
         """
-        if kwargs.get('update_fields') and 'timeline_entry' in kwargs['update_fields']:
-            """
-            The lower part is invoked when a timeline entry is deleted from a class. We need
-            this for ability to edit a class from django-admin.
-            """
-            if self.timeline_entry is None:  # timeline entry is deleted
-                old_entry = Class.objects.get(pk=self.pk).timeline_entry
-                super().save(*args, **kwargs)
-                old_entry.save()
-                return
+        Save a class with assigned timeline entry.
 
-        if self.timeline_entry:
-            if not self.timeline_entry.pk:  # this happens when the entry is created in current iteration
-                self.timeline_entry.save()
-                """
-                We do not use self.assign_entry() method here, because we assume, that
-                all required checks have passed. In future there may be cases, when
-                we should re-save a class with an invalid timeline entry. If we re-run
-                all checks, we will not be able to do this
-                """
-                self.timeline_entry = self.timeline_entry
-            self.is_scheduled = True
-        else:
-            self.is_scheduled = False
+        If entry is a new one, save() it before saving ourselves.
+        """
+        self.is_scheduled = True
+
+        if not self.timeline_entry.pk:  # this happens when the entry is created in current iteration
+            self.timeline_entry.save()
+            """
+            We do not use self.assign_entry() method here, because we assume, that
+            all required checks have passed. In future there may be cases, when
+            we should re-save a class with an invalid timeline entry. If we re-run
+            all checks, we will not be able to do this
+            """
+            self.timeline_entry = self.timeline_entry
 
         super().save(*args, **kwargs)
+        """
+        Below we run save() on an entry one more time. This is needed for
+        an ability to run save() only on a class, without a need to run save()
+        also on an entry.
 
-        if self.timeline_entry:
-            """
-            Below we run save() on an entry one more time. This is needed for
-            an ability to run save() only on a class, without a need to run save()
-            also on an entry.
+        This is usefull when instance of Class is created within the same
+        iteration with a timeline entry, i.e. when scheduling through the
+        sorting hat.
+        """
+        self.timeline_entry.save()
 
-            This is usefull when instance of Class is created within the same
-            iteration with a timeline entry, i.e. when scheduling through the
-            sorting hat.
-            """
-            self.timeline_entry.save()
+    def _save_unscheduled(self, *args, **kwargs):
+        """
+        Save a class without an assigned timeline entry.
+
+        Handle a case when save() is invoked when a timeline entry is deleted
+        from a class. We need this for ability to edit a class from django-admin.
+        """
+        self.is_scheduled = False
+        if kwargs.get('update_fields') and 'timeline_entry' in kwargs['update_fields']:
+            old_entry = Class.objects.get(pk=self.pk).timeline_entry
+            super().save(*args, **kwargs)
+            old_entry.save()
+            return
+
+        super().save(*args, **kwargs)
 
     def delete(self):
         """
@@ -297,9 +301,8 @@ class Class(BuyableProduct):
         if not self.timeline_entry:
             raise CannotBeUnscheduled('%s' % self)
 
-        # TODO — check if entry is not completed
         entry = self.timeline_entry
-        entry.classes.remove(self)
+        entry.classes.remove(self, bulk=True)  # expcitly don't run self.save()
         self.timeline_entry = None
         entry.save()
 
