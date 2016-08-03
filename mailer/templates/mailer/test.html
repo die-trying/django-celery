@@ -1,0 +1,18 @@
+{% extends "mail_templated/base.tpl" %}
+
+{% block subject %}
+Проверка сабжекта для {{username}}
+{% endblock %}
+
+{% block html %}
+  <p>Hi {{ full_name }},</p>
+
+  <p>You just signed up for my website, using:
+      <dl>
+        <dt>username</dt><dd>{{ username }}</dd>
+        <dt>join date</dt><dd>{{ register_date }}</dd>
+      </dl>
+  </p>
+
+  <p>Thanks, you rock!</p>
+{% endblock %}

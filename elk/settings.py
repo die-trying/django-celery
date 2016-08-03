@@ -32,8 +32,11 @@ INSTALLED_APPS = [
     'teachers',
     'acc',
     'history',
+    'mailer',
 
     'djmoney',
+    'anymail',
+    'mail_templated',
     'django_countries',
     'django_markdown',
     'django_user_agents',
@@ -138,6 +141,8 @@ STATIC_ROOT = env('STATIC_ROOT')
 
 SECRET_KEY = env('SECRET_KEY')  # Raises ImproperlyConfigured exception if SECRET_KEY not in os.environ
 
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_PORT = env('EMAIL_PORT')
 
 CACHES = {
     'default': env.cache(),

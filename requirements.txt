@@ -6,10 +6,12 @@ cssselect==0.9.2
 decorator==4.0.10
 defusedxml==0.4.1
 Django==1.8.14
+django-anymail==0.4.2
 django-countries==3.4.1
 django-debug-toolbar==1.4
 django-easy-timezones==0.7.0
 django-environ==0.4.0
+django-mail-templated==2.6.2
 django-markdown==0.8.4
 django-money==0.8
 django-nose==1.4.4
