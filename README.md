@@ -1,17 +1,14 @@
 # ELK Dashboard
 
-[![CircleCI](https://circleci.com/gh/f213/elk-dashboard.svg?style=svg&circle-token=2ce041d53271e60d7afa4efc393f981684951089)](https://circleci.com/gh/f213/elk-dashboard)
-
-
-[![codecov](https://codecov.io/gh/f213/elk-dashboard/branch/master/graph/badge.svg?token=qDGzPnPA1v)](https://codecov.io/gh/f213/elk-dashboard)
+[![CircleCI](https://circleci.com/gh/f213/elk-dashboard.svg?style=svg&circle-token=2ce041d53271e60d7afa4efc393f981684951089)](https://circleci.com/gh/f213/elk-dashboard) [![codecov](https://codecov.io/gh/f213/elk-dashboard/branch/master/graph/badge.svg?token=qDGzPnPA1v)](https://codecov.io/gh/f213/elk-dashboard)
 
 ## Configuration
 
 Configuration is stored in `elk/.env`, for examples see `elk/.env.circle`, used during CI.
 
-## Installing
+## Installing on a local machine
 
-This projects requires python3 (i don't test it on python2). For frontend building you need to install Node.JS. I run tests on OS X and Linux (Circle CI), so the project should work on both systems.
+This project requires python3 (i don't test it on python2). For frontend building you need to install Node.JS. I run tests on OS X and Linux (Circle CI), so the project should work on both systems.
 
 ```sh
 pip install -r requirements.txt
@@ -19,16 +16,15 @@ npm install -g gulp bower
 npm install
 bower install
 ./build/download_geoip_db.sh
+cp elk/.env.circle elk/.env
+./manage.py loaddata crm lessons products teachers
 ```
 
-For actual bootstrap process please consider CI configuration.
+For always-actual bootstrap process please consider CI configuration.
 
-## Building
-
-Development host:
+Running a development host:
 
 ```sh
-./manage.py loaddata crm lessons products teachers
 gulp&
 ./manage.py runserver
 ```
