@@ -123,33 +123,14 @@ class Entry(models.Model):
         return _('Usual lesson')
 
     def save(self, *args, **kwargs):
-        if self.lesson:
-            self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
+        self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
+        self.__run_pre_save_checks()  # check for overlapping, teacher working hours, etc
+        self.__update_slots()  # update free slot count, check if no classes were added without spare slots for it
 
-        if not self.allow_overlap and self.is_overlapping():
-            raise ValidationError('Entry time overlapes with some other entry of this teacher')
+        should_be_deleted = self.__self_delete_if_needed()  # timeline entry should delete itself, if it is not required
 
-        if not self.allow_besides_working_hours and not self.is_fitting_working_hours():
-            raise ValidationError('Entry time does not fit teachers working hours')
-
-        if self.pk:
-            self.__update_slots()  # update free slot count, check if no classes were added without spare slots for it
-            if self.taken_slots == 0:
-                if self.lesson and not self.lesson.get_contenttype().model_class().timeline_entry_required():
-                    """
-                    If the entry has no taken slots and is attached to a lesson,
-                    that does not require a timeline entry — the entry is unused
-                    and should be deleted.
-
-                    This behaviour is needed to free a teacher slot when the last
-                    student (often — the single), does cancel the class, that
-                    does not require a by-hand planning, i.e. ordinary lesson.
-                    """
-                    self.delete()
-                    return
-
-
-        super().save(*args, **kwargs)
+        if not should_be_deleted:
+            super().save(*args, **kwargs)
 
     def delete(self):
         """
@@ -209,11 +190,43 @@ class Entry(models.Model):
             'slots_available': self.slots,
         }
 
+    def __run_pre_save_checks(self):
+        if not self.allow_overlap and self.is_overlapping():
+            raise ValidationError('Entry time overlapes with some other entry of this teacher')
+
+        if not self.allow_besides_working_hours and not self.is_fitting_working_hours():
+            raise ValidationError('Entry time does not fit teachers working hours')
+
+    def __self_delete_if_needed(self):
+        """
+        If the entry has no taken slots and is attached to a lesson,
+        that does not require a timeline entry — the entry is unused
+        and should be deleted.
+
+        This behaviour is needed to free a teacher slot when the last
+        student (often — the single), does cancel the class, that
+        does not require a by-hand planning, i.e. ordinary lesson.
+        """
+        if not self.pk:
+            return False
+
+        if self.taken_slots > 0:
+            return False
+
+        if self.lesson and not self.lesson.get_contenttype().model_class().timeline_entry_required():
+            self.delete()
+            return True
+
+        return False
+
     def __get_data_from_lesson(self):
         """
         Timelentry entry can get some attributes (i.e. available student slots)
         only when it has an assigned lesson.
         """
+        if not self.lesson:
+            return
+
         self.slots = self.lesson.slots
         self.end = self.start + self.lesson.duration
 
@@ -227,6 +240,9 @@ class Entry(models.Model):
 
         If there is too much customers — raise an exception
         """
+        if not self.pk:
+            return
+
         self.taken_slots = self.classes.count()
 
         if self.taken_slots > self.slots:
