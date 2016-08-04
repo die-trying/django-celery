@@ -9,6 +9,7 @@ from djmoney.models.fields import MoneyField
 
 from crm.models import Customer
 from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
+from hub.signals import class_scheduled, class_unscheduled
 from timeline.models import Entry as TimelineEntry
 
 
@@ -227,6 +228,8 @@ class Class(BuyableProduct):
 
         If entry is a new one, save() it before saving ourselves.
         """
+        was_scheduled = self.is_scheduled
+
         self.is_scheduled = True
 
         if not self.timeline_entry.pk:  # this happens when the entry is created in current iteration
@@ -240,6 +243,7 @@ class Class(BuyableProduct):
             self.timeline_entry = self.timeline_entry
 
         super().save(*args, **kwargs)
+
         """
         Below we run save() on an entry one more time. This is needed for
         an ability to run save() only on a class, without a need to run save()
@@ -251,6 +255,9 @@ class Class(BuyableProduct):
         """
         self.timeline_entry.save()
 
+        if not was_scheduled:  # if the class was scheduled for the first time — send a signal
+            class_scheduled.send(sender=self.__class__, instance=self)
+
     def _save_unscheduled(self, *args, **kwargs):
         """
         Save a class without an assigned timeline entry.
@@ -258,14 +265,17 @@ class Class(BuyableProduct):
         Handle a case when save() is invoked when a timeline entry is deleted
         from a class. We need this for ability to edit a class from django-admin.
         """
+        was_scheduled = self.is_scheduled
         self.is_scheduled = False
         if kwargs.get('update_fields') and 'timeline_entry' in kwargs['update_fields']:
             old_entry = Class.objects.get(pk=self.pk).timeline_entry
             super().save(*args, **kwargs)
             old_entry.save()
-            return
 
         super().save(*args, **kwargs)
+
+        if was_scheduled:
+            class_unscheduled.send(sender=self.__class__, instance=self)  # send a signal, that class is unscheduled for the first time
 
     def delete(self):
         """
