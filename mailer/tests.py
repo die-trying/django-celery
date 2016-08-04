@@ -17,8 +17,8 @@ class TestTemplatedMail(TestCase):
             ctx=self._ctx(),
             to=['f@f213.in']
         )
-        m = owl.EmailMessage
-        m.send()
+        owl.send()
+        m = owl.msg
         self.assertIn('сабжекта для abraham.lincoln', m.subject)
 
     def test_body(self):
@@ -27,8 +27,8 @@ class TestTemplatedMail(TestCase):
             ctx=self._ctx(),
             to=['f@f213.in'],
         )
-        m = owl.EmailMessage
-        m.send()
+        owl.send()
+        m = owl.msg
         self.assertIn('Abraham Lincoln', m.body)
         self.assertIn('12.09.1809', m.body)
         self.assertIn('abraham.lincoln', m.body)
