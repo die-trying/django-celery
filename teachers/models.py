@@ -4,6 +4,7 @@ from django.apps import apps
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.dateparse import parse_date
 from django.utils.translation import ugettext_lazy as _
@@ -105,6 +106,12 @@ class Teacher(models.Model):
         if hours is None:
             return None
         return self.__all_free_slots(hours.start, hours.end, period)
+
+    def timeline_url(self):
+        """
+        Get teacher's timeline URL
+        """
+        return reverse('timeline:timeline', kwargs={'username': self.user.username})
 
     def __find_timeline_entries(self, date, **kwargs):
         """

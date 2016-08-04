@@ -12,6 +12,12 @@ from teachers.models import SlotList, Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
+class TestTeacherUnit(TestCase):
+    def test_timeline_url(self):
+        teacher = create_teacher()
+        self.assertEqual(teacher.timeline_url(), '/timeline/%s/' % teacher.user.username)
+
+
 class TestWorkingHours(TestCase):
     """
     By default, working hours return hours only in future, so your testing
