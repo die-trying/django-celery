@@ -4,7 +4,10 @@ machine:
     version: 3.5.1
 
   node:
-    version: 4.2.1
+    version: 4.2.6
+
+  services:
+    - redis
 
 dependencies:
   pre:
