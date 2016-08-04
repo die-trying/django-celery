@@ -332,7 +332,7 @@ class TestCancel(TestCase):
             allow_besides_working_hours=True
         )
         c.save()
-        entry = c.timeline_entry
+        entry = c.timeline
         self.assertIsInstance(entry, TimelineEntry)
         c.delete()
         self.assertFalse(TimelineEntry.objects.filter(pk=entry.pk).exists())  # during the class saving, entry shouold have deleted itself
@@ -348,7 +348,7 @@ class TestCancel(TestCase):
         entry = self._create_entry()
         c.assign_entry(entry)
         c.save()
-        entry = c.timeline_entry
+        entry = c.timeline
         self.assertIsInstance(entry, TimelineEntry)
 
         c.delete()

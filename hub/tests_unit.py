@@ -195,9 +195,9 @@ class TestScheduleLowLevel(TestCase):
             date=datetime(2016, 12, 1, 7, 25),  # monday
             allow_besides_working_hours=True,
         )
-        self.assertIsNone(c.timeline_entry.pk)
-        c.timeline_entry.save = MagicMock(return_value=None)
-        c.timeline_entry.save.assert_not_called()
+        self.assertIsNone(c.timeline.pk)
+        c.timeline.save = MagicMock(return_value=None)
+        c.timeline.save.assert_not_called()
 
     def test_schedule_auto_entry_only_within_working_hours(self):
         c = self._buy_a_lesson()

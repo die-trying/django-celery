@@ -121,16 +121,16 @@ class ClassesManager(models.Manager):
             del kwargs['date']
 
         return self.get_queryset() \
-            .filter(is_scheduled=True, timeline_entry__start__gte=date) \
+            .filter(is_scheduled=True, timeline__start__gte=date) \
             .filter(**kwargs) \
-            .order_by('timeline_entry__start') \
+            .order_by('timeline__start') \
             .first()
 
     def bought_lesson_types(self):
         """
         Get ContentTypes of lessons, available to user
         """
-        types = self.get_queryset().filter(timeline_entry__isnull=True).values_list('lesson_type', flat=True).distinct()
+        types = self.get_queryset().filter(timeline__isnull=True).values_list('lesson_type', flat=True).distinct()
 
         ContentType.objects.filter(pk__in=types)
 
@@ -206,7 +206,7 @@ class Class(BuyableProduct):
     lesson_id = models.PositiveIntegerField()
     lesson = GenericForeignKey('lesson_type', 'lesson_id')
 
-    timeline_entry = models.ForeignKey(TimelineEntry, null=True, blank=True, on_delete=models.SET_NULL, related_name='classes')
+    timeline = models.ForeignKey(TimelineEntry, null=True, blank=True, on_delete=models.SET_NULL, related_name='classes')
 
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, null=True, blank=True, related_name='classes')
 
@@ -218,7 +218,7 @@ class Class(BuyableProduct):
         return self.lesson.name
 
     def save(self, *args, **kwargs):
-        if self.timeline_entry is None:
+        if self.timeline is None:
             return self._save_unscheduled(*args, **kwargs)
         return self._save_scheduled(*args, **kwargs)
 
@@ -232,15 +232,15 @@ class Class(BuyableProduct):
 
         self.is_scheduled = True
 
-        if not self.timeline_entry.pk:  # this happens when the entry is created in current iteration
-            self.timeline_entry.save()
+        if not self.timeline.pk:  # this happens when the entry is created in current iteration
+            self.timeline.save()
             """
             We do not use self.assign_entry() method here, because we assume, that
             all required checks have passed. In future there may be cases, when
             we should re-save a class with an invalid timeline entry. If we re-run
             all checks, we will not be able to do this
             """
-            self.timeline_entry = self.timeline_entry
+            self.timeline = self.timeline
 
         super().save(*args, **kwargs)
 
@@ -253,7 +253,7 @@ class Class(BuyableProduct):
         iteration with a timeline entry, i.e. when scheduling through the
         sorting hat.
         """
-        self.timeline_entry.save()
+        self.timeline.save()
 
         if not was_scheduled:  # if the class was scheduled for the first time — send a signal
             class_scheduled.send(sender=self.__class__, instance=self)
@@ -268,7 +268,7 @@ class Class(BuyableProduct):
         was_scheduled = self.is_scheduled
         self.is_scheduled = False
         if kwargs.get('update_fields') and 'timeline_entry' in kwargs['update_fields']:
-            old_entry = Class.objects.get(pk=self.pk).timeline_entry
+            old_entry = Class.objects.get(pk=self.pk).timeline
             super().save(*args, **kwargs)
             old_entry.save()
 
@@ -302,7 +302,7 @@ class Class(BuyableProduct):
         """
         if not self.can_be_scheduled(entry):
             raise CannotBeScheduled('%s %s' % (self, entry))
-        self.timeline_entry = entry
+        self.timeline = entry
 
     def schedule(self, teacher, date, allow_overlap=True, allow_besides_working_hours=False):
         """
@@ -327,12 +327,12 @@ class Class(BuyableProduct):
         """
         Unschedule previously scheduled lesson
         """
-        if not self.timeline_entry:
+        if not self.timeline:
             raise CannotBeUnscheduled('%s' % self)
 
-        entry = self.timeline_entry
+        entry = self.timeline
         entry.classes.remove(self, bulk=True)  # expcitly don't run self.save()
-        self.timeline_entry = None
+        self.timeline = None
         entry.save()
 
     def can_be_scheduled(self, entry):

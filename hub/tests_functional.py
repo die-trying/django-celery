@@ -143,10 +143,10 @@ class ScheduleTestCase(TestCase):
         )
         c.save()
 
-        self.assertIsInstance(c.timeline_entry, TimelineEntry)
-        self.assertEquals(c.timeline_entry.classes.first().customer, self.customer)  # should save a customer
-        self.assertEquals(c.timeline_entry.start, datetime(2016, 8, 17, 10, 1))  # datetime for entry start should be from parameters
-        self.assertEquals(c.timeline_entry.end, datetime(2016, 8, 17, 10, 1) + lesson.duration)  # duration should be taken from lesson
+        self.assertIsInstance(c.timeline, TimelineEntry)
+        self.assertEquals(c.timeline.classes.first().customer, self.customer)  # should save a customer
+        self.assertEquals(c.timeline.start, datetime(2016, 8, 17, 10, 1))  # datetime for entry start should be from parameters
+        self.assertEquals(c.timeline.end, datetime(2016, 8, 17, 10, 1) + lesson.duration)  # duration should be taken from lesson
 
     def test_cant_automatically_schedule_lesson_that_requires_a_timeline_entry(self):
         """
