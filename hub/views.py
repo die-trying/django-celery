@@ -95,7 +95,7 @@ def step2(request, teacher, type_id, date, time):
         })
 
     if not hat.result:
-        return Http404('%s: %s' % (hat.err, hat.text))
+        return Http404('%s: %s' % (hat.err, hat.msg))
 
     hat.c.save()  # save a hat-generated class
     return redirect('/')  # TODO: a page with success story
