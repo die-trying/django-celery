@@ -19,6 +19,7 @@ django-mail-templated==2.6.2
 django-markdown==0.8.4
 django-money==0.8
 django-nose==1.4.4
+django-redis==4.4.4
 django-redis-cache==1.6.5
 django-suit==0.2.19
 django-user-agents==0.3.0
