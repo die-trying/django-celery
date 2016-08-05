@@ -36,7 +36,7 @@ class HistoryEvent(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.__store_request(self.request)
-        super().save(*args, *kwargs)
+        super().save(*args, **kwargs)
 
     def __store_request(self, request):
         """
