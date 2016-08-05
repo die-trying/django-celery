@@ -1,10 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from moneyed import Money
 
 from hub.models import Class, Subscription
-from hub.scheduler import SortingHat
+from hub.sortinghat import SortingHat
 from lessons.models import OrdinaryLesson
 from products.models import Product1
 from teachers.models import Teacher
@@ -69,6 +70,7 @@ def lessons(request, date, lesson_type):
         result.append(lesson_dict)
 
     return JsonResponse(result, safe=False)
+
 
 @login_required
 def step1(request):

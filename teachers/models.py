@@ -7,6 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.dateparse import parse_date
+from django.utils.timezone import make_aware, now
 from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
 
@@ -138,7 +139,7 @@ class Teacher(models.Model):
         slot = start
         while slot + period <= end:
             if not self.__check_overlap(slot, period):
-                if slot >= self.__today():
+                if slot >= self.__now():
                     slots.append(slot)
 
             slot += period
@@ -177,8 +178,8 @@ class Teacher(models.Model):
         if not Lesson_model.timeline_entry_required():
             del kwargs['lesson_type']
 
-    def __today(self):
-        return datetime.now()
+    def __now(self):
+        return now()
 
 
 class WorkingHoursManager(models.Manager):
@@ -193,8 +194,8 @@ class WorkingHoursManager(models.Manager):
         except ObjectDoesNotExist:
             return None
         else:
-            hours.start = datetime.combine(date, hours.start)
-            hours.end = datetime.combine(date, hours.end)
+            hours.start = make_aware(datetime.combine(date, hours.start))
+            hours.end = make_aware(datetime.combine(date, hours.end))
             return hours
 
 

@@ -55,9 +55,9 @@
     user: 1
   model: teachers.teacher
   pk: 1
-- fields: {end: '19:00:00', start: '08:00:00', teacher: 1, weekday: 0}
+- fields: {end: '19:00:00+00:00', start: '08:00:00+00:00', teacher: 1, weekday: 0}
   model: teachers.workinghours
   pk: 1
-- fields: {end: '19:00:00', start: '15:00:00', teacher: 1, weekday: 1}
+- fields: {end: '19:00:00+00:00', start: '15:00:00+00:00', teacher: 1, weekday: 1}
   model: teachers.workinghours
   pk: 2

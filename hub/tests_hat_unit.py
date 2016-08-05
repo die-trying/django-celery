@@ -2,13 +2,14 @@ from datetime import datetime
 from unittest.mock import Mock
 
 from django.test import TestCase
+from django.utils import timezone
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
 from elk.utils.testing import create_customer, create_teacher
 from hub.exceptions import CannotBeScheduled
 from hub.models import Class, Subscription
-from hub.scheduler import SortingHat
+from hub.sortinghat import SortingHat
 from products.models import Product1
 from timeline.models import Entry as TimelineEntry
 
@@ -176,7 +177,7 @@ class TestScheduler(TestCase):
         s.c.schedule = mocked_schedule
 
         s.schedule_a_class()
-        mocked_schedule.assert_called_with(date=datetime(2016, 1, 1, 13, 37), teacher=self.host)
+        mocked_schedule.assert_called_with(date=timezone.make_aware(datetime(2016, 1, 1, 13, 37)), teacher=self.host)
         self.assertEquals(s.err, 'E_CANT_SCHEDULE')
 
     def test_get_only_active_classes(self):

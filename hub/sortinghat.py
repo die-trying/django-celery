@@ -1,6 +1,7 @@
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import F
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.translation import ugettext as _
 
@@ -67,7 +68,7 @@ class SortingHat():
         self.customer = customer
         self.lesson_type = ContentType.objects.get(app_label='lessons', pk=lesson_type)
         self.teacher = teacher
-        self.date = parse_datetime(date + ' ' + time)
+        self.date = timezone.make_aware(parse_datetime(date + ' ' + time))
 
     def __set_err(self, err='E_NONE', msg=None):
         """

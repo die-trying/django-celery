@@ -2,7 +2,7 @@
   pk: 1
   fields:
     password: pbkdf2_sha256$24000$ri9yLfnl0Uhj$gd5V+zlABd6OsekQucih3RbyLlI73dF0gLJAAIkLpdI=
-    last_login: 2016-06-24 08:50:47.965230
+    last_login: "2016-06-24T08:50:47+00:00"
     is_superuser: true
     username: admin
     first_name: 'Fedor'
@@ -10,13 +10,13 @@
     email: f@f213.in
     is_staff: true
     is_active: true
-    date_joined: 2016-06-23 13:58:08.522407
+    date_joined: "2016-06-23T13:58:08+00:00"
     groups: []
     user_permissions: []
 - model: crm.customer
   pk: 1
   fields: {user: 1, source: 'internal',
-    date_arrived: ! '2016-06-23 13:59:30', country: RU, starting_level: A1, current_level: A2}
+    date_arrived: '2016-06-23T13:59:30+03:00', country: RU, starting_level: A1, current_level: A2}
 - model: crm.customer
   pk: 2
   fields: {
@@ -24,4 +24,4 @@
       customer_last_name: 'Poupkine',
       source: 'internal',
       'customer_email':  'f@f213.in',
-      date_arrived: ! '2016-06-23 13:59:30', country: RU, starting_level: A1, current_level: A2}
+      date_arrived: '2016-06-23T13:59:30+03:00', country: RU, starting_level: A1, current_level: A2}

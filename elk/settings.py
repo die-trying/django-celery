@@ -164,3 +164,12 @@ CELERY_RESULT_SERIALIZER = 'json'
 
 GEOIP_DATABASE = './geolite/GeoLiteCity.dat'
 GEOIPV6_DATABASE = './geolite/GeoLiteCityv6.dat'
+
+
+# Uncomment this lines to catch all runtime warnings as errors
+
+# import warnings  # noqa
+# warnings.filterwarnings(
+#     'error', r".*",
+#     RuntimeWarning, r".*"
+# )

@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
+from django.utils import timezone
 from django.utils.dateparse import parse_time
 from mixer.backend.django import mixer
 
@@ -119,8 +120,8 @@ class TestWorkingHours(TestCase):
         Set the clock to the middle of teacher working interval — available
         slots count should be reduced.
         """
-        with patch('teachers.models.Teacher._Teacher__today') as mocked_date:
-            mocked_date.return_value = datetime(2016, 7, 25, 14, 0)  # monday
+        with patch('teachers.models.Teacher._Teacher__now') as mocked_date:
+            mocked_date.return_value = timezone.make_aware(datetime(2016, 7, 25, 14, 0))  # monday
             slots = self.teacher.find_free_slots(date='2016-07-25')
             self.assertEquals(len(slots), 2)  # should return 2 slots instead of 4, because current time is 14:00
 
