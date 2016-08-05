@@ -1,5 +1,9 @@
 import environ
 
+
+# include all celery tasks definitions
+from hub.cron import *  # noqa
+
 root = environ.Path(__file__) - 3        # three folder back (/a/b/c/ - 3 = /)
 env = environ.Env(DEBUG=(bool, False),)  # set default values and casting
 environ.Env.read_env()                   # reading .env file
@@ -161,6 +165,7 @@ CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = env('TIME_ZONE')
 
 GEOIP_DATABASE = './geolite/GeoLiteCity.dat'
 GEOIPV6_DATABASE = './geolite/GeoLiteCityv6.dat'

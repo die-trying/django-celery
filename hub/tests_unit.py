@@ -1,8 +1,9 @@
-from datetime import datetime
-from unittest.mock import MagicMock
+from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
 
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
+from django.utils import timezone
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
@@ -112,6 +113,13 @@ class TestClassManager(TestCase):
         c.save()
 
         self.assertIsNone(self.customer.classes.nearest_scheduled())  # should not throw anything
+
+    def test_starting_soon(self):
+        self._schedule()
+        with patch('hub.models.ClassesManager._ClassesManager__now') as mocked_date:
+            mocked_date.return_value = timezone.make_aware(datetime(2032, 12, 1, 10, 0))
+            self.assertEquals(self.customer.classes.starting_soon(timedelta(minutes=89)).count(), 0)
+            self.assertEquals(self.customer.classes.starting_soon(timedelta(minutes=91)).count(), 1)
 
     def test_nearest_dont_return_past_classes(self):
         """

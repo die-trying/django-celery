@@ -108,14 +108,14 @@ class Subscription(BuyableProduct):
 
 class ClassesManager(models.Manager):
     """
-    All this methods assume, that they are called from a related manager
-    customer.classes, like customer.classes.nearest()
+    Almost all of this methods assume, that they are called from a related
+    manager customer.classes, like customer.classes.nearest()
     """
     def nearest_scheduled(self, **kwargs):
         """
         Return nearest scheduled class
         """
-        date = timezone.now()
+        date = self.__now()
         if 'date' in kwargs:
             date = kwargs['date']
             del kwargs['date']
@@ -126,11 +126,24 @@ class ClassesManager(models.Manager):
             .order_by('timeline__start') \
             .first()
 
+    def starting_soon(self, delta, **kwargs):
+        """
+        Return a queryset with classes, that are about to start in `delta` time.
+
+        Delta is a python datetime.timedelta.
+        """
+        print(self.get_queryset()
+            .filter(is_scheduled=True, timeline__start__range=(self.__now(), self.__now() + delta))
+            .filter(**kwargs).query)
+        return self.get_queryset() \
+            .filter(is_scheduled=True, timeline__start__range=(self.__now(), self.__now() + delta)) \
+            .filter(**kwargs)
+
     def bought_lesson_types(self):
         """
         Get ContentTypes of lessons, available to user
         """
-        types = self.get_queryset().filter(timeline__isnull=True).values_list('lesson_type', flat=True).distinct()
+        types = self.get_queryset().filter(is_scheduled=False).values_list('lesson_type', flat=True).distinct()
 
         ContentType.objects.filter(pk__in=types)
 
@@ -161,6 +174,9 @@ class ClassesManager(models.Manager):
         while current < end:
             yield current
             current += timedelta(days=1)
+
+    def __now(self):
+        return timezone.now()
 
 
 class Class(BuyableProduct):
@@ -209,6 +225,9 @@ class Class(BuyableProduct):
     timeline = models.ForeignKey(TimelineEntry, null=True, blank=True, on_delete=models.SET_NULL, related_name='classes')
 
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, null=True, blank=True, related_name='classes')
+
+    pre_start_notifications_sent_to_teacher = models.BooleanField(default=False)
+    pre_start_notifications_sent_to_student = models.BooleanField(default=False)
 
     class Meta:
         get_latest_by = 'buy_date'

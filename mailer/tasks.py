@@ -1,5 +1,4 @@
 from mail_templated import EmailMessage
-
 from elk.celery import app as celery
 
 
