@@ -35,3 +35,11 @@ test:
     - bash <(curl -s https://codecov.io/bash) -t 8ce25f6b-eaf8-442a-aab4-fb6218384b6e
     - ./build/store-build-information.sh
     - ./build/strip-for-production.sh
+    - ./manage.py collectstatic --noinput
+
+deployment:
+  production:
+    branch: master
+    commands:
+      rsync -vz --delete -rl ./ deployer@128.199.32.70:/home/dashboard/
+      ssh deployer@128.199.32.70 ./home/deployer/post-deploy-prod.sh
