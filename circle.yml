@@ -41,5 +41,5 @@ deployment:
   production:
     branch: master
     commands:
-      rsync -vz --delete -rl ./ deployer@128.199.32.70:/home/dashboard/
-      ssh deployer@128.199.32.70 ./home/deployer/post-deploy-prod.sh
+      - rsync -vz --delete -rl ./ deployer@128.199.32.70:/home/dashboard/
+      - ssh deployer@128.199.32.70 ./home/deployer/post-deploy-prod.sh
