@@ -1,7 +1,7 @@
 from django.dispatch import receiver
 
 from hub.models import Class
-from hub.signals import class_scheduled, class_starting_teacher, class_starting_student
+from hub.signals import class_scheduled, class_starting_student, class_starting_teacher
 from mailer.owl import Owl
 
 

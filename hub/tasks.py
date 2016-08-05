@@ -1,7 +1,8 @@
-from elk.celery import app as celery
 from datetime import timedelta
-from hub.signals import class_starting_teacher, class_starting_student
+
+from elk.celery import app as celery
 from hub.models import Class
+from hub.signals import class_starting_student, class_starting_teacher
 
 
 @celery.task

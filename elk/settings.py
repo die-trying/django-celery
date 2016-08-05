@@ -1,7 +1,5 @@
 import environ
 
-
-# include all celery tasks definitions
 from hub.cron import *  # noqa
 
 root = environ.Path(__file__) - 3        # three folder back (/a/b/c/ - 3 = /)
