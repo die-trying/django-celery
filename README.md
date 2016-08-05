@@ -1,17 +1,14 @@
 # ELK Dashboard
 
-[![CircleCI](https://circleci.com/gh/f213/elk-dashboard.svg?style=svg&circle-token=2ce041d53271e60d7afa4efc393f981684951089)](https://circleci.com/gh/f213/elk-dashboard)
-
-
-[![codecov](https://codecov.io/gh/f213/elk-dashboard/branch/master/graph/badge.svg?token=qDGzPnPA1v)](https://codecov.io/gh/f213/elk-dashboard)
+[![CircleCI](https://circleci.com/gh/f213/elk-dashboard.svg?style=svg&circle-token=2ce041d53271e60d7afa4efc393f981684951089)](https://circleci.com/gh/f213/elk-dashboard) [![codecov](https://codecov.io/gh/f213/elk-dashboard/branch/master/graph/badge.svg?token=qDGzPnPA1v)](https://codecov.io/gh/f213/elk-dashboard)
 
 ## Configuration
 
 Configuration is stored in `elk/.env`, for examples see `elk/.env.circle`, used during CI.
 
-## Installing
+## Installing on a local machine
 
-This projects requires python3 (i don't test it on python2). For frontend building you need to install Node.JS. I run tests on OS X and Linux (Circle CI), so the project should work on both systems.
+This project requires python3 (i don't test it on python2). For frontend building you need to install Node.JS. I run tests on OS X and Linux (Circle CI), so the project should work on both systems.
 
 ```sh
 pip install -r requirements.txt
@@ -19,21 +16,64 @@ npm install -g gulp bower
 npm install
 bower install
 ./build/download_geoip_db.sh
+cp elk/.env.circle elk/.env
+./manage.py loaddata crm lessons products teachers
 ```
 
-For actual bootstrap process please consider CI configuration.
+For always-actual bootstrap process please consider CI configuration.
 
-## Building
-
-Development host:
+Running a development host:
 
 ```sh
-./manage.py loaddata crm lessons products teachers
 gulp&
 ./manage.py runserver
 ```
 
-For building production-ready frontend, run `gulp production`
+Production version is built via CircleCI — [![CircleCI](https://circleci.com/gh/f213/elk-dashboard.svg?style=svg&circle-token=2ce041d53271e60d7afa4efc393f981684951089)](https://circleci.com/gh/f213/elk-dashboard).
+
+## Frontend
+
+### CoffeeScript
+All frontend programming should be done in [CoffeeScript](http://coffeescript.org). You can learn it in 3 hours, and it will save you nearly 30% of code by removing JS boilerplate. The price is a slightly bigger cognitive load, but the absence of the boilerplate worth it.
+
+### Stylus
+All CSS is written in Stylus. You event don't need to learn it — just omit everything boilerplate-like: `{`, `}` and `;`
+
+### Global namespace
+CoffeeScript has a built-in protector from polluting global namespace — it wraps every file like this:
+```javascript
+(function(){
+    # your code here
+})()
+```
+So you can't pollute global namespace even if you want it.
+When you really need to publish something globally, you can use the `Project` object. It's ok to store Models, Controllers and Helpers there, like this:
+```coffeescript
+# model.coffee
+class Model extends MicroEvent
+    constructor (@a, @b, @c) ->
+        # your wonerful code here
+
+Project.Models.YourModel = Model
+
+# later, in controller.coffee
+
+class Controller
+    constructor (@a, @b, @c ) ->
+        @model = new Project.Models.YourModel @a, @b, @c
+```
+
+### Local assets
+By default all vendor assets, located it `build/js-vendor-filters.json` and `build/css-vendor-files.json` are cross-site. If you need a heavy library, you can include it with templatetags `css` and `js`, like this:
+```django
+{% block css %}
+<link rel="stylesheet" href="{% static 'vendor/fullcalendar/dist/fullcalendar.min.css' %}">
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript" src="{% static 'vendor/fullcalendar/dist/fullcalendar.min.js' %}"></script>
+{% endblock %}
+```
 
 ## Coding style
 
@@ -45,45 +85,4 @@ All comments and commit messages should be written in English.
 
 Every model and model method should have a docstring.
 
-### Frontend
-
-#### CoffeeScript
-All frontend programming should be done in [CoffeeScript](http://coffeescript.org). You can learn it in 3 hours, and it will save you nearly 30% of code by removing plenty of JS boilerplate. The price is a slightly bigger cognitive load, but the absence of the boilerplate worth it.
-
-#### Stylus
-All CSS is written in Stylus. You event don't need to learn it — just omit everything boilerplate-like: `{`, `}`, `:` and `;`
-
-#### Global namespace
-CoffeeScript has a wonderful protector from polluting global namespace — it wraps every file like this:
-```javascript
-(function(){
-    # your code here
-})()
-```
-So you can't pollute global namespace even if you want it.
-When you really need to publish something globally, you can use the `Project` objects. It is allowed to store Models, Controllers and Helpers there, like this:
-```coffeescript
-class Model extends MicroEvent
-    constructor (@a, @b, @c) ->
-        # your wonerful code here
-
-Project.Models.YourModel = Model
-
-# later, in the controller
-
-class Controller
-    constructor (@a, @b, @c ) ->
-        @model = new Project.Models.YourModel @a, @b, @c
-```
-
-#### Local assets
-By default all vendor assets, located it `build/js-vendor-filters.json` and `build/css-vendor-files.json` are cross-site. If you need a heavy library, you can include it with templatetags `css` and `js`, like this:
-```django
-{% block css %}
-<link rel="stylesheet" href="{% static 'vendor/fullcalendar/dist/fullcalendar.min.css' %}">
-{% endblock %}
-
-{% block js %}
-<script type="text/javascript" src="{% static 'vendor/fullcalendar/dist/fullcalendar.min.js' %}"></script>
-{% endblock %}
-```
+All your code should be covered by tests.
