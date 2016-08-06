@@ -19,7 +19,7 @@ FORMAT_MODULE_PATH = [
 ]
 
 DEBUG = env('DEBUG')    # False if not in os.environ
-
+ALLOWED_HOSTS = ['*']
 DATABASES = {
     'default': env.db(),    # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
 }
@@ -69,6 +69,7 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'easy_timezones.middleware.EasyTimezoneMiddleware',
 ]
 
@@ -123,6 +124,17 @@ SOCIAL_AUTH_PIPELINE = (
     'acc.pipelines.save_profile_picture'
 
 )
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
+DEBUG_TOOLBAR_CONFIG = {
+    'JQUERY_URL': '/static/vendor/jquery/dist/jquery.min.js',
+}
+
+INTERNAL_IPS = [
+    '127.0.0.1',
+    '::1',
+    '77.37.209.221',
+    '91.197.114.155',
+]
 
 SOCIAL_AUTH_URL_NAMESPACE = 'acc:social'
 
