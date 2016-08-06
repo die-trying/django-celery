@@ -36,6 +36,7 @@ test:
     - ./build/store-build-information.sh
     - ./build/strip-for-production.sh
     - rm elk/.env
+    - chmod +x .deploy/*.sh
 
 deployment:
   production:
