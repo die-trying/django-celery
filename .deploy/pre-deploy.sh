@@ -21,6 +21,7 @@ fi;
 
 MODE=$1
 DIR='/home/dashboard'
+ROLE='dashboard'
 
 NC='\033[0m'       		  # Text Reset
 Green='\033[0;32m'        # Green
@@ -40,6 +41,7 @@ printf "${Blue}ELK dashboard pre-deploy hook (${White}${MODE}${Blue})${NC}\n"
 
 if [ "$1" = 'staging' ]; then
 	DIR='/home/staging'
+	ROLE='staging'
 fi;
 
 printf "${Green}Deployment root: ${White}${DIR}${NC}\n"
@@ -50,3 +52,9 @@ cd $DIR
 start "Preserving configuration files"
 cp src/elk/.env .env.$MODE.preserved
 finish
+
+start "Backuping the ${White}${MODE}${Green} database: ${White}${ROLE}${Green}"
+sudo -H pg_dump -U $ROLE|gzip -9 > ${MODE}.sql.preserved.gz
+printf " ${Yellow}Done: ${NC}"
+du -h $DIR/$MODE.sql.preserved.gz
+printf "${NC}\n"
