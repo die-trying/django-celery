@@ -20,6 +20,9 @@ FORMAT_MODULE_PATH = [
 
 DEBUG = env('DEBUG')    # False if not in os.environ
 ALLOWED_HOSTS = ['*']
+
+SUPPORT_EMAIL = 'help@elk.academy'
+
 DATABASES = {
     'default': env.db(),    # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
 }
@@ -93,8 +96,11 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
 
+                'elk.context_processors.support_email',
+
                 'social.apps.django_app.context_processors.backends',
                 'social.apps.django_app.context_processors.login_redirect',
+
             ],
         },
     },
