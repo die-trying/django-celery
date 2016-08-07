@@ -60,7 +60,7 @@ pip install -r requirements.txt -q
 finish
 
 start "Restoring ${White}${MODE}${Green} configuration"
-cp $DIR/.env elk/.env
+cp $DIR/.env.$MODE elk/.env
 finish
 
 start "Running migrations"
