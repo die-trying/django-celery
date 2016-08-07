@@ -4,6 +4,12 @@ from django.db import models
 from djmoney.models.fields import MoneyField
 
 from crm.models import Customer
+from hub.models import Class
+
+EVENT_SOURCES = (
+    ('customer', 'customer'),
+    ('teacher', 'Teacher'),
+)
 
 
 class HistoryEvent(models.Model):
@@ -15,12 +21,7 @@ class HistoryEvent(models.Model):
     analysis. See examples in history.signals and history.tests.
     """
     time = models.DateTimeField(auto_now_add=True)
-    price = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
-
-    product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    product_id = models.PositiveIntegerField()
-    product = GenericForeignKey('product_type', 'product_id')
-
+    src = models.CharField('Event source', max_length=10, choices=EVENT_SOURCES, default='customer')
     ip = models.GenericIPAddressField(default='127.0.0.1')
     raw_useragent = models.TextField()
 
@@ -60,5 +61,32 @@ class HistoryEvent(models.Model):
         abstract = True
 
 
-class PaymentEvent(HistoryEvent):
+class ProductEvent(HistoryEvent):
+    """
+    Abstract class for events with products, like buying
+    """
+    price = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
+
+    product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    product_id = models.PositiveIntegerField()
+    product = GenericForeignKey('product_type', 'product_id')
+
+    class Meta:
+        abstract = True
+
+
+class ClassEvent(HistoryEvent):
+    """
+    Class for timeline events, like planning or cancelling.
+    """
+    TYPE_CHOICES = (
+        ('SCHED', 'Scheduling'),
+        ('CANCEL', 'Cancellation'),
+        ('RESCH', 'Rescheduling'),
+    )
+    event_type = models.CharField('Event type', max_length=5, blank=False, choices=TYPE_CHOICES, db_index=True)
+    scheduled_class = models.ForeignKey(Class)
+
+
+class PaymentEvent(ProductEvent):
     customer = models.ForeignKey(Customer, related_name='payments')

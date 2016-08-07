@@ -26,6 +26,7 @@ def log_bought_class(sender, **kwargs):
         return
 
     ev = PaymentEvent(
+        src='customer',  # flex scope: in future you should acknowledge — who has added a class: staff or a student himself
         customer=instance.customer,
         product=instance,
         price=instance.buy_price,
@@ -52,6 +53,7 @@ def log_bought_subscription(sender, **kwargs):
         return
 
     ev = PaymentEvent(
+        src='customer',  # flex scope: in future you should acknowledge — who has added a subscription: staff or a student himself
         customer=instance.customer,
         product=instance,
         price=instance.buy_price,
