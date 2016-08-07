@@ -23,6 +23,10 @@ ALLOWED_HOSTS = [
     'a.elk.today',
     'a-staging.elk.today',
 ]
+CORS_ORIGIN_WHITELIST = [
+    'static.elk.today',
+    'media.elk.today',
+]
 
 SUPPORT_EMAIL = 'help@elk.academy'
 
@@ -53,6 +57,7 @@ INSTALLED_APPS = [
     'django_nose',
     'django.contrib.admindocs',
     'suit',
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -67,6 +72,7 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

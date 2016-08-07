@@ -11,6 +11,7 @@ decorator==4.0.10
 defusedxml==0.4.1
 Django==1.8.14
 django-anymail==0.4.2
+django-cors-headers==1.1.0
 django-countries==3.4.1
 django-debug-toolbar==1.4
 django-easy-timezones==0.7.0
