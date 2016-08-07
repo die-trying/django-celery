@@ -8,7 +8,7 @@
                 {% trans 'with' %} {{ next_class.timeline.teacher.user.crm.full_name }},
                 <span class="next_class__date">{{ next_class.timeline.start | naturalday:'SHORT_DATE_FORMAT' | capfirst }}
                 {% trans 'at' %} {{ next_class.timeline.start | time:'SHORT_TIME_FORMAT'}}</span>
-                <a class="pseudo class_reschedule" data-class-id="{{ next_class.pk }}" href='#'>{% trans 'reschedule'|capfirst %}</a> {% trans 'or' %} <a class="pseudo class_cancel" data-class-id="{{ next_class.pk }}" data-dismiss-after-cancellation=".next_class" href='#'>{% trans 'cancel' %}</a> it.</p>
+                <a class="pseudo class_reschedule" data-class-id="{{ next_class.pk }}" href='mailto:{{ SUPPORT_EMAIL }}?subject=Please reschedule my class'>{% trans 'reschedule'|capfirst %}</a> {% trans 'or' %} <a class="pseudo class_cancel" data-class-id="{{ next_class.pk }}" data-dismiss-after-cancellation=".next_class" href='#'>{% trans 'cancel' %}</a> it.</p>
         </div>
     {% endif %}
 {% endwith %}
