@@ -77,3 +77,7 @@ fi;
 start "Reloading main application"
 touch $DIR/reload
 finish
+
+start "Updateing static files"
+./manage.py collectstatic --noinput
+finish
