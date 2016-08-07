@@ -37,6 +37,9 @@ class Customer(models.Model):
     date_arrived = models.DateTimeField(auto_now_add=True)
     birthday = models.DateField(null=True, blank=True)
 
+    cancellation_streak = models.SmallIntegerField('Cancelled lesson streak', default=0)
+    max_cancellation_count = models.SmallIntegerField('Maximum allowed lessons to cancel', default=2)
+
     profile_photo = models.ImageField(upload_to='profiles/', null=True, blank=True)
 
     profession = models.CharField(max_length=140, null=True, blank=True)

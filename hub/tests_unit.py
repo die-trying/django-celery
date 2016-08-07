@@ -248,6 +248,57 @@ class TestScheduleLowLevel(TestCase):
         unschedule.assert_not_called()
         self.assertEqual(c.active, 0)
 
+    def test_increase_cancellation_count(self):
+        """
+        Every cancellation caused by customer should increase its cancellation count
+        """
+        c = self._buy_a_lesson()
+        c.schedule(
+            teacher=self.teacher,
+            date=datetime(2016, 12, 1, 7, 25),  # monday
+            allow_besides_working_hours=True,
+        )
+        self.assertEqual(self.customer.cancellation_streak, 0)
+        c.unschedule(src='customer')
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.cancellation_streak, 1)
+
+    def test_dont_increase_canellation_count(self):
+        """
+        Cancel caused by teacher should not increase user's cancellation count
+        """
+        c = self._buy_a_lesson()
+        c.schedule(
+            teacher=self.teacher,
+            date=datetime(2016, 12, 1, 7, 25),  # monday
+            allow_besides_working_hours=True,
+        )
+        self.assertEqual(self.customer.cancellation_streak, 0)
+        c.unschedule(src='teacher')
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.cancellation_streak, 0)
+
+    def test_null_cancellation_count(self):
+        """
+        Every schedule caused by customer should null its cancellation count
+        """
+        self.customer.cancellation_streak = 1
+        self.customer.save()
+        c = self._buy_a_lesson()
+
+        self.customer.refresh_from_db()
+        self.assertEquals(self.customer.cancellation_streak, 1)
+
+        c.schedule(
+            teacher=self.teacher,
+            date=datetime(2016, 12, 1, 7, 25),  # monday
+            allow_besides_working_hours=True,
+        )
+        c.save()
+
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.cancellation_streak, 0)
+
 
 class TestClassSignals(TestCase):
     fixtures = ('lessons',)

@@ -271,8 +271,13 @@ class Class(BuyableProduct):
         """
         self.timeline.save()
 
-        if not was_scheduled:  # if the class was scheduled for the first time — send a signal
+        """ If the class was scheduled for the first time — send a signal """
+        if not was_scheduled:
             class_scheduled.send(sender=self.__class__, instance=self)
+
+        """ Nullify customer cancellation_streak """
+        self.customer.cancellation_streak = 0
+        self.customer.save()
 
     def _save_unscheduled(self, *args, **kwargs):
         """
@@ -339,15 +344,19 @@ class Class(BuyableProduct):
 
         self.assign_entry(entry)
 
-    def unschedule(self):
+    def unschedule(self, src='teacher', request=None):
         """
         Unschedule previously scheduled lesson
         """
         if not self.timeline:
-            raise CannotBeUnscheduled('%s' % self)
+            raise CannotBeUnscheduled()
+
+        if src == 'customer':
+            self.customer.cancellation_streak += 1
+            self.customer.save()
 
         entry = self.timeline
-        entry.classes.remove(self, bulk=True)  # expcitly don't run self.save()
+        entry.classes.remove(self, bulk=True)  # expcitly disable runnin of self.save()
         self.timeline = None
         entry.save()
 
