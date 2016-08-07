@@ -19,7 +19,10 @@ FORMAT_MODULE_PATH = [
 ]
 
 DEBUG = env('DEBUG')    # False if not in os.environ
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'a.elk.today',
+    'a-staging.elk.today',
+]
 
 SUPPORT_EMAIL = 'help@elk.academy'
 
@@ -153,10 +156,10 @@ WSGI_APPLICATION = 'elk.wsgi.application'
 
 public_root = root.path('public/')
 
+MEDIA_URL = env('MEDIA_URL')
 MEDIA_ROOT = env('MEDIA_ROOT')
-MEDIA_URL = 'media/'
 
-STATIC_URL = '/static/'
+STATIC_URL = env('STATIC_URL')
 STATIC_ROOT = env('STATIC_ROOT')
 
 SECRET_KEY = env('SECRET_KEY')  # Raises ImproperlyConfigured exception if SECRET_KEY not in os.environ
