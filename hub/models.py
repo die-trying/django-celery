@@ -132,9 +132,6 @@ class ClassesManager(models.Manager):
 
         Delta is a python datetime.timedelta.
         """
-        print(self.get_queryset()
-            .filter(is_scheduled=True, timeline__start__range=(self.__now(), self.__now() + delta))
-            .filter(**kwargs).query)
         return self.get_queryset() \
             .filter(is_scheduled=True, timeline__start__range=(self.__now(), self.__now() + delta)) \
             .filter(**kwargs)
