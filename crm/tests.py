@@ -1,12 +1,13 @@
 from django.test import TestCase
 
 from crm.models import Customer
+from elk.utils.testing import create_customer
 
 
-class CustomerUserModelIntegrationTestCase(TestCase):
+class CustomerTestCase(TestCase):
     fixtures = ('crm.yaml',)
 
-    def testUsername(self):
+    def test_username(self):
         """
         Customer objects with assigned django user should take user data from
         the django table.
@@ -22,3 +23,11 @@ class CustomerUserModelIntegrationTestCase(TestCase):
         self.assertEqual(customer_without_user.first_name, 'Vasiliy')
         self.assertEqual(customer_without_user.last_name, 'Poupkine')
         self.assertEqual(customer_without_user.email, 'f@f213.in')
+
+    def test_can_cancel_classes(self):
+        customer = create_customer()
+
+        self.assertTrue(customer.can_cancel_classes())
+        customer.cancellation_streak = 5
+        customer.max_cancellation_count = 5
+        self.assertFalse(customer.can_cancel_classes())

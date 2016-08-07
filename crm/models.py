@@ -38,7 +38,7 @@ class Customer(models.Model):
     birthday = models.DateField(null=True, blank=True)
 
     cancellation_streak = models.SmallIntegerField('Cancelled lesson streak', default=0)
-    max_cancellation_count = models.SmallIntegerField('Maximum allowed lessons to cancel', default=2)
+    max_cancellation_count = models.SmallIntegerField('Maximum allowed lessons to cancel', default=7)
 
     profile_photo = models.ImageField(upload_to='profiles/', null=True, blank=True)
 
@@ -95,6 +95,15 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.full_name
+
+    def can_cancel_classes(self):
+        """
+        Determine, if user can cancel a particular class. Class here is for future
+        purposes.
+        """
+        if self.cancellation_streak < self.max_cancellation_count:
+            return True
+        return False
 
     class Meta:
         verbose_name = 'Lead'

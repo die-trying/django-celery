@@ -100,3 +100,24 @@ def step2(request, teacher, type_id, date, time):
 
     hat.c.save()  # save a hat-generated class
     return redirect('/')  # TODO: a page with success story
+
+
+@login_required
+def cancel_popup(request, class_id):
+    if not request.user.crm.can_cancel_classes():
+        return render(request, 'hub/cancel_popup/sorry.html')
+
+    return render(request, 'hub/cancel_popup/index.html', context={
+        'object': get_object_or_404(request.user.crm.classes, pk=class_id, is_scheduled=True),
+    })
+
+
+@login_required
+def cancel(request, class_id):
+    c = get_object_or_404(request.user.crm.classes, pk=class_id)
+    if not request.user.crm.can_cancel_classes():
+        return JsonResponse({'result': False}, safe=False)
+
+    c.unschedule(src='customer')
+    c.save()
+    return JsonResponse({'result': True}, safe=False)

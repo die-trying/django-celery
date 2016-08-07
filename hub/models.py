@@ -276,8 +276,13 @@ class Class(BuyableProduct):
             class_scheduled.send(sender=self.__class__, instance=self)
 
         """ Nullify customer cancellation_streak """
-        self.customer.cancellation_streak = 0
-        self.customer.save()
+        # self.customer.cancellation_streak = 0
+        # self.customer.save()
+        """
+        Nullification is disabled, because it should be done asyncronously,
+        when user has some actualy passed classes two las weeks
+        """
+
 
     def _save_unscheduled(self, *args, **kwargs):
         """

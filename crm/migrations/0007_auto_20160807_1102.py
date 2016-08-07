@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='customer',
             name='max_cancellation_count',
-            field=models.SmallIntegerField(verbose_name='Maximum allowed lessons to cancel', default=2),
+            field=models.SmallIntegerField(verbose_name='Maximum allowed lessons to cancel', default=7),
         ),
     ]

@@ -1,0 +1,20 @@
+{% load i18n %}
+<div class="modal-dialog class_cancel_popup">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            <h3 class="modal-title">{% trans 'Are you sure? :-(' %}</h3>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <p>{% trans "We'll hopefuly wait untill it's comfortable for you to schedule a next class." %}</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">No, i'm not sure</button>
+            <button type="button" class="btn btn-primary" data-class-cancellation-url="{% url 'hub:cancel' object.pk %}">Cancel my lesson</button>
+        </div>
+    </div>
+</div>

@@ -278,27 +278,6 @@ class TestScheduleLowLevel(TestCase):
         self.customer.refresh_from_db()
         self.assertEqual(self.customer.cancellation_streak, 0)
 
-    def test_null_cancellation_count(self):
-        """
-        Every schedule caused by customer should null its cancellation count
-        """
-        self.customer.cancellation_streak = 1
-        self.customer.save()
-        c = self._buy_a_lesson()
-
-        self.customer.refresh_from_db()
-        self.assertEquals(self.customer.cancellation_streak, 1)
-
-        c.schedule(
-            teacher=self.teacher,
-            date=datetime(2016, 12, 1, 7, 25),  # monday
-            allow_besides_working_hours=True,
-        )
-        c.save()
-
-        self.customer.refresh_from_db()
-        self.assertEqual(self.customer.cancellation_streak, 0)
-
 
 class TestClassSignals(TestCase):
     fixtures = ('lessons',)

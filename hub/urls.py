@@ -17,4 +17,12 @@ urlpatterns = [
         view=views.step1,
         name='step01'
         ),
+    url(regex=r'cancel/(?P<class_id>\d+)/popup/',
+        view=views.cancel_popup,
+        name='cancel_popup'
+        ),
+    url(regex=r'cancel/(?P<class_id>\d+)/$',
+        view=views.cancel,
+        name='cancel',
+        )
 ]

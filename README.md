@@ -63,6 +63,8 @@ class Controller
         @model = new Project.Models.YourModel @a, @b, @c
 ```
 
+If you need a specific to an element peace of code, you should write a [simple jquery plugin](https://learn.jquery.com/plugins/basic-plugin-creation/).
+
 ### Local assets
 By default all vendor assets, located it `build/js-vendor-filters.json` and `build/css-vendor-files.json` are cross-site. If you need a heavy library, you can include it with templatetags `css` and `js`, like this:
 ```django
