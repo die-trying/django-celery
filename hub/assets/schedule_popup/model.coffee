@@ -11,6 +11,7 @@ class Model extends MicroEvent
     }
     @query_type = 'teachers'
     @from_json()
+    @timout = 1
 
   class Record
     constructor: (@name, @photo, @author, @description) ->
@@ -21,26 +22,34 @@ class Model extends MicroEvent
     @records= []
 
     @loaded = false
+    @loading = true
+    setTimeout () =>
+      @loading = false
+    , 3000
     $.getJSON url, (data) =>
       @loaded = true
-      for event in data
-        record = new Record(
-          name = event.name
-          photo = event.profile_photo
-          author = if event.host? then event.host.name
-          description = event.announce
-        )
-        for time in event.slots
-          time_for_id = time.replace ':', '_'
-          slot = {
-            id: "teacher_#{ event.id }_time_#{ time_for_id }"
-            teacher: if event.host? then event.host.id else event.id
-            time: time
-          }
-          record.slots.push slot
+      setTimeout () =>
+        @timeout = 700  # TODO: remove this timeout after debugging
+        @loading = false
+        for event in data
+          record = new Record(
+            name = event.name
+            photo = event.profile_photo
+            author = if event.host? then event.host.name
+            description = event.announce
+          )
+          for time in event.slots
+            time_for_id = time.replace ':', '_'
+            slot = {
+              id: "teacher_#{ event.id }_time_#{ time_for_id }"
+              teacher: if event.host? then event.host.id else event.id
+              time: time
+            }
+            record.slots.push slot
 
-        @records.push record
-      @trigger 'update'
+          @records.push record
+        @trigger 'update'
+      , @timeout
 
   submit_url: (data) ->
     "/hub/schedule/step2/teacher/#{ data.teacher }/#{ data.lesson }/#{ data.date }/#{ data.time }/"

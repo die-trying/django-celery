@@ -3,6 +3,7 @@
 {% load humanize %}
 {% load staticfiles %}
 {% load hub.schedule_popup %}
+{% load pretty_loader %}
 
 <div class="modal-dialog schedule-popup">
     <div class="modal-content">
@@ -26,6 +27,7 @@
                 </div>
             </div>
             <div class="schedule-popup__content">
+                <div class="schedule-popup__content-loading" rv-class-shown="model.loading" {% pretty_loader %}></div>
                 <div rv-each-record="model.records" class="row schedule-popup__record">
                     <div class="col-md-1">
                         <img class="img-circle" rv-if="record.photo" rv-src="record.photo">

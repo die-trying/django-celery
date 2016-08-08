@@ -14,6 +14,21 @@
         padding-top: 20px
         padding-bottom: 10px
 
+    &__content-loading
+        z-index: 0
+        width: 768px
+        height: 400px
+        position: absolute
+        background: white
+        background-repeat: no-repeat
+        background-position: center
+        opacity: 0
+        &:not(.shown)
+            transition: opacity .3s ease
+        &.shown
+            z-index: 100500
+            opacity: 1
+
     &__record
         margin-bottom: 15px
         &-name

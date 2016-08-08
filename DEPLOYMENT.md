@@ -10,7 +10,6 @@ Here is a simple deployment checklist:
 1. Install and launch managed instance of Celery
 2. Change `MAIL_ASYNC` to True
 3. Configure real mailgun API tokens
-2. Create appropriate user logins for all the staff
 5. Set server timezone to UTC
 
 
@@ -20,3 +19,9 @@ Here is a simple deployment checklist:
 1. Emails should be send via mailgun
 3. Async 'class start soon' notifications
 2. User's timezone should be automatically guessed and applied. Lesson, planned to 08:00 should be displayed at 08:00 and stored as 05:00
+
+
+## Pre-launch
+
+2. Create appropriate user logins for all the staff
+1. Remove timeout in hub/assets/scheduling_popup/model.coffee

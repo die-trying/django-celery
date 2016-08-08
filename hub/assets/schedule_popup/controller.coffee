@@ -25,10 +25,13 @@ class Controller
       @model.lesson_type = e.target.value
       @model.query_type = e.target.dataset.queryType
       @model.from_json()
+      @submit = 'disabled'
+
 
     $('.schedule-popup__filters select').on 'change', (e) =>
       @model.date = $('.schedule-popup__filters select').val()
       @model.from_json()
+      @submit = 'disabled'
 
   bind_slot_buttons: () ->
     $('.schedule-popup__time-label').on 'click', (e) =>
