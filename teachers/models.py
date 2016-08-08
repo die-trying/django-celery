@@ -69,7 +69,7 @@ class Teacher(models.Model):
     event type to the `acceptable_lessons` property.
     """
     objects = TeacherManager()
-    user = models.OneToOneField(User, on_delete=models.PROTECT, related_name='teacher_data', limit_choices_to={'is_staff': 1})
+    user = models.OneToOneField(User, on_delete=models.PROTECT, related_name='teacher_data', limit_choices_to={'is_staff': 1, 'crm__isnull': False})
 
     acceptable_lessons = models.ManyToManyField(ContentType, related_name='+', blank=True, limit_choices_to={'app_label': 'lessons'})
 
