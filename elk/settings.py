@@ -133,7 +133,6 @@ SOCIAL_AUTH_PIPELINE = (
     'acc.pipelines.save_profile_picture'
 
 )
-DEBUG_TOOLBAR_PATCH_SETTINGS = False
 DEBUG_TOOLBAR_CONFIG = {
     'JQUERY_URL': '/static/vendor/jquery/dist/jquery.min.js',
 }
@@ -143,6 +142,7 @@ INTERNAL_IPS = [
     '::1',
     '77.37.209.221',
     '91.197.114.155',
+    '91.197.113.166',
 ]
 
 SOCIAL_AUTH_URL_NAMESPACE = 'acc:social'
