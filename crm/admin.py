@@ -1,9 +1,10 @@
 from django.contrib import admin
+from django.utils import timezone
 from django.contrib.auth.admin import UserAdmin as StockUserAdmin
 from django.contrib.auth.models import User
 
 from .models import Customer, RegisteredCustomer
-
+from hub.models import Class
 
 # Register your models here.
 
@@ -49,8 +50,8 @@ class ExistingCustomerAdmin(admin.ModelAdmin):
     """
     The admin module for manager current customers without managing users
     """
-    list_display = ('full_name', 'country', 'bought_classes', 'bought_subscriptions', 'email', 'date_arrived', 'source')
-    list_filter = ('country', 'current_level',)
+    list_display = ('full_name', 'classes', 'subscriptions', 'full_name', 'date_arrived')
+    # list_filter = ('country',)
     actions = None
     readonly_fields = ('__str__', 'email', 'user', 'date_arrived', 'starting_level')
     fieldsets = (
@@ -64,6 +65,23 @@ class ExistingCustomerAdmin(admin.ModelAdmin):
             'fields': ('skype', 'facebook', 'instagram', 'twitter', 'linkedin')
         }),
     )
+
+    def classes(self, instance):
+        total = instance.classes.all()
+        finished = total.filter(timeline__start__lte=timezone.now())
+        return '%d/%d' % (finished.count(), total.count())
+
+    def subscriptions(self, instance):
+        if not instance.classes:
+            return '0/0'
+
+        total = instance.classes.distinct('subscription').values_list('subscription', flat=True)
+
+        if not total:
+            return '0/0'
+
+        finished = Class.objects.filter(subscription_id__in=total).exclude(is_scheduled=False).filter(timeline__start__gt=timezone.now()).distinct('subscription').values_list('subscription', flat=True)
+        return '%d/%d' % (finished.count(), total.count())
 
     def has_add_permission(self, request):
         return False

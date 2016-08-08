@@ -111,7 +111,7 @@ class Customer(models.Model):
 
 class RegisteredCustomerManager(models.Manager):
     def get_queryset(self, exclude_void=True):
-        return super(RegisteredCustomerManager, self).get_queryset().filter(user__isnull=False, user__teacher_data__isnull=True)
+        return super(RegisteredCustomerManager, self).get_queryset().select_related('user').filter(user__isnull=False, user__teacher_data__isnull=True)
 
 
 class RegisteredCustomer(Customer):
@@ -119,14 +119,6 @@ class RegisteredCustomer(Customer):
     A stub customer model for administration purposes
     """
     objects = RegisteredCustomerManager()
-
-    @property
-    def bought_classes(customer):
-        return customer.classes.filter(buy_source=0).count()  # select only single bought classes
-
-    @property
-    def bought_subscriptions(customer):
-        return customer.subscriptions.count()
 
     class Meta:
         proxy = True
