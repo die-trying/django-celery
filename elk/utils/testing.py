@@ -71,7 +71,6 @@ def mock_request(customer=create_customer()):
         'REMOTE_ADDR': '127.0.0.5',
         'HTTP_USER_AGENT': 'WinXP; U/16',
     }
-    request.get_host = Mock(return_value='127.0.0.5:8553')
     request.crm = customer
 
     return request
