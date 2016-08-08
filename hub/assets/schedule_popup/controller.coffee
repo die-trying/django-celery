@@ -11,6 +11,7 @@ class Controller
 
     @bind_filters()
     @mark_active_lesson()
+    @hide_filter_without_options()
 
     @view_main = rivets.bind $('.schedule-popup__content'), {model: @model}
     @view_footer = rivets.bind $('.schedule-popup__footer'), {c: this}
@@ -76,6 +77,11 @@ class Controller
         $(this).button 'toggle'
         .removeClass 'active'
 
+  hide_filter_without_options: () ->
+    $z = $ '.lesson_type>label'
+    if $z.length is 1
+      $z.addClass 'hidden'
+
   destroy: () ->
     @view_footer.unbind()
     @view_main.unbind()   # Disarm rivets.
@@ -90,10 +96,13 @@ c = ''
 $('.schedule-popup-container').on 'show.bs.modal', () ->
   c = new Controller
 
+
+
   $(document).on 'keyup', (e) ->  #close popup on ESC
     return if e.keyCode isnt 27
     $(document).off 'keyup'
     $('.schedule-popup-container').modal 'hide'
+
 
 $('.schedule-popup-container').on 'hidden.bs.modal', () ->
   c.destroy()

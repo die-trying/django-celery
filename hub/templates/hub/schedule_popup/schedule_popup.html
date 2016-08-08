@@ -12,18 +12,16 @@
         </div>
         <div class="modal-body">
             <div class="row schedule-popup__filters">
-                <div class="col-md-8 lesson_type">
-                    <div class="btn-group" data-toggle="buttons">
-                        {% lesson_type_filter user.crm.classes.bought_lesson_types %}
-                    </div>
-                </div>
-                <div class="col-md-4 schedule-popup__date-selector">
-                    <div class="form-group">
+                <div class="col-md-12">
+                    <div class="form-group schedule-popup__date-selector">
                         <select name="date" class="selectpicker">
                             {% for d in user.crm.classes.dates_for_planning %}
                             <option value="{{ d|date:'Y-m-d' }}">{{ d|naturalday:'SHORT_DATE_FORMAT'|capfirst }}</option>
                             {% endfor %}
                         </select>
+                    </div>
+                    <div class="btn-group lesson_type" data-toggle="buttons">
+                        {% lesson_type_filter user.crm.classes.bought_lesson_types %}
                     </div>
                 </div>
             </div>
