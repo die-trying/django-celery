@@ -1,9 +1,10 @@
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
 from mixer.backend.django import mixer
 
@@ -198,8 +199,9 @@ class EntryCRUDTest(ClientTestCase):
 
         self.added_entry = self.__get_entry_from()
 
-        end = parse_datetime(self.added_entry['end']).replace(tzinfo=None)
-        self.assertEqual(end, parse_datetime('2016-06-29 15:33:00'))
+        end = parse_datetime(self.added_entry['end'])
+        reference = timezone.make_aware(parse_datetime('2016-06-29 15:33:00'))
+        self.assertEqual(end, reference)
         self.assertEqual(self.added_entry['title'], self.lesson.name)
 
         entry = TimelineEntry.objects.get(pk=self.added_entry['id'])
@@ -220,8 +222,9 @@ class EntryCRUDTest(ClientTestCase):
 
         self.added_entry = self.__get_entry_from()
 
-        end = parse_datetime(self.added_entry['end']).replace(tzinfo=None)
-        self.assertEqual(end, parse_datetime('2016-06-29 16:33:00'))
+        end = parse_datetime(self.added_entry['end'])
+        reference = timezone.make_aware(parse_datetime('2016-06-29 16:33:00'))
+        self.assertEqual(end, reference)
         self.assertEqual(self.added_entry['title'], self.lesson.name)
 
     def _delete(self):
@@ -264,7 +267,7 @@ class EntryAPITest(ClientTestCase):
 
         mocked_entries = {}
 
-        now = datetime.now()
+        now = timezone.now()
         for i in range(0, 10):
             entry = mixer.blend(TimelineEntry,
                                 teacher=self.teacher,
@@ -280,8 +283,8 @@ class EntryAPITest(ClientTestCase):
             id = i['id']
             mocked_entry = mocked_entries[id]
 
-            start = parse_datetime(i['start']).replace(tzinfo=None)
-            end = parse_datetime(i['end']).replace(tzinfo=None)
+            start = parse_datetime(i['start'])
+            end = parse_datetime(i['end'])
             self.assertEqual(start, mocked_entry.start)
             self.assertEqual(end, now + duration)
 
