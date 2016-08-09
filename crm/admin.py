@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext as _
 
 from elk.utils.admin import BooleanFilter, ModelAdmin, TabularInline
-from hub.models import Class
+from hub.models import Class, Subscription
 
 from .models import Customer, RegisteredCustomer
 
@@ -71,11 +71,33 @@ class HasSubscriptionsFilter(BooleanFilter):
         return queryset.filter(subscriptions__isnull=True)
 
 
-class ClassesInlineBase(TabularInline):
-    model = Class
+class SubscriptionsInline(TabularInline):
+    model = Subscription
+    readonly_fields = ('product', 'when', 'has_classes_left')
+    fieldsets = (
+        (None, {
+            'fields': ('product', 'when', 'has_classes_left')
+        }),
+    )
+
+    def product(self, instance):
+        return str(instance.product)
 
     def when(self, instance):
         return self._datetime(instance.buy_date) + ' ' + self._time(instance.buy_date)
+
+    def has_classes_left(self, instance):
+        return '10050'
+
+    def has_add_permission(self, instance):
+        return False
+
+    def has_delete_permission(self, request, instance):
+        return False
+
+
+class ClassesInlineBase(TabularInline):
+    model = Class
 
     def has_add_permission(self, request):
         """
@@ -84,16 +106,33 @@ class ClassesInlineBase(TabularInline):
         """
         return False
 
+    def has_delete_permission(self, request, instance):
+        return False
+
+    def buy_time(self, instance):
+        return self._datetime(instance.buy_date) + ' ' + self._time(instance.buy_date)
+
 
 class ClassesLeftInline(ClassesInlineBase):
     verbose_name = 'Bought lesson'
     verbose_name_plural = 'Bought lessons left'
-    readonly_fields = ('lesson', 'when', 'buy_source')
+    readonly_fields = ('lesson', 'source', 'buy_time')
     fieldsets = (
         (None, {
-            'fields': ('lesson', 'when', 'buy_source')
+            'fields': ('lesson', 'source', 'buy_time')
         }),
     )
+
+    def source(self, instance):
+        if not instance.subscription:
+            return '—'
+        else:
+            return str(instance.subscription.product)
+
+    def buy_time(self, instance):
+        if not instance.subscription:
+            return super().buy_time(instance)
+        return '—'
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -130,12 +169,6 @@ class ClassesPassedInline(ClassesInlineBase):
     def when(self, instance):
         return self._datetime(instance.timeline.start) + ' ' + self._time(instance.timeline.start)
 
-    def has_delete_permission(self, request, instance):
-        """
-        For obvious reasons passed class should not be deletable event through admin
-        """
-        return False
-
 
 @admin.register(RegisteredCustomer)
 class ExistingCustomerAdmin(ModelAdmin):
@@ -146,7 +179,7 @@ class ExistingCustomerAdmin(ModelAdmin):
     list_filter = (HasClassesFilter, HasSubscriptionsFilter,)
     actions = None
     readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions')
-    inlines = (ClassesLeftInline, ClassesPassedInline)
+    inlines = (SubscriptionsInline, ClassesLeftInline, ClassesPassedInline)
     fieldsets = (
         (None, {
             'fields': ('student', 'email', 'arrived', 'classes', 'subscriptions')
