@@ -26,6 +26,11 @@ class ClassInline(admin.StackedInline):
     def has_add_permission(self, request):
         return False
 
+    def has_delete_permission(self, request, instance):
+        if instance.is_in_past():
+            return False
+        return True
+
 
 class LessonFilter(admin.SimpleListFilter):
     title = _('Lesson type')
