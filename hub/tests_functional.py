@@ -70,7 +70,7 @@ class BuySubscriptionTestCase(TestCase):
         s.save()
 
         for c in s.classes.all():
-            self.assertEqual(c.buy_source, 1)  # 1 is defined in the model
+            self.assertEqual(c.buy_source, 'subscription')
 
     def test_disabling_subscription(self):
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)

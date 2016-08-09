@@ -22,7 +22,7 @@ def log_bought_class(sender, **kwargs):
     if not hasattr(instance, 'request'):  # if we don't know a request, probably it's testing
         return
 
-    if instance.buy_source != 0:  # log only single-bought classes
+    if instance.buy_source != 'single':  # log only single-bought classes
         return
 
     ev = PaymentEvent(

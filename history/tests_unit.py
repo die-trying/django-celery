@@ -44,7 +44,7 @@ class TestEvent(TestCase):
             customer=customer,
             lesson=OrdinaryLesson.get_default(),
             buy_price=10,
-            buy_source=0,
+            buy_source='single',
         )
         c.request = mock_request()
         c.save()

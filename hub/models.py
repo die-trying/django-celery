@@ -88,7 +88,7 @@ class Subscription(BuyableProduct):
                     subscription=self,
                     customer=self.customer,
                     buy_price=self.buy_price,
-                    buy_source=1,  # store a sign, that class is bought by subscription
+                    buy_source='subscription',  # store a sign, that class is bought by subscription
                 )
                 if hasattr(self, 'request'):
                     c.request = self.request  # bypass request object for later analysis
@@ -203,16 +203,11 @@ class Class(BuyableProduct):
     For backup purposes, the delete method is redefined in :model:`hub.BuyableProduct`
     for completely disabling deletion of anything, that anyone has bought for money.
     """
-    BUY_SOURCES = (
-        (0, 'Single'),
-        (1, 'Subscription')
-    )
-
     objects = ClassesManager()
 
     customer = models.ForeignKey(Customer, related_name='classes')
     is_scheduled = models.BooleanField(default=False)
-    buy_source = models.SmallIntegerField(choices=BUY_SOURCES, default=0)
+    buy_source = models.CharField(max_length=12, default='single')
     buy_date = models.DateTimeField(auto_now_add=True)
 
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
