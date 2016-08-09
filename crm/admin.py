@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 
-from elk.utils.admin import BooleanFilter, ModelAdmin
+from elk.utils.admin import BooleanFilter, ModelAdmin, TabularInline
 from hub.models import Class
 
 from .models import Customer, RegisteredCustomer
@@ -71,6 +71,32 @@ class HasSubscriptionsFilter(BooleanFilter):
         return queryset.filter(subscriptions__isnull=True)
 
 
+class ClassesLeftInline(TabularInline):
+    model = Class
+    verbose_name = 'Bought lesson'
+    verbose_name_plural = 'Bought lessons left'
+    readonly_fields = ('lesson', 'when', 'buy_source')
+    fieldsets = (
+        (None, {
+            'fields': ('lesson', 'when', 'buy_source')
+        }),
+    )
+
+    def when(self, instance):
+        return self._datetime(instance.buy_date) + ' ' + self._time(instance.buy_date)
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.exclude(timeline__start__lt=timezone.now())
+
+    def has_add_permission(self, request):
+        """
+        Administration of the classes is made on the separate page for harnessin
+        the `GeneralStackedInline`
+        """
+        return False
+
+
 @admin.register(RegisteredCustomer)
 class ExistingCustomerAdmin(ModelAdmin):
     """
@@ -80,6 +106,7 @@ class ExistingCustomerAdmin(ModelAdmin):
     list_filter = (HasClassesFilter, HasSubscriptionsFilter,)
     actions = None
     readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions')
+    inlines = (ClassesLeftInline,)
     fieldsets = (
         (None, {
             'fields': ('student', 'email', 'arrived', 'classes', 'subscriptions')

@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.humanize.templatetags.humanize import naturalday
+from django.template.defaultfilters import capfirst, time
 from django.utils.html import format_html
 
 
@@ -36,16 +37,30 @@ class BooleanFilter(admin.SimpleListFilter):
                 return self.f(request, queryset)
 
 
-class ModelAdmin(admin.ModelAdmin):
-    """
-    Abstract base class for all admin modules. Currently, supports only a minor
-    set of helpers
-    """
-
+class AdminHelpersMixin():
     def _email(self, email):
         return format_html(
             '<a href="mailto:%s">%s</a>' % (email, email)
         )
 
     def _datetime(self, date):
-        return naturalday(date)
+        return capfirst(naturalday(date))
+
+    def _time(self, date):
+        return time(date, 'SHORT_TIME_FORMAT')
+
+
+class ModelAdmin(admin.ModelAdmin, AdminHelpersMixin):
+    """
+    Abstract base class for all admin modules. Currently, supports only a minor
+    set of helpers
+    """
+    pass
+
+
+class TabularInline(admin.TabularInline, AdminHelpersMixin):
+    pass
+
+
+class StackedInline(admin.StackedInline, AdminHelpersMixin):
+    pass
