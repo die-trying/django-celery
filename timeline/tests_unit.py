@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from django.utils.timezone import is_naive, make_aware
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
@@ -100,6 +101,15 @@ class EntryTestCase(TestCase):
             entry = mixer.blend(TimelineEntry, teacher=self.teacher2, lesson=lesson)
             entry.save()
 
+    def test_entry_in_past(self):
+        lesson = mixer.blend(lessons.MasterClass, host=self.teacher1)
+        entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson)
+        entry.start = make_aware(datetime(1995, 12, 1))
+        self.assertTrue(entry.is_in_past())
+
+        entry.start = make_aware(datetime(2032, 12, 1))  # will fail in 16 years, sorry
+        self.assertFalse(entry.is_in_past())
+
 
 class TestPermissions(ClientTestCase):
     def setUp(self):
@@ -139,6 +149,11 @@ class TestCancellation(TestCase):
         return c
 
     def _create_entry(self, start=datetime(2032, 5, 3, 13, 30), end=datetime(2032, 5, 3, 14, 0)):
+        if is_naive(start):
+            start = make_aware(start)
+        if is_naive(end):
+            end = make_aware(end)
+
         return mixer.blend(
             TimelineEntry,
             teacher=self.teacher,
@@ -171,7 +186,7 @@ class TestCancellation(TestCase):
         c = self._buy_a_lesson(lesson)
         c.schedule(  # go through the simple scheduling process, without a special-crafted timeline entry
             teacher=self.teacher,
-            date=datetime(2032, 5, 3, 12, 30),
+            date=make_aware(datetime(2032, 5, 3, 12, 30)),
             allow_besides_working_hours=True
         )
         c.save()

@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 from django.contrib.contenttypes.models import ContentType
 from django.http.response import Http404
 from django.test import TestCase
+from django.utils import timezone
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
@@ -116,7 +117,7 @@ class ScheduleTestCase(TestCase):
         """
         lesson = products.OrdinaryLesson.get_default()
 
-        entry = mixer.blend(TimelineEntry, slots=1, lesson=lesson)
+        entry = mixer.blend(TimelineEntry, slots=1, lesson=lesson, start=timezone.make_aware(datetime(2032, 12, 12)))
         bought_class = self._buy_a_lesson(lesson)
 
         self.assertFalse(bought_class.is_scheduled)
@@ -174,6 +175,7 @@ class ScheduleTestCase(TestCase):
         timeline_entry = mixer.blend(TimelineEntry,
                                      lesson=lesson,
                                      teacher=self.host,
+                                     start=timezone.make_aware(datetime(2032, 12, 1))
                                      )
 
         timeline_entry.save()
@@ -208,7 +210,7 @@ class ScheduleTestCase(TestCase):
         )
         customer2_class.save()
 
-        timeline_entry = mixer.blend(TimelineEntry, lesson=paired_lesson, teacher=self.host)
+        timeline_entry = mixer.blend(TimelineEntry, lesson=paired_lesson, teacher=self.host, start=timezone.make_aware(datetime(2032, 12, 1)))
 
         customer1_class.assign_entry(timeline_entry)
         customer1_class.save()

@@ -10,7 +10,7 @@ import lessons.models as lessons
 import products.models as products
 from elk.utils.testing import create_customer, create_teacher
 from hub import signals
-from hub.exceptions import CannotBeScheduled
+from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from hub.models import Class, Subscription
 from teachers.models import WorkingHours
 from timeline.models import Entry as TimelineEntry
@@ -76,6 +76,9 @@ class TestClassManager(TestCase):
         s.save()
 
     def _schedule(self, lesson_type=None, date=datetime(2032, 12, 1, 11, 30)):  # By default it will fail in 16 years, sorry
+        if timezone.is_naive(date):
+            date = timezone.make_aware(date)
+
         if lesson_type is None:
             lesson_type = lessons.OrdinaryLesson.get_contenttype()
         c = self.customer.classes.filter(lesson_type=lesson_type, is_scheduled=False).first()
@@ -167,6 +170,12 @@ class TestClassManager(TestCase):
 
         self.assertEquals(dates[0].strftime('%Y-%m-%d'), datetime.now().strftime('%Y-%m-%d'))  # the first day should be today
 
+    def test_cant_unschedule_in_past(self):
+        c = self._schedule(date=timezone.make_aware(datetime(2020, 12, 1, 11, 30)))
+        c.timeline.is_in_past = MagicMock(return_value=True)
+        with self.assertRaises(CannotBeUnscheduled):
+            c.unschedule()
+
 
 class TestScheduleLowLevel(TestCase):
     fixtures = ('lessons',)
@@ -255,7 +264,7 @@ class TestScheduleLowLevel(TestCase):
         c = self._buy_a_lesson()
         c.schedule(
             teacher=self.teacher,
-            date=datetime(2016, 12, 1, 7, 25),  # monday
+            date=timezone.make_aware(datetime(2016, 12, 1, 7, 25)),  # monday
             allow_besides_working_hours=True,
         )
         self.assertEqual(self.customer.cancellation_streak, 0)
@@ -270,7 +279,7 @@ class TestScheduleLowLevel(TestCase):
         c = self._buy_a_lesson()
         c.schedule(
             teacher=self.teacher,
-            date=datetime(2016, 12, 1, 7, 25),  # monday
+            date=timezone.make_aware(datetime(2016, 12, 1, 7, 25)),  # monday
             allow_besides_working_hours=True,
         )
         self.assertEqual(self.customer.cancellation_streak, 0)
@@ -297,6 +306,9 @@ class TestClassSignals(TestCase):
         return c
 
     def _schedule(self, c, date=datetime(2032, 12, 1, 11, 30)):  # By default it will fail in 16 years, sorry
+        if timezone.is_naive(date):
+            date = timezone.make_aware(date)
+
         c.schedule(
             teacher=self.teacher,
             date=date,

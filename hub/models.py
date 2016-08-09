@@ -283,7 +283,6 @@ class Class(BuyableProduct):
         when user has some actualy passed classes two las weeks
         """
 
-
     def _save_unscheduled(self, *args, **kwargs):
         """
         Save a class without an assigned timeline entry.
@@ -355,6 +354,8 @@ class Class(BuyableProduct):
         """
         if not self.timeline:
             raise CannotBeUnscheduled()
+        if self.timeline.is_in_past():
+            raise CannotBeUnscheduled('Past classed cannot be unscheduled!')
 
         if src == 'customer':
             self.customer.cancellation_streak += 1

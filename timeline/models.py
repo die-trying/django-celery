@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.utils import timezone
 from django.utils.dateformat import format
 from django.utils.translation import ugettext as _
 
@@ -175,6 +176,14 @@ class Entry(models.Model):
             return False
 
         return True
+
+    def is_in_past(self):
+        """
+        Check, if timeline entry is in past
+        """
+        if self.start < timezone.now():
+            return True
+        return False
 
     def as_dict(self):
         """
