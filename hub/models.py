@@ -62,9 +62,12 @@ class Subscription(BuyableProduct):
 
     customer = models.ForeignKey(Customer, related_name='subscriptions')
 
-    product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    product_id = models.PositiveIntegerField()
+    product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'products'})
+    product_id = models.PositiveIntegerField(default=1)  # flex scope — always add the first product
     product = GenericForeignKey('product_type', 'product_id')
+
+    def __str__(self):
+        return self.name_for_user
 
     @property
     def name_for_user(self):
