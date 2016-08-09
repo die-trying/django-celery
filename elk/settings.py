@@ -25,7 +25,8 @@ ALLOWED_HOSTS = [
     'a-staging.elk.today',
 ]
 
-SUPPORT_EMAIL = 'help@elk.academy'
+SUPPORT_EMAIL = 'help@elk.today'
+SERVER_EMAIL = 'django@elk.today'
 
 ADMINS = [
     ('Fedor Borshev', 'f@f213.in'),
