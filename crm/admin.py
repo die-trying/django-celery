@@ -1,10 +1,14 @@
 from django.contrib import admin
-from django.utils import timezone
 from django.contrib.auth.admin import UserAdmin as StockUserAdmin
 from django.contrib.auth.models import User
+from django.utils import timezone
+from django.utils.translation import ugettext as _
+
+from elk.utils.admin import BooleanFilter, ModelAdmin
+from hub.models import Class
 
 from .models import Customer, RegisteredCustomer
-from hub.models import Class
+
 
 # Register your models here.
 
@@ -29,7 +33,7 @@ class UserAdmin(StockUserAdmin):
 
 
 @admin.register(Customer)
-class CustomerAdmin(admin.ModelAdmin):
+class CustomerAdmin(ModelAdmin):
     """
     This admin module is for managing CRM-only customer databases
     e.g. potential customers.
@@ -41,25 +45,47 @@ class CustomerAdmin(admin.ModelAdmin):
         Disable administration of customers, assigned to users.
         One should edit this customer via the 'Users' page.
         """
-        queryset = super(admin.ModelAdmin, self).get_queryset(request)
+        queryset = super().get_queryset(request)
         return queryset.filter(user=None)
 
 
+class HasClassesFilter(BooleanFilter):
+    title = _('Has classes')
+    parameter_name = 'has_classes'
+
+    def t(self, request, queryset):
+        return queryset.filter(classes__isnull=False).distinct('pk')
+
+    def n(self, request, queryset):
+        return queryset.filter(classes__isnull=True)
+
+
+class HasSubscriptionsFilter(BooleanFilter):
+    title = _('Has subscriptions')
+    parameter_name = 'has_subscriptions'
+
+    def t(self, request, queryset):
+        return queryset.filter(subscriptions__isnull=False).distinct('pk')
+
+    def n(self, request, queryset):
+        return queryset.filter(subscriptions__isnull=True)
+
+
 @admin.register(RegisteredCustomer)
-class ExistingCustomerAdmin(admin.ModelAdmin):
+class ExistingCustomerAdmin(ModelAdmin):
     """
     The admin module for manager current customers without managing users
     """
-    list_display = ('full_name', 'classes', 'subscriptions', 'full_name', 'date_arrived')
-    # list_filter = ('country',)
+    list_display = ('full_name', 'classes', 'subscriptions', 'country', 'date_arrived')
+    list_filter = (HasClassesFilter, HasSubscriptionsFilter,)
     actions = None
-    readonly_fields = ('__str__', 'email', 'user', 'date_arrived', 'starting_level')
+    readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions')
     fieldsets = (
         (None, {
-            'fields': ('user', '__str__', 'email', 'date_arrived', 'starting_level')
+            'fields': ('student', 'email', 'arrived', 'classes', 'subscriptions')
         }),
         ('Profile', {
-            'fields': ('birthday', 'country', 'native_language', 'profile_photo', 'current_level')
+            'fields': ('birthday', 'country', 'native_language', 'profile_photo', 'starting_level', 'current_level')
         }),
         ('Social', {
             'fields': ('skype', 'facebook', 'instagram', 'twitter', 'linkedin')
@@ -68,20 +94,32 @@ class ExistingCustomerAdmin(admin.ModelAdmin):
 
     def classes(self, instance):
         total = instance.classes.all()
+        if not total:
+            return '—'
+
         finished = total.filter(timeline__start__lte=timezone.now())
         return '%d/%d' % (finished.count(), total.count())
 
     def subscriptions(self, instance):
         if not instance.classes:
-            return '0/0'
+            return '—'
 
         total = instance.classes.distinct('subscription').values_list('subscription', flat=True)
 
         if not total:
-            return '0/0'
+            return '—'
 
         finished = Class.objects.filter(subscription_id__in=total).exclude(is_scheduled=False).filter(timeline__start__gt=timezone.now()).distinct('subscription').values_list('subscription', flat=True)
         return '%d/%d' % (finished.count(), total.count())
+
+    def email(self, instance):
+        return self._email(instance.email)
+
+    def arrived(self, instance):
+        return self._datetime(instance.date_arrived) + ', ' + instance.source
+
+    def student(self, instance):
+        return "%s (%s)" % (instance.__str__(), instance.user.username)
 
     def has_add_permission(self, request):
         return False

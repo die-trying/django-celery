@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from elk.utils.admin import ModelAdmin
 from teachers.models import Teacher, WorkingHours
 
 
@@ -8,5 +9,5 @@ class WorkingHoursInline(admin.StackedInline):
 
 
 @admin.register(Teacher)
-class TeacherAdmin(admin.ModelAdmin):
+class TeacherAdmin(ModelAdmin):
     inlines = (WorkingHoursInline,)

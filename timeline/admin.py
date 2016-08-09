@@ -6,6 +6,7 @@ from django.template.defaultfilters import capfirst
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
+from elk.utils.admin import BooleanFilter, ModelAdmin
 from hub.models import Class
 
 from .models import Entry as TimelineEntry
@@ -45,28 +46,19 @@ class LessonFilter(admin.SimpleListFilter):
             return queryset
 
 
-class FreeFilter(admin.SimpleListFilter):
-    title = _('Has free slots left')
+class FreeFilter(BooleanFilter):
+    title = _('Free slots left')
     parameter_name = 'is_free'
 
-    def lookups(self, request, model_admin):
-        return (
-            ('t', 'Yes'),
-            ('f', 'No'),
-        )
+    def t(self, request, queryset):
+        return queryset.filter(taken_slots__lt=F('slots'))
 
-    def queryset(self, request, queryset):
-        if not self.value():
-            return queryset
-        else:
-            if self.value() == 't':
-                return queryset.filter(taken_slots__lt=F('slots'))
-            else:
-                return queryset.filter(slots=F('taken_slots'))
+    def n(self, request, queryset):
+        return queryset.filter(slots=F('taken_slots'))
 
 
 @admin.register(TimelineEntry)
-class TimelineEntryAdmin(admin.ModelAdmin):
+class TimelineEntryAdmin(ModelAdmin):
     actions = []
     readonly_fields = ('slots', 'taken_slots', 'date', 'lesson', 'students', 'teacher')
     list_display = ('teacher', 'lesson_name', 'date', 'students')

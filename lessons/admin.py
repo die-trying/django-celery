@@ -1,9 +1,11 @@
 from django.contrib import admin
 
+from elk.utils.admin import ModelAdmin
+
 from .models import HappyHour, LessonWithNative, MasterClass, OrdinaryLesson, PairedLesson
 
 
-class LessonAdmin(admin.ModelAdmin):
+class LessonAdmin(ModelAdmin):
     """
     Abstract admin for the lessons.
     """
