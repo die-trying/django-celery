@@ -22,7 +22,7 @@ class BuyableProduct(models.Model):
         (1, 'Active'),
     )
 
-    buy_time = models.DateTimeField(auto_now_add=True)
+    buy_date = models.DateTimeField(auto_now_add=True)
     buy_price = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
 
     active = models.SmallIntegerField(choices=ENABLED, default=1)
@@ -208,7 +208,6 @@ class Class(BuyableProduct):
     customer = models.ForeignKey(Customer, related_name='classes')
     is_scheduled = models.BooleanField(default=False)
     buy_source = models.CharField(max_length=12, default='single')
-    buy_date = models.DateTimeField(auto_now_add=True)
 
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     lesson_id = models.PositiveIntegerField()
