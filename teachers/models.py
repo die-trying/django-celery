@@ -213,8 +213,8 @@ class WorkingHours(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='working_hours')
 
     weekday = models.IntegerField('Weekday', choices=WEEKDAYS)
-    start = models.TimeField('Start hour (UTC)')
-    end = models.TimeField('End hoour(UTC)')
+    start = models.TimeField('Start hour (EDT)')
+    end = models.TimeField('End hoour(EDT)')
 
     def as_dict(self):
         return {
