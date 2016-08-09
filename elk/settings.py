@@ -19,12 +19,17 @@ FORMAT_MODULE_PATH = [
 ]
 
 DEBUG = env('DEBUG')    # False if not in os.environ
+
 ALLOWED_HOSTS = [
     'a.elk.today',
     'a-staging.elk.today',
 ]
 
 SUPPORT_EMAIL = 'help@elk.academy'
+
+ADMINS = [
+    ('Fedor Borshev', 'f@f213.in'),
+]
 
 DATABASES = {
     'default': env.db(),    # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
