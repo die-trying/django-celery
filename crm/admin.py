@@ -73,10 +73,10 @@ class HasSubscriptionsFilter(BooleanFilter):
 
 class SubscriptionsInline(TabularInline):
     model = Subscription
-    readonly_fields = ('product', 'when', 'has_classes_left')
+    readonly_fields = ('product', 'when', 'is_fully_used')
     fieldsets = (
         (None, {
-            'fields': ('product', 'when', 'has_classes_left')
+            'fields': ('product', 'when', 'is_fully_used')
         }),
     )
 
@@ -85,9 +85,6 @@ class SubscriptionsInline(TabularInline):
 
     def when(self, instance):
         return self._datetime(instance.buy_date) + ' ' + self._time(instance.buy_date)
-
-    def has_classes_left(self, instance):
-        return '10050'
 
     def has_add_permission(self, instance):
         return False
@@ -197,7 +194,7 @@ class ExistingCustomerAdmin(ModelAdmin):
         if not total:
             return '—'
 
-        finished = total.filter(timeline__start__lte=timezone.now())
+        finished = total.filter(is_fully_used=True)
         return '%d/%d' % (finished.count(), total.count())
 
     def subscriptions(self, instance):
@@ -209,7 +206,7 @@ class ExistingCustomerAdmin(ModelAdmin):
         if not total:
             return '—'
 
-        finished = Class.objects.filter(subscription_id__in=total).exclude(is_scheduled=False).filter(timeline__start__gt=timezone.now()).distinct('subscription').values_list('subscription', flat=True)
+        finished = total.filter(is_fully_used=True)
         return '%d/%d' % (finished.count(), total.count())
 
     def email(self, instance):
