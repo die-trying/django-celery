@@ -71,8 +71,21 @@ class HasSubscriptionsFilter(BooleanFilter):
         return queryset.filter(subscriptions__isnull=True)
 
 
-class ClassesLeftInline(TabularInline):
+class ClassesInlineBase(TabularInline):
     model = Class
+
+    def when(self, instance):
+        return self._datetime(instance.buy_date) + ' ' + self._time(instance.buy_date)
+
+    def has_add_permission(self, request):
+        """
+        Administration of the classes is made on the separate page for harnessin
+        the `GeneralStackedInline`
+        """
+        return False
+
+
+class ClassesLeftInline(ClassesInlineBase):
     verbose_name = 'Bought lesson'
     verbose_name_plural = 'Bought lessons left'
     readonly_fields = ('lesson', 'when', 'buy_source')
@@ -82,17 +95,44 @@ class ClassesLeftInline(TabularInline):
         }),
     )
 
-    def when(self, instance):
-        return self._datetime(instance.buy_date) + ' ' + self._time(instance.buy_date)
-
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         return queryset.exclude(timeline__start__lt=timezone.now())
 
-    def has_add_permission(self, request):
+
+class ClassesPassedInline(ClassesInlineBase):
+    verbose_name = 'Lesson'
+    verbose_name_plural = 'Passed classes'
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.filter(timeline__start__lt=timezone.now())
+
+    readonly_fields = ('lesson', 'teacher', 'when',)
+    fieldsets = (
+        (None, {
+            'fields': ('lesson', 'teacher', 'when')
+        }),
+    )
+
+    def lesson(self, instance):
         """
-        Administration of the classes is made on the separate page for harnessin
-        the `GeneralStackedInline`
+        Display actual lesson name for hosted lessons
+        """
+        if not hasattr(instance.timeline.lesson, 'host'):
+            return instance.lesson
+        else:
+            return instance.timeline.lesson.name
+
+    def teacher(self, instance):
+        return instance.timeline.teacher.user.crm.full_name
+
+    def when(self, instance):
+        return self._datetime(instance.timeline.start) + ' ' + self._time(instance.timeline.start)
+
+    def has_delete_permission(self, request, instance):
+        """
+        For obvious reasons passed class should not be deletable event through admin
         """
         return False
 
@@ -106,7 +146,7 @@ class ExistingCustomerAdmin(ModelAdmin):
     list_filter = (HasClassesFilter, HasSubscriptionsFilter,)
     actions = None
     readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions')
-    inlines = (ClassesLeftInline,)
+    inlines = (ClassesLeftInline, ClassesPassedInline)
     fieldsets = (
         (None, {
             'fields': ('student', 'email', 'arrived', 'classes', 'subscriptions')
