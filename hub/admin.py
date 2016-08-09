@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from elk.utils.admin import BooleanFilter, ModelAdmin
+from hub.admin.components import ClassesLeftInline, ClassesPassedInline
 from hub.models import Subscription
 
 
@@ -21,6 +22,7 @@ class SubscriptionAdmin(ModelAdmin):
     list_filter = (IsFinishedFilter,)
     readonly_fields = ('lesson_usage', 'buy_time', 'planned_lessons')
     actions = None
+    inlines = (ClassesLeftInline, ClassesPassedInline)
     search_fields = ('customer__user__first_name', 'customer__user__last_name')
     fieldsets = (
         (None, {

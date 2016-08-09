@@ -1,11 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as StockUserAdmin
 from django.contrib.auth.models import User
-from django.utils import timezone
 from django.utils.translation import ugettext as _
 
-from elk.utils.admin import BooleanFilter, ModelAdmin, TabularInline
-from hub.models import Class, Subscription
+from elk.utils.admin import BooleanFilter, ModelAdmin
+from hub.admin.components import ClassesLeftInline, ClassesPassedInline, SubscriptionsInline
 
 from .models import Customer, RegisteredCustomer
 
@@ -69,102 +68,6 @@ class HasSubscriptionsFilter(BooleanFilter):
 
     def n(self, request, queryset):
         return queryset.filter(subscriptions__isnull=True)
-
-
-class SubscriptionsInline(TabularInline):
-    model = Subscription
-    readonly_fields = ('product', 'when', 'is_fully_used')
-    fieldsets = (
-        (None, {
-            'fields': ('product', 'when', 'is_fully_used')
-        }),
-    )
-
-    def product(self, instance):
-        return str(instance.product)
-
-    def when(self, instance):
-        return self._datetime(instance.buy_date) + ' ' + self._time(instance.buy_date)
-
-    def has_add_permission(self, instance):
-        return False
-
-    def has_delete_permission(self, request, instance):
-        return False
-
-
-class ClassesInlineBase(TabularInline):
-    model = Class
-
-    def has_add_permission(self, request):
-        """
-        Administration of the classes is made on the separate page for harnessin
-        the `GeneralStackedInline`
-        """
-        return False
-
-    def has_delete_permission(self, request, instance):
-        return False
-
-    def buy_time(self, instance):
-        return self._datetime(instance.buy_date) + ' ' + self._time(instance.buy_date)
-
-
-class ClassesLeftInline(ClassesInlineBase):
-    verbose_name = 'Bought lesson'
-    verbose_name_plural = 'Bought lessons left'
-    readonly_fields = ('lesson', 'source', 'buy_time')
-    fieldsets = (
-        (None, {
-            'fields': ('lesson', 'source', 'buy_time')
-        }),
-    )
-
-    def source(self, instance):
-        if not instance.subscription:
-            return '—'
-        else:
-            return str(instance.subscription.product)
-
-    def buy_time(self, instance):
-        if not instance.subscription:
-            return super().buy_time(instance)
-        return '—'
-
-    def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-        return queryset.exclude(timeline__start__lt=timezone.now())
-
-
-class ClassesPassedInline(ClassesInlineBase):
-    verbose_name = 'Lesson'
-    verbose_name_plural = 'Passed classes'
-
-    def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-        return queryset.filter(timeline__start__lt=timezone.now())
-
-    readonly_fields = ('lesson', 'teacher', 'when',)
-    fieldsets = (
-        (None, {
-            'fields': ('lesson', 'teacher', 'when')
-        }),
-    )
-
-    def lesson(self, instance):
-        """
-        Display actual lesson name for hosted lessons
-        """
-        if not hasattr(instance.timeline.lesson, 'host'):
-            return instance.lesson
-        else:
-            return instance.timeline.lesson.name
-
-    def teacher(self, instance):
-        return instance.timeline.teacher.user.crm.full_name
-
-    def when(self, instance):
-        return self._datetime(instance.timeline.start) + ' ' + self._time(instance.timeline.start)
 
 
 @admin.register(RegisteredCustomer)
