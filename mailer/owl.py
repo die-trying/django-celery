@@ -39,7 +39,7 @@ class Owl():
         """
         On the production host — run through celery
         """
-        if settings.EMAIL_ASYNC:
+        if not settings.EMAIL_ASYNC:
             self.msg.send()
         else:
             self.queue()
