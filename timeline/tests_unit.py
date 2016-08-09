@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from unittest.mock import MagicMock
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -110,6 +111,25 @@ class EntryTestCase(TestCase):
         entry.start = make_aware(datetime(2032, 12, 1))  # will fail in 16 years, sorry
         self.assertFalse(entry.is_in_past())
 
+    def test_to_be_marked_as_finished_queryset(self):
+        lesson = mixer.blend(lessons.MasterClass, host=self.teacher1, duration='01:00:00')
+        mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson, start=make_aware(datetime(2016, 12, 15, 15, 14)))
+
+        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=make_aware(datetime(2016, 12, 15, 17, 15)))
+        self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 1)
+
+        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=make_aware(datetime(2016, 12, 15, 17, 13)))
+        self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 0)  # two minutes in past this entry shoud not be marked as finished
+
+    def test_dont_automaticaly_mark_finished_entries_as_finished_one_more_time(self):
+        lesson = mixer.blend(lessons.MasterClass, host=self.teacher1, duration='01:00:00')
+        entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson, start=make_aware(datetime(2016, 12, 15, 15, 14)))
+
+        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=make_aware(datetime(2016, 12, 15, 17, 15)))
+        entry.is_finished = True
+        entry.save()
+        self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 0)
+
 
 class TestPermissions(ClientTestCase):
     def setUp(self):
@@ -138,7 +158,7 @@ class TestCancellation(TestCase):
     def setUp(self):
         self.teacher = create_teacher()
         self.customer = create_customer()
-        self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher)
+        self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher, slots=15)
 
     def _buy_a_lesson(self, lesson):
         c = Class(
@@ -211,6 +231,29 @@ class TestCancellation(TestCase):
 
         c.delete()
         self.assertTrue(TimelineEntry.objects.filter(pk=entry.pk).exists())  # auto-deletion mechanism should not be engaged
+
+    def test_mark_classes_as_finished(self):
+        """
+        Assign ten classes to the entry and check if it marks them as fully used.
+
+        This a functional test, but i have related fixtures (_create_entry(), _buy_a_lesson()),
+        so it will wait until refactoring.
+        """
+        entry = self._create_entry()
+
+        for i in range(0, 10):
+            c = self._buy_a_lesson(self.lesson)
+            c.is_fully_used = False
+            c.save()
+
+        for c in entry.classes.all():
+            self.assertFalse(c.is_fully_used)
+
+        entry.is_finished = True
+        entry.save()
+
+        for c in entry.classes.all():
+            self.assertTrue(c.is_fully_used)
 
 
 class TestFormContext(ClientTestCase):

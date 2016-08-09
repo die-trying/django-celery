@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -9,13 +11,25 @@ from django.utils.translation import ugettext as _
 
 from teachers.models import Teacher, WorkingHours
 
-ALLOWED_TIMELINE_FILTERS = ('lesson_type', 'lesson_id')  # list of filters, allowed for ordinary users through get parameters
+MARK_ENTRIES_AUTOMATICALLY_FINISHED_AFTER = timedelta(minutes=60)
 
 
 class EntryManager(models.Manager):
 
     def get_queryset(self, exclude_void=True):
         return super(EntryManager, self).get_queryset().exclude(active=0)
+
+    def to_be_marked_as_finished(self):
+        """
+        Queryset for entries, that are unfinished, and should be automaticaly
+        marked as finished.
+        """
+        return self.get_queryset() \
+            .filter(is_finished=False) \
+            .filter(end__lte=self.__now() - MARK_ENTRIES_AUTOMATICALLY_FINISHED_AFTER)
+
+    def __now():
+        return timezone.now()
 
 
 class Entry(models.Model):
@@ -102,6 +116,8 @@ class Entry(models.Model):
     # TODO — disable assigning of bought classes to inactive entries
     active = models.SmallIntegerField(choices=ENABLED, default=1)
 
+    is_finished = models.BooleanField(default=False)
+
     @property
     def is_free(self):
         return self.taken_slots < self.slots
@@ -128,6 +144,7 @@ class Entry(models.Model):
         self.__run_pre_save_checks()  # check for overlapping, teacher working hours, etc
         self.__update_slots()  # update free slot count, check if no classes were added without spare slots for it
 
+        self.__notify_class_that_it_has_been_finished(*args, **kwargs)  # notify a parent class, that it is used and finished
         should_be_deleted = self.__self_delete_if_needed()  # timeline entry should delete itself, if it is not required
 
         if not should_be_deleted:
@@ -256,3 +273,13 @@ class Entry(models.Model):
 
         if self.taken_slots > self.slots:
             raise ValidationError('Trying to assign a class to event without free slots')
+
+    def __notify_class_that_it_has_been_finished(self, *args, **kwargs):
+        """
+        Mark classes as used, when timeline entry is finished
+        """
+        if not self.is_finished:
+            return
+        for c in self.classes.all():
+            if not c.is_fully_used:
+                c.mark_as_fully_used()

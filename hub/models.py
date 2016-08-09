@@ -24,7 +24,7 @@ class BuyableProduct(models.Model):
 
     buy_date = models.DateTimeField(auto_now_add=True)
     buy_price = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
-
+    is_fully_used = models.BooleanField(default=False)
     active = models.SmallIntegerField(choices=ENABLED, default=1)
 
     @abstractproperty
@@ -36,6 +36,13 @@ class BuyableProduct(models.Model):
         Disable deletion for any buyable thing
         """
         self.active = 0
+        self.save()
+
+    def mark_as_fully_used(self):
+        """
+        Mark product as fully used. Caution — does automatic save!
+        """
+        self.is_fully_used = True
         self.save()
 
     class Meta:
@@ -104,6 +111,15 @@ class Subscription(BuyableProduct):
             for lesson in self.classes.all():
                 lesson.active = self.active
                 lesson.save()
+
+    def check_is_fully_finished(self):
+        """
+        Check, if subscription has unused classes. If not — mark self as fully_used
+        """
+        if self.classes.filter(is_fully_used=False).exists():
+            return
+        else:
+            self.mark_as_fully_used()
 
 
 class ClassesManager(models.Manager):
@@ -207,6 +223,7 @@ class Class(BuyableProduct):
 
     customer = models.ForeignKey(Customer, related_name='classes')
     is_scheduled = models.BooleanField(default=False)
+
     buy_source = models.CharField(max_length=12, default='single')
 
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
@@ -231,6 +248,14 @@ class Class(BuyableProduct):
         if self.timeline is None:
             return self._save_unscheduled(*args, **kwargs)
         return self._save_scheduled(*args, **kwargs)
+
+    def mark_as_fully_used(self):
+        """
+        Notify a parent subscription, that it might be fully used
+        """
+        super().mark_as_fully_used()
+        if self.subscription:
+            self.subscription.check_is_fully_finished()
 
     def _save_scheduled(self, *args, **kwargs):
         """

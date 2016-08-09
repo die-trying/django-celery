@@ -90,6 +90,28 @@ class BuySubscriptionTestCase(TestCase):
         for lesson in s.classes.all():
             self.assertEqual(lesson.active, 0, 'Every lesson in subscription should become inactive now')
 
+    def test_mark_as_fully_used(self):
+        product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
+        s = Subscription(
+            customer=self.customer,
+            product=product,
+            buy_price=150,
+        )
+        s.save()
+
+        self.assertFalse(s.is_fully_used)
+
+        lessons = []
+        for lesson in s.classes.all():
+            lessons.append(lesson)
+
+        for lesson in lessons[:-1]:
+            lesson.mark_as_fully_used()
+            self.assertFalse(s.is_fully_used)
+
+        lessons[-1].mark_as_fully_used()
+        self.assertTrue(s.is_fully_used)  # the last lesson should have marked it's parent subscription as fully used
+
 
 class ScheduleTestCase(TestCase):
     fixtures = ('crm', 'lessons')
