@@ -4,6 +4,7 @@ class Controller
     @model = new Project.models.SchedulePopupModel(
       lesson_type = $('.schedule-popup__filters input[name=lesson_type]').val()
       date = $('.schedule-popup__filters select').val()
+      query_type = $('.schedule-popup__filters .btn-group label:first-child input').data 'query-type'
     )
 
     @model.bind 'update', () =>

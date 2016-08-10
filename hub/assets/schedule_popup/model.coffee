@@ -4,12 +4,11 @@ class Model extends MicroEvent
   #  - query_type — the type of slots we need to query:
   #     - 'lessons': for lessons, that do not require planning (default)
   #     - 'teachers':  for lessons, that require planning (like master classes etc.)
-  constructor: (@lesson_type, @date) ->
+  constructor: (@lesson_type, @date, @query_type='teahers') ->
     @urls = {  # two different urls for query types
       teachers: "/hub/%s/type/%d/teachers.json"
       lessons: "/hub/%s/type/%d/lessons.json"
     }
-    @query_type = 'teachers'
     @from_json()
     @timout = 1
 
