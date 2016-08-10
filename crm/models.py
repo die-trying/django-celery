@@ -109,7 +109,6 @@ class Customer(models.Model):
         """
         Determine, if user has bought classes
         """
-        return False
         if self.classes.filter(is_fully_used=False).exclude(is_scheduled=True).count():
             return True
         return False
