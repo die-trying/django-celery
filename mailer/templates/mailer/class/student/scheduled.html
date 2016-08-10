@@ -3,7 +3,7 @@
 {% load humanize %}
 
 {% block subject %}
-{{ c.customer.first_name | capfirst }}, {% trans 'you class is scheduled to '%} {{ c.timeline.start | naturalday:'SHORT_DATE_FORMAT' | capfirst }} {% trans 'at' %} {{ c.timeline.start | time:'SHORT_TIME_FORMAT'}}
+{{ c.customer.first_name | capfirst }}, {% trans 'you class is scheduled on '%} {{ c.timeline.start | naturalday:'SHORT_DATE_FORMAT' | capfirst }} {% trans 'at' %} {{ c.timeline.start | time:'SHORT_TIME_FORMAT'}}
 {% endblock %}
 
 {% block body %}
