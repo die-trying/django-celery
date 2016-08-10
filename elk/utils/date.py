@@ -5,6 +5,7 @@
 from copy import copy
 from datetime import datetime, timedelta
 
+from django.utils import timezone
 from django.utils.dateformat import format
 
 
@@ -34,3 +35,10 @@ def day_range(d):
         d + ' 00:00:00',
         d + ' 23:59:59',
     )
+
+
+def localize(time):
+    """
+    A shortcut for localizing time «as in templates»
+    """
+    return timezone.localtime(time, timezone.get_current_timezone())

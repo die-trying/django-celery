@@ -11,12 +11,12 @@ from django.utils.timezone import make_aware, now
 from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
 
-from elk.utils.date import day_range
+from elk.utils.date import day_range, localize
 
 
 class SlotList(list):
     def as_dict(self):
-        return [i.strftime('%H:%M') for i in sorted(self)]
+        return [localize(i).strftime('%H:%M') for i in sorted(self)]
 
 
 class TeacherManager(models.Manager):

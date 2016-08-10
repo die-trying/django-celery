@@ -262,22 +262,23 @@ class EntryAPITest(ClientTestCase):
 
         super().setUp()
 
-    def test_create_user(self):
+    def test_user(self):  # TODO: REFACTOR IT
         duration = timedelta(minutes=71)
 
         mocked_entries = {}
 
-        now = timezone.now()
         for i in range(0, 10):
             entry = mixer.blend(TimelineEntry,
                                 teacher=self.teacher,
-                                start=(now - timedelta(days=3)),
-                                end=(now + duration),
+                                # start=(now),
+                                # end=(now + duration),
                                 )
+            entry.start = entry.start.replace(tzinfo=timezone.get_current_timezone())
+            entry.end = entry.start + duration
+            entry.save()
             mocked_entries[entry.pk] = entry
-            print(entry.start, entry.end)
 
-        response = self.c.get('/timeline/%s.json' % self.teacher.user.username)
+        response = self.c.get('/timeline/%s.json?start=1971-12-01&end=2032-11-01' % self.teacher.user.username)
 
         for i in json.loads(response.content.decode('utf-8')):
             id = i['id']
@@ -286,7 +287,7 @@ class EntryAPITest(ClientTestCase):
             start = parse_datetime(i['start'])
             end = parse_datetime(i['end'])
             self.assertEqual(start, mocked_entry.start)
-            self.assertEqual(end, now + duration)
+            self.assertEqual(end, mocked_entry.end)
 
     def test_create_user_filter(self):
         x = parse_date('2016-01-01')

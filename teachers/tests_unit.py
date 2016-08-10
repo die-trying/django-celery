@@ -275,8 +275,11 @@ class TestSlotsIterable(TestCase):
         self.assertEquals(slot_list[-1], '14:30')
 
     def test_sort(self):
+        def dt(*args):
+            return timezone.make_aware(datetime(*args))
+
         slots = SlotList()
-        for i in (datetime(2016, 1, 1, 13, 0), datetime(2016, 1, 1, 11, 0), datetime(2016, 1, 1, 11, 1), datetime(2016, 1, 1, 14, 0)):
+        for i in (dt(2016, 1, 1, 13, 0), dt(2016, 1, 1, 11, 0), dt(2016, 1, 1, 11, 1), dt(2016, 1, 1, 14, 0)):
             slots.append(i)
         slot_list = slots.as_dict()
         self.assertEquals(slot_list, ['11:00', '11:01', '13:00', '14:00'])

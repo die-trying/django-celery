@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
 from django.utils.dateformat import format
+from django.utils.timezone import localtime
 from django.utils.translation import ugettext as _
 
 from teachers.models import Teacher, WorkingHours
@@ -206,11 +207,13 @@ class Entry(models.Model):
         """
         Dictionary representation of a model. For details see model description.
         """
+        start = localtime(self.start)
+        end = localtime(self.end)
         return {
             'id': self.pk,
             'title': self.__str__(),
-            'start': format(self.start, 'c'),   # ISO 8601
-            'end': format(self.end, 'c'),       # ISO 8601
+            'start': format(start, 'c'),   # ISO 8601
+            'end': format(end, 'c'),       # ISO 8601
             'is_free': self.is_free,
             'slots_taken': self.taken_slots,
             'slots_available': self.slots,

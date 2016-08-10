@@ -49,8 +49,7 @@ class calendar_update(TeacherCtxMixin, UpdateView):
 def calendar_delete(request, username, pk):
     teacher = get_object_or_404(Teacher, user__username=username)
     entry = get_object_or_404(TimelineEntry, teacher=teacher, pk=pk)
-    entry.active = 0
-    entry.save()
+    entry.delete()
     return redirect(reverse('timeline:timeline', kwargs={'username': username}))
 
 
