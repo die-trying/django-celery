@@ -6,7 +6,7 @@ from django.template.defaultfilters import capfirst
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
-from elk.utils.admin import BooleanFilter, ModelAdmin
+from elk.admin import BooleanFilter, ModelAdmin
 from hub.models import Class
 
 from .models import Entry as TimelineEntry

@@ -1,6 +1,6 @@
 # from django.contrib import admin
 #
-# from elk.utils.admin import ModelAdmin
+# from elk.admin import ModelAdmin
 #
 # from .models import Product1
 #

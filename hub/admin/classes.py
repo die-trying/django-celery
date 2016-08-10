@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from elk.utils.admin import BooleanFilter
+from elk.admin import BooleanFilter
 from hub.admin.components import BuyableProductModelAdmin
 from hub.models import Class
 

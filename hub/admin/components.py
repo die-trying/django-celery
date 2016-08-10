@@ -1,6 +1,6 @@
 from django.utils import timezone
 
-from elk.utils.admin import ModelAdmin, TabularInline
+from elk.admin import ModelAdmin, TabularInline
 from hub.models import Class, Subscription
 
 

@@ -1,3 +1,6 @@
+"""
+Abstract admin classes. All your ModelAdmins should be subclasses from this Modeladmin
+"""
 from django.contrib import admin
 from django.contrib.humanize.templatetags.humanize import naturalday
 from django.template.defaultfilters import capfirst, time
