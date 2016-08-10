@@ -173,10 +173,7 @@ class ClassesManager(models.Manager):
             if order:
                 sort_order[order] = t
 
-        result = []
-        for i in sorted(sort_order.keys()):
-            result.append(sort_order[i])
-        return result
+        return [sort_order[i] for i in sorted(sort_order.keys())]
 
     def dates_for_planning(self):
         """

@@ -2,6 +2,9 @@ from django.test import TestCase
 
 from crm.models import Customer
 from elk.utils.testing import create_customer
+from hub.models import Class
+from lessons import models as lessons
+from mixer.backend.django import mixer
 
 
 class CustomerTestCase(TestCase):
@@ -31,3 +34,14 @@ class CustomerTestCase(TestCase):
         customer.cancellation_streak = 5
         customer.max_cancellation_count = 5
         self.assertFalse(customer.can_cancel_classes())
+
+    def test_can_schedule_classes(self):
+        customer = create_customer()
+
+        self.assertFalse(customer.can_schedule_classes())
+        c = Class(
+            lesson=mixer.blend(lessons.OrdinaryLesson, customer=customer),
+            customer=customer
+        )
+        c.save()
+        self.assertTrue(customer.can_schedule_classes())

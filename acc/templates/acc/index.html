@@ -1,31 +1,38 @@
 {% extends 'elk/base.html' %}
 
 {% block content %}
-<h1>Hi, %username%!</h1>
+
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-8">
+        <h1>Hi, {{ request.user.first_name | capfirst }}!</h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-8">
+        <p class="lead">Welcome to the alpha-version of the Dashboard!</p>
+        <p>
+         Dashbaord is a place, where you can see interseting staff that happens right now in the ELK world{% if request.user.crm.can_schedule_classes %}
+            or <a href="#" class="pseudo load_schedule_popup" data-toggle="modal" data-target=".schedule-popup-container">plan a lesson</a>.
+         {% else %}. Please contact <a class="pseudo" href='mailto:akkinney@gmail.com?subject=Reedem my lessons'>Amanda Kinney</a> to redeem you lessons.{% endif %}
+        </p>
+        <p>We want to develop this tool together with you, so we've launched
+            the pre-production version and started keeping track of all our lesosns.
+            Please be pacient for some bugs, and fill free to
+            <a class="pseudo" href="mailto:{{ SUPPORT_EMAIL }}">drop us a line</a>.
+        </p>
+    </div>
+    <div class="col-md-4">
         {% include 'hub/_next_lesson.html' %}
     </div>
 </div>
 
-
-<div class="row" style="margin-top: 20px">
-    <div class="col-sm-4"></div>
-
-    <div class="col-sm-2">
-        <button data-url="{% url 'hub:buy_a_subscription' %}" type="button" class="btn btn-default btn-lg">Buy a subscription</button>
-    </div>
-
-    <div class="col-sm-2">
-        <button data-url="{% url 'hub:buy_a_single' %}" type="button" class="btn btn-default btn-lg">Buy a single lesson</button>
-    </div>
-
-    <div class="col-sm-4"></div>
-</div>
-
-<div class="row">
-    <div class="col-sm-1">
-        <button type="button" class="btn btn-default load_schedule_popup" data-toggle="modal" data-target=".schedule-popup-container">Schedule a lesson</button>
+<div class="row home-page-big-blue-button">
+    <div class="col-md-12 text-center">
+        {% if request.user.crm.can_schedule_classes %}
+        <button class="btn btn-primary btn-lg load_schedule_popup" data-toggle="modal" data-target=".schedule-popup-container">Plan a lesson</button>
+        {% else %}
+        <a class="btn btn-primary btn-lg" href='mailto:akkinney@gmail.com?subject=Reedem my lessons'>Contact Amanda to redeem lessons</a>
+        {% endif %}
     </div>
 </div>
 

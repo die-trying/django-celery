@@ -105,6 +105,15 @@ class Customer(models.Model):
             return True
         return False
 
+    def can_schedule_classes(self):
+        """
+        Determine, if user has bought classes
+        """
+        return False
+        if self.classes.filter(is_fully_used=False).exclude(is_scheduled=True).count():
+            return True
+        return False
+
     class Meta:
         verbose_name = 'Lead'
 
