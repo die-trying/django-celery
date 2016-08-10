@@ -221,12 +221,12 @@ class Class(BuyableProduct):
     """
     objects = ClassesManager()
 
-    customer = models.ForeignKey(Customer, related_name='classes')
+    customer = models.ForeignKey(Customer, related_name='classes', limit_choices_to={'user__isnull': False})
     is_scheduled = models.BooleanField(default=False)
 
     buy_source = models.CharField(max_length=12, default='single')
 
-    lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
     lesson_id = models.PositiveIntegerField()
     lesson = GenericForeignKey('lesson_type', 'lesson_id')
 
@@ -238,6 +238,7 @@ class Class(BuyableProduct):
     pre_start_notifications_sent_to_student = models.BooleanField(default=False)
 
     class Meta:
+        verbose_name = 'Bought lesson'
         get_latest_by = 'buy_date'
 
     @property
@@ -245,6 +246,8 @@ class Class(BuyableProduct):
         return self.lesson.name
 
     def save(self, *args, **kwargs):
+        self.__set_default_lesson_id_if_required()
+
         if self.timeline is None:
             return self._save_unscheduled(*args, **kwargs)
         return self._save_scheduled(*args, **kwargs)
@@ -320,6 +323,14 @@ class Class(BuyableProduct):
 
         if was_scheduled:
             class_unscheduled.send(sender=self.__class__, instance=self)  # send a signal, that class is unscheduled for the first time
+
+    def __set_default_lesson_id_if_required(self):
+        """
+        When saving a class with defined lesson_type and without defined lesson_id
+        we set the default lesson
+        """
+        if self.lesson_type and not self.lesson_id:
+            self.lesson = self.lesson_type.model_class().get_default()
 
     def delete(self):
         """

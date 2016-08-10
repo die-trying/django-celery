@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from elk.utils.admin import BooleanFilter, ModelAdmin
-from hub.admin.components import ClassesLeftInline, ClassesPassedInline
+from elk.utils.admin import BooleanFilter
+from hub.admin.components import BuyableProductModelAdmin, ClassesLeftInline, ClassesPassedInline
 from hub.models import Subscription
 
 
@@ -17,11 +17,10 @@ class IsFinishedFilter(BooleanFilter):
 
 
 @admin.register(Subscription)
-class SubscriptionAdmin(ModelAdmin):
+class SubscriptionAdmin(BuyableProductModelAdmin):
     list_display = ('customer', '__str__', 'lesson_usage', 'planned_lessons', 'buy_time', 'buy_price')
     list_filter = (IsFinishedFilter,)
     readonly_fields = ('lesson_usage', 'buy_time', 'planned_lessons')
-    actions = None
     inlines = (ClassesLeftInline, ClassesPassedInline)
     search_fields = ('customer__user__first_name', 'customer__user__last_name')
     fieldsets = (
@@ -47,9 +46,6 @@ class SubscriptionAdmin(ModelAdmin):
             return '—'
         else:
             return scheduled
-
-    def buy_time(self, instance):
-        return self._datetime(instance.buy_date) + ' ' + self._time(instance.buy_date)
 
     def has_delete_permission(self, request, obj=None):
         if obj and (obj.classes.filter(is_fully_used=True) or obj.classes.filter(timeline__isnull=False)):

@@ -159,10 +159,6 @@ class HostedLesson(Lesson):
             result['host'] = self.host.as_dict()
         return result
 
-    @classmethod
-    def get_default(cls):
-        raise NotImplementedError('You can not buy a default master class, sorry')
-
     class Meta:
         abstract = True
 

@@ -1,7 +1,19 @@
 from django.utils import timezone
 
-from elk.utils.admin import TabularInline
+from elk.utils.admin import ModelAdmin, TabularInline
 from hub.models import Class, Subscription
+
+
+class BuyableProductModelAdmin(ModelAdmin):
+    actions = None
+
+    def buy_time(self, instance):
+        return self._datetime(instance.buy_date) + ' ' + self._time(instance.buy_date)
+
+    def available(self, instance):
+        return not instance.is_fully_used
+
+    available.boolean = True
 
 
 class SubscriptionsInline(TabularInline):
@@ -66,7 +78,7 @@ class ClassesLeftInline(ClassesInlineBase):
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.exclude(timeline__start__lt=timezone.now())
+        return queryset.exclude(is_fully_used=True)
 
 
 class ClassesPassedInline(ClassesInlineBase):
@@ -75,7 +87,7 @@ class ClassesPassedInline(ClassesInlineBase):
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.filter(timeline__start__lt=timezone.now())
+        return queryset.filter(timeline__start__lt=timezone.now())  # TODO: replace it with .is_full_used property
 
     readonly_fields = ('lesson', 'teacher', 'when',)
     fieldsets = (
