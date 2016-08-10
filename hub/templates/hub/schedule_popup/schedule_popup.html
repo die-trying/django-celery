@@ -35,7 +35,7 @@
                     </div>
                     <div class="col-md-5 record">
                         <h5 class="schedule-popup__record-name" rv-text="record.name"></h5> <p rv-if="record.author" rv-text="record.author" class="text-muted schedule-popup__record-author"></p>
-                        <p rv-text="record.description"></p>
+                        <p rv-html="record.description"></p>
                     </div>
                     <div class="col-md-6 slots">
                         <div class="btn-group" data-toggle="buttons">

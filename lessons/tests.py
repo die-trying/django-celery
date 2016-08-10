@@ -28,6 +28,17 @@ class TestLessonsUnit(TestCase):
         l = mixer.blend(lessons.OrdinaryLesson)
         self.assertEqual(str(l.type_verbose_name), 'curated session')
 
+    def test_assure_markdown_is_rendered(self):
+        l = mixer.blend(lessons.OrdinaryLesson, description='**bold**')
+        result = l.as_dict()
+        self.assertIn('<strong>bold</strong>', result['description'])
+
+    def test_assure_slot_count(self):
+        l = mixer.blend(lessons.OrdinaryLesson)
+        l.available_slots_count = 100500
+        result = l.as_dict()
+        self.assertEqual(result['available_slots_count'], 100500)
+
 
 class TestLessonsFunctional(ClientTestCase):
     def setUp(self):

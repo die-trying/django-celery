@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
+from django_markdown.utils import markdown
 
 from teachers.models import Teacher
 
@@ -103,8 +104,8 @@ class Lesson(models.Model):
             'id': self.pk,
             'name': self.name,
             'required_slots': self.slots,
-            'announce': self.announce,
-            'description': self.description,
+            'announce': markdown(self.announce),
+            'description': markdown(self.description),
             'duration': str(self.duration)
         }
 

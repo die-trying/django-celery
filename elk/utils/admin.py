@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.contrib.humanize.templatetags.humanize import naturalday
 from django.template.defaultfilters import capfirst, time
 from django.utils.html import format_html
+from django_markdown.models import MarkdownField
+from django_markdown.widgets import AdminMarkdownWidget
 
 
 class BooleanFilter(admin.SimpleListFilter):
@@ -55,6 +57,7 @@ class ModelAdmin(admin.ModelAdmin, AdminHelpersMixin):
     Abstract base class for all admin modules. Currently, supports only a minor
     set of helpers
     """
+    formfield_overrides = {MarkdownField: {'widget': AdminMarkdownWidget}}
     pass
 
 
