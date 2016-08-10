@@ -58,7 +58,11 @@ class ModelAdmin(admin.ModelAdmin, AdminHelpersMixin):
     set of helpers
     """
     formfield_overrides = {MarkdownField: {'widget': AdminMarkdownWidget}}
-    pass
+
+    class Media:  # TODO: if you need to add something here, please create a good build system with gulp
+        css = {
+            "all": ("admin/markitup-fixes.css",)
+        }
 
 
 class TabularInline(admin.TabularInline, AdminHelpersMixin):
