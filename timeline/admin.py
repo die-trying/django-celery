@@ -78,6 +78,7 @@ class TimelineEntryAdmin(ModelAdmin):
         }),
     )
     ordering = ('-start',)
+    search_fields = ('classes__customer__user__first_name', 'classes__customer__user__last_name', 'teacher__user__first_name', 'teacher__user__last_name')
 
     def duration(self, instance):
         d = str(instance.end - instance.start).split(':')
