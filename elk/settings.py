@@ -82,7 +82,8 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.admindocs.middleware.XViewMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'easy_timezones.middleware.EasyTimezoneMiddleware',
+    #'easy_timezones.middleware.EasyTimezoneMiddleware',
+    'elk.middleware.TimezoneMiddleware',
 ]
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
