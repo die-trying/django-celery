@@ -26,7 +26,7 @@ def notify_teacher_class_scheduled(sender, **kwargs):
         ctx={
             'c': c,
         },
-        to=[c.customer.user.email],
+        to=[c.timeline.teacher.user.email],
     )
     owl.send()
 
