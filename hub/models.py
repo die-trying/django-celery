@@ -13,6 +13,11 @@ from hub.signals import class_scheduled, class_unscheduled
 from timeline.models import Entry as TimelineEntry
 
 
+class BuyableProductManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(active=1)
+
+
 class BuyableProduct(models.Model):
     """
     Parent of every buyable object
@@ -59,7 +64,7 @@ class Subscription(BuyableProduct):
 
     The property is accessed later in the history.signals module.
     """
-
+    objects = BuyableProductManager
     customer = models.ForeignKey(Customer, related_name='subscriptions')
 
     product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'products'})
@@ -125,7 +130,7 @@ class Subscription(BuyableProduct):
             self.mark_as_fully_used()
 
 
-class ClassesManager(models.Manager):
+class ClassesManager(BuyableProductManager):
     """
     Almost all of this methods assume, that they are called from a related
     manager customer.classes, like customer.classes.nearest()

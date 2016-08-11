@@ -7,6 +7,9 @@ from hub.models import Class, Subscription
 class BuyableProductModelAdmin(ModelAdmin):
     actions = None
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(active=1)
+
     def buy_time(self, instance):
         return self._datetime(instance.buy_date) + ' ' + self._time(instance.buy_date)
 
