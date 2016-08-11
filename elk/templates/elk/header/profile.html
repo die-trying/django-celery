@@ -10,5 +10,5 @@
 </div>
 
 <div class="navbar__profile-username">
-    <p>{{ request.user.crm }} (<a href="{% url 'acc:logout' %}">{% trans 'Log&nbsp;out' %}</a>)</p>
+    <p>{{ request.user.crm }} (<a href="{% url 'acc:logout' %}?next=/">{% trans 'Log&nbsp;out' %}</a>)</p>
 </div>

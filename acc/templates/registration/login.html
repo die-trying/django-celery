@@ -4,21 +4,24 @@
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-3 col-sm-1"></div>
-    <div class="col-md-6">
-        <div class="social-login">
-            <a class="btn btn-block btn-social btn-lg btn-google" href="{% url 'acc:social:begin' 'google-oauth2' %}?next={{ next | urlencode}}">
+<div class="row login-jumbotron">
+    <div class="col-xs-12 login-jumbotron__message text-center">
+        <h1>Welcome to the Dashboard</h1>
+        <h5 class="login-jumbotron__benefit">Dashboard keeps track about your ELK studies and helps to communicate with teachers</h5>
+        <p>Please login to start learning</p>
+        <p class="login-jumbotron__buttons">
+            <a class="btn btn-social btn-google" href="{% url 'acc:social:begin' 'google-oauth2' %}?next={{ next | urlencode}}">
                 <span class="fa fa-google"></span>
-                Sign in with Google
+                Google
             </a>
-
-            <a class="btn btn-block btn-social btn-lg btn-facebook" href="{% url 'acc:social:begin' 'facebook' %}?next={{ next| urlencode }}">
+            <a class="btn btn-social btn-facebook" href="{% url 'acc:social:begin' 'facebook' %}?next={{ next| urlencode }}">
                 <span class="fa fa-facebook"></span>
-                Sign in with Facebook
+                Facebook
             </a>
-        </div>
+        </p>
     </div>
-    <div class="col-md-3 col-sm-1"></div>
+</div>
+<div class="staff-login text-right">
+    <a href="/admin/login?next=/" title = "staff login"><i class="fa fa-cloud" aria-hidden="true"></i></a>
 </div>
 {% endblock %}
