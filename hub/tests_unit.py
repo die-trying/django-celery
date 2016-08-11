@@ -252,10 +252,10 @@ class TestScheduleLowLevel(TestCase):
         c.unschedule = unschedule
 
         c.delete()
-        c.refresh_from_db()
+        with self.assertRaises(Class.DoesNotExist):
+            c.refresh_from_db()
 
         unschedule.assert_not_called()
-        self.assertEqual(c.active, 0)
 
     def test_increase_cancellation_count(self):
         """
