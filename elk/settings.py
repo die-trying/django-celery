@@ -136,9 +136,9 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.associate_user',
     'social.pipeline.social_auth.load_extra_data',
     'social.pipeline.user.user_details',
-    'acc.pipelines.save_profile_picture'
-
+    'acc.pipelines.save_profile_picture',
 )
+
 DEBUG_TOOLBAR_CONFIG = {
     'JQUERY_URL': '/static/vendor/jquery/dist/jquery.min.js',
 }
@@ -173,6 +173,10 @@ SOCIAL_AUTH_URL_NAMESPACE = 'acc:social'
 
 SOCIAL_AUTH_FACEBOOK_KEY = env('SOCIAL_AUTH_FACEBOOK_KEY')
 SOCIAL_AUTH_FACEBOOK_SECRET = env('SOCIAL_AUTH_FACEBOOK_SECRET')
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id, name, email'
+}
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
 

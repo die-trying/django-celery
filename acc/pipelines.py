@@ -65,10 +65,17 @@ class SaveGoogleProfile(SaveSocialProfile):
         return self.response['image'].get('url')
 
 
+class SaveFacebookProfile(SaveSocialProfile):
+    source_name = 'facebook'
+
+    def get_picture_url(self):
+        return 'http://graph.facebook.com/%d/picture' % self.response['id']
+
+
 def save_profile_picture(strategy, backend, user, response, is_new=False, *args, **kwargs):
     """
     A python-social-auth pipeline entry point for running SaveSocialProfile
-    class
+    class.
 
     You should add this to the end of your SOCIAL_AUTH_PIPELINE in your settings,
     for example:
@@ -83,4 +90,8 @@ def save_profile_picture(strategy, backend, user, response, is_new=False, *args,
 
     if backend.name == 'google-oauth2':
         profile_saver = SaveGoogleProfile(user=user, response=response, backend=backend)
+        profile_saver.run()
+
+    if backend.name == 'facebook':
+        profile_saver = SaveFacebookProfile(user=user, response=response, backend=backend)
         profile_saver.run()
