@@ -1,4 +1,5 @@
 from django import template
+from django.utils.translation import ugettext as _
 
 register = template.Library()
 
@@ -36,3 +37,19 @@ def lesson_type_filter(types):
             name=lesson_type.model_class()._meta.verbose_name_plural
         )
     return result
+
+
+@register.simple_tag
+def schedule_popup_title(lesson_types):
+    """
+    Title for scheduling popup
+
+    When user has only one lesson type, the popup is titled 'Schedule a <lesson_type>'
+    i.e. 'Schedule a master class' or 'Schedule a curated session'
+
+    When there are multiple lesson types with filter — 'Schedule a lesson'.
+    """
+    if len(lesson_types) > 1:
+        return _('lesson')
+    else:
+        return lesson_types[0].model_class()._meta.verbose_name.lower()
