@@ -69,7 +69,7 @@ class SaveFacebookProfile(SaveSocialProfile):
     source_name = 'facebook'
 
     def get_picture_url(self):
-        return 'http://graph.facebook.com/%d/picture' % self.response['id']
+        return 'http://graph.facebook.com/%d/picture' % int(self.response['id'])
 
 
 def save_profile_picture(strategy, backend, user, response, is_new=False, *args, **kwargs):
