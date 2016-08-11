@@ -52,4 +52,5 @@ def schedule_popup_title(lesson_types):
     if len(lesson_types) > 1:
         return _('lesson')
     else:
-        return lesson_types[0].model_class()._meta.verbose_name.lower()
+        if lesson_types:
+            return lesson_types[0].model_class()._meta.verbose_name.lower()
