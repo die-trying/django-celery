@@ -52,6 +52,6 @@ def class_starting_teacher(sender, **kwargs):
         ctx={
             'c': c,
         },
-        to=[c.customer.user.email],
+        to=[c.timeline.teacher.user.email],
     )
     owl.send()
