@@ -18,6 +18,9 @@ class CustomerInline(admin.StackedInline):
     exclude = ('customer_email', 'customer_first_name', 'customer_last_name')
     verbose_name = 'CRM Profile'
 
+    def has_add_permission(self, request):
+        return False
+
 admin.site.unregister(User)
 
 
@@ -29,23 +32,6 @@ class UserAdmin(StockUserAdmin):
             'fields': ('username', 'password', 'first_name', 'last_name', 'email', 'is_active', 'is_staff')
         }),
     )
-
-
-@admin.register(Customer)
-class CustomerAdmin(ModelAdmin):
-    """
-    This admin module is for managing CRM-only customer databases
-    e.g. potential customers.
-    """
-    list_display = ('full_name', 'country', 'email', 'source', 'date_arrived')
-
-    def get_queryset(self, request):
-        """
-        Disable administration of customers, assigned to users.
-        One should edit this customer via the 'Users' page.
-        """
-        queryset = super().get_queryset(request)
-        return queryset.filter(user=None)
 
 
 class HasClassesFilter(BooleanFilter):

@@ -114,7 +114,7 @@ class Customer(models.Model):
         return False
 
     class Meta:
-        verbose_name = 'Lead'
+        verbose_name = 'CRM Profile'
 
 
 class RegisteredCustomerManager(models.Manager):
