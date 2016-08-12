@@ -163,11 +163,11 @@ class TestClassManager(TestCase):
 
     def test_find_student_classes_nothing(self):
         self.subscription.delete()
-        no_students = Class.objects.find_students(lesson_type=lessons.OrdinaryLesson.get_contenttype())
+        no_students = Class.objects.find_student_classes(lesson_type=lessons.OrdinaryLesson.get_contenttype())
         self.assertEquals(len(no_students), 0)
 
     def test_find_student_classes(self):
-        single = Class.objects.find_students(lesson_type=lessons.OrdinaryLesson.get_contenttype())
+        single = Class.objects.find_student_classes(lesson_type=lessons.OrdinaryLesson.get_contenttype())
         self.assertEqual(single[0].customer, self.customer)
 
     def test_dates_for_planning(self):
