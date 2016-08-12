@@ -68,12 +68,12 @@ class TestClassManager(TestCase):
     def setUp(self):
         self.customer = create_customer()
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
-        s = Subscription(
+        self.subscription = Subscription(
             customer=self.customer,
             product=product,
             buy_price=150,
         )
-        s.save()
+        self.subscription.save()
 
     def _schedule(self, lesson_type=None, date=datetime(2032, 12, 1, 11, 30)):  # By default it will fail in 16 years, sorry
         if timezone.is_naive(date):
@@ -160,6 +160,15 @@ class TestClassManager(TestCase):
         for lesson_type in lesson_types:
             ordered_lesson = sorted_lessons.pop(0)
             self.assertEquals(lesson_type.model_class(), ordered_lesson)
+
+    def test_find_student_classes_nothing(self):
+        self.subscription.delete()
+        no_students = Class.objects.find_students(lesson_type=lessons.OrdinaryLesson.get_contenttype())
+        self.assertEquals(len(no_students), 0)
+
+    def test_find_student_classes(self):
+        single = Class.objects.find_students(lesson_type=lessons.OrdinaryLesson.get_contenttype())
+        self.assertEqual(single[0].customer, self.customer)
 
     def test_dates_for_planning(self):
         dates = [i for i in self.customer.classes.dates_for_planning()]

@@ -180,6 +180,15 @@ class ClassesManager(BuyableProductManager):
 
         return [sort_order[i] for i in sorted(sort_order.keys())]
 
+    def find_student_classes(self, lesson_type):
+        """
+        Find students, that can schedule a lesson_type
+        """
+        return self.get_queryset() \
+            .filter(is_scheduled=False, is_fully_used=False) \
+            .filter(lesson_type=lesson_type) \
+            .distinct('customer')
+
     def dates_for_planning(self):
         """
         A generator of dates, available for planning for particular user
