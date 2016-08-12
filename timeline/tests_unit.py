@@ -23,15 +23,25 @@ class EntryTestCase(TestCase):
         self.teacher1 = create_teacher()
         self.teacher2 = create_teacher()
 
-    def test_entry_naming(self):
+    def test_entry_naming_simple(self):
         """
-        Timeline entry with an assigned name should return the name of event.
-
-        Without an event, timeline entry should return placeholder 'Usual lesson'.
         """
         lesson = mixer.blend(lessons.OrdinaryLesson, name='Test_Lesson_Name')
         entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson)
-        self.assertEqual(str(entry), 'Test_Lesson_Name')
+        self.assertIn('Test_Lesson_Name', str(entry))
+
+    def test_entry_naming_with_student(self):
+        lesson = mixer.blend(lessons.OrdinaryLesson, name='Test_Lesson_Name')
+        entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson)
+        customer = create_customer()
+        c = Class(
+            customer=customer,
+            lesson=lesson
+        )
+        c.assign_entry(entry)
+        c.save()
+        entry.refresh_from_db()
+        self.assertIn(customer.full_name, str(entry))
 
     def test_default_scope(self):
         active_lesson = mixer.blend(lessons.OrdinaryLesson, name='Active_lesson')

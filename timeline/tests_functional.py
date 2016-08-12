@@ -202,7 +202,7 @@ class EntryCRUDTest(ClientTestCase):
         end = parse_datetime(self.added_entry['end'])
         reference = timezone.make_aware(parse_datetime('2016-06-29 15:33:00'))
         self.assertEqual(end, reference)
-        self.assertEqual(self.added_entry['title'], self.lesson.name)
+        self.assertIn(self.lesson.name, self.added_entry['title'])
 
         entry = TimelineEntry.objects.get(pk=self.added_entry['id'])
         self.assertIsNotNone(entry)
@@ -225,7 +225,7 @@ class EntryCRUDTest(ClientTestCase):
         end = parse_datetime(self.added_entry['end'])
         reference = timezone.make_aware(parse_datetime('2016-06-29 16:33:00'))
         self.assertEqual(end, reference)
-        self.assertEqual(self.added_entry['title'], self.lesson.name)
+        self.assertIn(self.lesson.name, self.added_entry['title'])
 
     def _delete(self):
         pk = self.added_entry['id']

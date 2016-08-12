@@ -135,10 +135,19 @@ class Entry(models.Model):
         )
 
     def __str__(self):
-        if self.lesson:
-            return str(self.lesson.name)
+        if not self.lesson:
+            return _('Usual lesson')
 
-        return _('Usual lesson')
+        s = ''
+
+        print(self.lesson.slots, self.classes.count(), self.classes)
+        if self.lesson.slots == 1 and self.classes.count():
+            s += "%s for %s" % (self.lesson.type_verbose_name, self.classes.first().customer.full_name)
+
+        else:
+            s += '%s (%d/%d)' % (self.lesson.name, self.taken_slots, self.slots)
+
+        return s
 
     def save(self, *args, **kwargs):
         self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
