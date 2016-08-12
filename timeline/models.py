@@ -140,7 +140,6 @@ class Entry(models.Model):
 
         s = ''
 
-        print(self.lesson.slots, self.classes.count(), self.classes)
         if self.lesson.slots == 1 and self.classes.count():
             s += "%s for %s" % (self.lesson.type_verbose_name, self.classes.first().customer.full_name)
 
