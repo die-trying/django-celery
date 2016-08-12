@@ -125,7 +125,10 @@ class Entry(models.Model):
 
     @property
     def admin_url(self):
-        return reverse('admin:timeline_entry_change', args=(self.pk,))
+        return reverse('timeline:entry_card', kwargs={
+            'username': self.teacher.user.username,
+            'pk': self.pk
+        })
 
     class Meta:
         verbose_name = 'Planned class'

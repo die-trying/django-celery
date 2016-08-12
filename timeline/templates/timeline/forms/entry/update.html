@@ -35,13 +35,16 @@
             {% if object.taken_slots %}
                 <p class="timeline-entry-form__slots">
                     {% if object.slots != 1 %} {# multiple students #}
-                        <a href = "{{ object.admin_url }}" target="_blank">{{ object.taken_slots }}/{{ object.slots }}</a> students registered
+                        <a href = "{{ object.admin_url }}">{{ object.taken_slots }}/{{ object.slots }}</a> students registered
                     {% else %} {# for a single student #}
-                        <a href = "{{ object.admin_url }}" target="_blank">{{ object.classes.all.0.customer.full_name }}</a> registered
+                        <a href = "{{ object.admin_url }}">{{ object.classes.all.0.customer.full_name }}</a> registered
                     {% endif %}
                 </p>
             {% endif %}
-            <button type="submit" class="btn btn-default timeline-entry-form__submit">{% trans 'Update entry' %}</button>
+            <button type="submit" class="btn btn-default timeline-entry-form__submit">{% trans 'Update' %}</button>
+            {% if not object.taken_slots %}
+                <p class="timeline-entry-form__add-a-student"><a href="{{ object.admin_url }}">add a student</a>,</p>
+            {% endif %}
             <p class="timeline-entry-form__delete">or <a class="text-danger" href="{% url 'timeline:timeline_delete' username=teacher.user.username pk=object.pk %}">delete</a> it.</p>
         </form>
 

@@ -1,11 +1,16 @@
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.urlresolvers import reverse
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404, redirect, render
+from django.utils import timezone
+from django.utils.dateformat import format
 from django.utils.dateparse import parse_datetime
 from django.views.generic.edit import CreateView, UpdateView
 
+from crm.models import Customer
 from elk.utils import date
+from hub.models import Class
+from hub.sortinghat import SortingHat
 from teachers.models import Teacher
 from timeline.forms import EntryForm as TimelineEntryForm
 from timeline.models import Entry as TimelineEntry
@@ -47,10 +52,58 @@ class calendar_update(TeacherCtxMixin, UpdateView):
 
 @staff_member_required
 def calendar_delete(request, username, pk):
-    teacher = get_object_or_404(Teacher, user__username=username)
-    entry = get_object_or_404(TimelineEntry, teacher=teacher, pk=pk)
+    entry = get_object_or_404(TimelineEntry, teacher__user__username=username, pk=pk)
     entry.delete()
     return redirect(reverse('timeline:timeline', kwargs={'username': username}))
+
+
+@staff_member_required
+def entry_card(request, username, pk):
+    entry = get_object_or_404(TimelineEntry, teacher__user__username=username, pk=pk)
+    return render(request, 'timeline/entry-card/card.html', context={
+        'object': entry,
+        'students_for_adding': Class.objects.find_student_classes(lesson_type=entry.lesson_type).exclude(customer__pk__in=entry.classes.distinct('customer__pk'))
+    })
+
+
+@staff_member_required
+def delete_customer(request, username, pk, customer):
+    c = get_object_or_404(Class, timeline__id=pk, timeline__teacher__user__username=username, customer__pk=customer)
+    c.delete()
+    return redirect(reverse('timeline:entry_card', kwargs={'username': username, 'pk': pk}))
+
+
+@staff_member_required
+def add_customer(request, username, pk, customer):
+    """
+    Add customer to a particular timeline entry
+
+    This view feeds the SortingHat with exact parameters from particular entry,
+    hoping that the hat will find the same entry, as requested. If you will find
+    problems with it, the probable solution would be adding a timeline_entry as
+    an input parameter to the SortingHat.
+    """
+    entry = get_object_or_404(TimelineEntry, teacher__user__username=username, pk=pk)
+
+    # By now, SortingHat waits for time in the user timezone, so we pretent, that we have
+    # localized it.
+    # TODO: FIX IT!
+    start = timezone.localtime(entry.start)
+
+    hat = SortingHat(
+        customer=get_object_or_404(Customer, pk=customer),
+        lesson_type=entry.lesson_type.pk,
+        teacher=entry.teacher,
+        date=format(start, 'Y-m-d'),
+        time=format(start, 'H:i'),
+    )
+
+    if not hat.do_the_thing():
+        print(hat.err)
+        raise Http404('%s: %s' % (hat.err, hat.msg))
+
+    hat.c.save()
+    return redirect(reverse('timeline:entry_card', kwargs={'username': username, 'pk': hat.c.timeline.pk}))
 
 
 @staff_member_required
