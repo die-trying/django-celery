@@ -1,6 +1,7 @@
 {% extends 'elk/base.html'%}
 {% load i18n %}
 {% load humanize %}
+{% load markdown from django_markdown %}
 
 {% block content %}
 <div class="page-header">
@@ -8,9 +9,9 @@
 </div>
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-3">
         <h3>{% trans 'Class info' %}</h3>
-        <dl class="dl-horizontal timeline-entry-info">
+        <dl class="inline timeline-entry-info">
             <dt>Host</dt>
             <dd>{% if object.teacher.user == request.user %}You{% else %}{{ object.teacher.user.crm.full_name }}{% endif %}</dd>
 
@@ -20,8 +21,9 @@
             <dt>Lesson</dt>
             <dd>{{ object.lesson.name }}</dd>
         </dl>
+        <p>{{ object.lesson.description | markdown }}</p>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-4">
         <h3>{% trans 'Students' %}</h3>
         <table class="timeline-student-list table table-striped table-condensed">
             <thead>
@@ -43,7 +45,7 @@
             </tbody>
         </table>
         {% if object.is_free %}
-            <div class="panel panel-default add-a-student">
+            <div class="panel panel-default add-a-student hidden-print">
                 <div class="panel-body">
                     <select class="add-a-student__selector" data-live-search="true">
                         <option value="">Add a student</option>
