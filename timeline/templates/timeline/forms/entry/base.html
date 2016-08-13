@@ -2,7 +2,11 @@
 <div class="panel panel-default timeline-entry-form">
     <div class="panel-heading">
         <h3 class="panel-title">
-            {% trans 'Timeline event' %}
+            {% if object.pk %}
+                <a href="{{ object.admin_url }}">{% trans 'Timeline event' %}</a>
+            {% else %}
+                {% trans 'Timeline event' %}
+            {% endif %}
             <button type="button" class="close user-calendar__close_popup"><span>&times;</span></button>
         </h3>
     </div>

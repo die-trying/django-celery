@@ -30,17 +30,17 @@
                     <label for="id_duration">{% trans 'Duration:' %}</label>
                     <input readonly maxlength=5 placeholder='HH:MM' type="text" class="form-control", id="id_duration" name="duration" rv-value="model.lesson.duration">
                     {% include 'timeline/forms/entry/err.html' %}
+                    {% if object.taken_slots %}
+                        <p class="timeline-entry-form__slots">
+                            {% if object.slots != 1 %} {# multiple students #}
+                                <a href = "{{ object.admin_url }}" title="{{ object.taken_slots }}/{{ object.slots }}"><i class="fa fa-users" aria-hidden="true"></i></a>
+                            {% else %} {# for a single student #}
+                                <a href = "{{ object.admin_url }}" title="{{ object.classes.all.0.customer.full_name }}"><i class="fa fa-user" aria-hidden="true"></i></a>
+                            {% endif %}
+                        </p>
+            {% endif %}
                 </div>
             </div>
-            {% if object.taken_slots %}
-                <p class="timeline-entry-form__slots">
-                    {% if object.slots != 1 %} {# multiple students #}
-                        <a href = "{{ object.admin_url }}">{{ object.taken_slots }}/{{ object.slots }}</a> students registered
-                    {% else %} {# for a single student #}
-                        <a href = "{{ object.admin_url }}">{{ object.classes.all.0.customer.full_name }}</a> registered
-                    {% endif %}
-                </p>
-            {% endif %}
             <button type="submit" class="btn btn-default timeline-entry-form__submit">{% trans 'Update' %}</button>
             {% if not object.taken_slots %}
                 <p class="timeline-entry-form__add-a-student"><a href="{{ object.admin_url }}">add a student</a>,</p>
