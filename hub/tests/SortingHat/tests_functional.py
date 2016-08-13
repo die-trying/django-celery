@@ -5,11 +5,10 @@ from mixer.backend.django import mixer
 
 import lessons.models as lessons
 from elk.utils.testing import ClientTestCase, create_customer, create_teacher
+from hub import views
 from hub.models import Class
 from teachers.models import WorkingHours
 from timeline.models import Entry as TimelineEntry
-
-from . import views
 
 
 class SchedulingPopupTestCaseBase(ClientTestCase):
