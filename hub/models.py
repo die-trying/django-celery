@@ -373,7 +373,7 @@ class Class(BuyableProduct):
             raise CannotBeScheduled('%s %s' % (self, entry))
         self.timeline = entry
 
-    def schedule(self, teacher, date, allow_overlap=True, allow_besides_working_hours=False):
+    def schedule(self, **kwargs):
         """
         Method for scheduling a lesson that does not require a timeline entry.
         allow_besides_working_hours should be set to True only when testing.
@@ -382,15 +382,28 @@ class Class(BuyableProduct):
         if Lesson.timeline_entry_required():  # every lesson model should define if it requires a timeline entry or not. For details, see :model:`lessons.Lesson`
             raise CannotBeScheduled("Lesson '%s' requieres a teachers timeline entry" % self.lesson)
 
-        entry = TimelineEntry(
-            teacher=teacher,
-            lesson=self.lesson,
-            start=date,
-            allow_besides_working_hours=allow_besides_working_hours,
-            allow_overlap=allow_overlap,
-        )
-
+        entry = self.__get_entry(**kwargs)
         self.assign_entry(entry)
+
+    def __get_entry(self, teacher, date, allow_overlap=True, allow_besides_working_hours=False):
+        """
+        Find existing timeline entry or create a new one for lessons, that don't require
+        a particular timeline entry.
+        """
+        try:
+            return TimelineEntry.objects.get(
+                teacher=teacher,
+                lesson_type=self.lesson.get_contenttype(),
+                start=date
+            )
+        except TimelineEntry.DoesNotExist:
+            return TimelineEntry(
+                teacher=teacher,
+                lesson=self.lesson,
+                start=date,
+                allow_besides_working_hours=allow_besides_working_hours,
+                allow_overlap=allow_overlap,
+            )
 
     def unschedule(self, src='teacher', request=None):
         """

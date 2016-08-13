@@ -175,6 +175,28 @@ class ScheduleTestCase(TestCase):
         self.assertEquals(c.timeline.start, datetime(2016, 8, 17, 10, 1))  # datetime for entry start should be from parameters
         self.assertEquals(c.timeline.end, datetime(2016, 8, 17, 10, 1) + lesson.duration)  # duration should be taken from lesson
 
+    def test_schedule_existsing_entry(self):
+        """
+        Create a timeline entry, that class.__get_entry should return instead of
+        creating a new one
+        """
+        lesson = products.OrdinaryLesson.get_default()
+        c = self._buy_a_lesson(lesson)
+        date = datetime(2016, 8, 17, 10, 1)
+        entry = TimelineEntry(
+            teacher=self.host,
+            start=date,
+            lesson=lesson
+        )
+        entry.save()
+        c.schedule(
+            teacher=self.host,
+            date=datetime(2016, 8, 17, 10, 1),
+            allow_besides_working_hours=True,
+        )
+        c.save()
+        self.assertEquals(c.timeline, entry)
+
     def test_cant_automatically_schedule_lesson_that_requires_a_timeline_entry(self):
         """
         Scheduling a hosted lesson that requires a timeline entry should fail

@@ -144,7 +144,7 @@ class Entry(models.Model):
         s = ''
 
         if self.lesson.slots == 1 and self.classes.count():
-            s += "%s for %s" % (self.lesson.type_verbose_name, self.classes.first().customer.full_name)
+            s += "%s: %s" % (self.classes.first().customer.full_name, self.lesson.type_verbose_name)
 
         else:
             s += '%s (%d/%d)' % (self.lesson.name, self.taken_slots, self.slots)

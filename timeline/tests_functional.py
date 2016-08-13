@@ -209,6 +209,8 @@ class EntryCRUDTest(ClientTestCase):
         entry = TimelineEntry.objects.get(pk=self.added_entry['id'])
         self.assertIsNotNone(entry)
 
+        self.assertTrue(entry.allow_besides_working_hours)
+
     def _update(self):
         pk = self.added_entry['id']
 

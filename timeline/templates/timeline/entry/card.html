@@ -37,7 +37,9 @@
                         <td class="timeline-student-list__cnt">{{ forloop.counter }})</td>
                         <td class="timeline-student-list__student">{{ c.customer.full_name }}
                             {% if not object.is_in_past %}
-                                <a class="timeline-student-list__actions" href="{% url 'timeline:delete_customer' username=object.teacher.user.username pk=object.pk customer=c.customer.pk %}" class="text-danger" title="{% trans 'Remove a student' %}" aria-hidden="true"><i class="fa fa-user-times"></i></a>
+                                {% if object.lesson.timeline_entry_required or object.lesson.slots > 1 %}
+                                    <a class="timeline-student-list__actions" href="{% url 'timeline:delete_customer' username=object.teacher.user.username pk=object.pk customer=c.customer.pk %}" class="text-danger" title="{% trans 'Remove a student' %}" aria-hidden="true"><i class="fa fa-user-times"></i></a>
+                                {% endif %}
                             {% endif %}
                         </td>
                     </tr>

@@ -69,7 +69,14 @@ def entry_card(request, username, pk):
 @staff_member_required
 def delete_customer(request, username, pk, customer):
     c = get_object_or_404(Class, timeline__id=pk, timeline__teacher__user__username=username, customer__pk=customer)
+    entry = c.timeline
     c.delete()
+
+    try:
+        entry.refresh_from_db()
+    except TimelineEntry.DoesNotExist:
+        return redirect(reverse('timeline:timeline', kwargs={'username': username}))
+
     return redirect(reverse('timeline:entry_card', kwargs={'username': username, 'pk': pk}))
 
 
