@@ -16,3 +16,9 @@ def notify_15min_to_class():
         i.pre_start_notifications_sent_to_student = True
         i.save()
         class_starting_student.send(sender=notify_15min_to_class, instance=i)
+
+
+@celery.task
+def mark_classes_as_fully_used():
+    for i in Class.objects.to_be_marked_as_used():
+        i.mark_as_fully_used()

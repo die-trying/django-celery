@@ -12,6 +12,8 @@ from hub.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from hub.signals import class_scheduled, class_unscheduled
 from timeline.models import Entry as TimelineEntry
 
+MARK_CLASSES_AS_USED_AFTER = timedelta(hours=1)
+
 
 class BuyableProductManager(models.Manager):
     def get_queryset(self):
@@ -179,6 +181,14 @@ class ClassesManager(BuyableProductManager):
                 sort_order[order] = t
 
         return [sort_order[i] for i in sorted(sort_order.keys())]
+
+    def to_be_marked_as_used(self):
+        """
+        List of classes, that should be marked as used by now
+        """
+        return self.get_queryset().filter(is_scheduled=True) \
+            .filter(is_fully_used=False) \
+            .filter(timeline__end__lt=self.__now() - MARK_CLASSES_AS_USED_AFTER)
 
     def find_student_classes(self, lesson_type):
         """
