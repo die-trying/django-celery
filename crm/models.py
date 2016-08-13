@@ -47,8 +47,8 @@ class Customer(models.Model):
     country = CountryField()
     native_language = models.CharField(max_length=140, null=True, blank=True)
 
-    starting_level = models.CharField(max_length=2, db_index=True, choices=LEVELS, default='A1')
-    current_level = models.CharField(max_length=2, db_index=True, choices=LEVELS, default='A1')
+    starting_level = models.CharField(max_length=2, choices=LEVELS, blank=True, null=True)
+    current_level = models.CharField(max_length=2, choices=LEVELS, blank=True, null=True)
 
     skype = models.CharField('Skype login', max_length=140, blank=True)
     facebook = models.CharField('Facebook profile id', max_length=140, blank=True)
