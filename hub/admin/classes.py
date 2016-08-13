@@ -6,7 +6,7 @@ from hub.models import Class
 
 
 class BuySubscriptionFilter(BooleanFilter):
-    title = "Single bought"
+    title = "Single purchase"
     parameter_name = "single_bought"
 
     def t(self, request, queryset):
@@ -30,7 +30,7 @@ class AvailableFilter(BooleanFilter):
 @admin.register(Class)
 class ClassAdmin(BuyableProductModelAdmin):
     verbose_name = 'Class'
-    verbose_name_plural = 'Bought classes'
+    verbose_name_plural = 'Purchesed classes'
     model = Class
     list_display = ('lesson_type', 'customer', 'buy_time', 'available')
     list_filter = (AvailableFilter, BuySubscriptionFilter,)

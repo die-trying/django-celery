@@ -252,7 +252,7 @@ class Class(BuyableProduct):
     pre_start_notifications_sent_to_student = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = 'Bought lesson'
+        verbose_name = 'Lesson'
         get_latest_by = 'buy_date'
 
     @property
