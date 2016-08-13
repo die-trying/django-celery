@@ -60,7 +60,7 @@ def calendar_delete(request, username, pk):
 @staff_member_required
 def entry_card(request, username, pk):
     entry = get_object_or_404(TimelineEntry, teacher__user__username=username, pk=pk)
-    return render(request, 'timeline/entry-card/card.html', context={
+    return render(request, 'timeline/entry/card.html', context={
         'object': entry,
         'students_for_adding': Class.objects.find_student_classes(lesson_type=entry.lesson_type).exclude(customer__pk__in=entry.classes.distinct('customer__pk'))
     })
