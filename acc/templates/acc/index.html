@@ -11,13 +11,13 @@
     <div class="col-md-8">
         <p class="lead">Welcome to the alpha-version of the dashboard!</p>
         <p>
-         Dashbaord is a place, where you can see interseting staff that happens right now in the ELK world{% if request.user.crm.can_schedule_classes %}
+         Dashbaord is a place, where you can see interseting staff that is happening right now in the ELK world{% if request.user.crm.can_schedule_classes %}
             or <a href="#" class="pseudo load_schedule_popup" data-toggle="modal" data-target=".schedule-popup-container">plan a lesson</a>.
          {% else %}. Please contact <a class="pseudo" href='mailto:akkinney@gmail.com?subject=Reedem my lessons'>Amanda Kinney</a> to redeem you lessons.{% endif %}
         </p>
         <p>We want to develop this tool together with you, so we've launched
             the pre-production version and started keeping track of all your lesosns.
-            Please be pacient for some bugs, and fill free to
+            Please be patient for some bugs, and fill free to
             <a class="pseudo" href="mailto:{{ SUPPORT_EMAIL }}">drop us a line</a>.
         </p>
     </div>
