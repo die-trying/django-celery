@@ -56,6 +56,6 @@ class TestFixtures(TestCase):
 
     def test_create_teacher_all_lessons(self):
         teacher = create_teacher()
-        acceptable_lessons = teacher.acceptable_lessons.all()
-        self.assertGreater(acceptable_lessons.count(), 0)
-        self.assertEqual(acceptable_lessons[0].app_label, 'lessons')
+        allowed_lessons = teacher.allowed_lessons.all()
+        self.assertGreater(allowed_lessons.count(), 0)
+        self.assertEqual(allowed_lessons[0].app_label, 'lessons')

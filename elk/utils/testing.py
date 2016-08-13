@@ -16,7 +16,7 @@ from with_asserts.mixin import AssertHTMLMixin
 
 def __add_all_lessons(teacher):
     for lesson in ContentType.objects.filter(app_label='lessons'):
-        teacher.acceptable_lessons.add(lesson)
+        teacher.allowed_lessons.add(lesson)
 
 
 def create_user():

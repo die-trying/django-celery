@@ -3,7 +3,7 @@
 {% load format_entry_date %}
 
 {% block form %}
-        <form method = "POST" class="form"  action="{% url 'timeline:timeline_update' username=teacher.user.username pk=object.pk %}" data-lessons-url="{% url 'lessons:available' username=teacher.user.username %}">
+        <form method = "POST" class="form"  action="{% url 'timeline:timeline_update' username=teacher.user.username pk=object.pk %}">
             <input type="hidden" id="teacher" name="teacher" value="{{ teacher.pk }}">
             <input type="hidden" id="initial_lesson" value="{{ form.lesson_id.value }}">
             {% csrf_token %}

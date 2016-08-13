@@ -1,6 +1,5 @@
 import json
 
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from mixer.backend.django import mixer
@@ -59,9 +58,9 @@ class TestLessonsFunctional(ClientTestCase):
             mocked_lesson = mixer.blend(klass, host=self.teacher)
             mocked_lessons[mocked_lesson.pk] = mocked_lesson
 
-        lesson_type_id = ContentType.objects.get_for_model(klass).pk
+        lesson_type_id = klass.get_contenttype().pk
 
-        response = self.c.get('/lessons/%s/available.json?lesson_type=%d' % (self.teacher.user.username, lesson_type_id))
+        response = self.c.get('/lessons/%s/type/%d/available.json' % (self.teacher.user.username, lesson_type_id))
 
         self.assertEquals(response.status_code, 200)
         got_lessons = json.loads(response.content.decode('utf-8'))

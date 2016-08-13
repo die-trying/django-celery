@@ -66,12 +66,12 @@ class Teacher(models.Model):
     ==================
 
     Before teacher can host an event, he should be allowed to do that by adding
-    event type to the `acceptable_lessons` property.
+    event type to the `allowed_lessons` property.
     """
     objects = TeacherManager()
     user = models.OneToOneField(User, on_delete=models.PROTECT, related_name='teacher_data', limit_choices_to={'is_staff': 1, 'crm__isnull': False})
 
-    acceptable_lessons = models.ManyToManyField(ContentType, related_name='+', blank=True, limit_choices_to={'app_label': 'lessons'})
+    allowed_lessons = models.ManyToManyField(ContentType, related_name='+', blank=True, limit_choices_to={'app_label': 'lessons'})
 
     description = MarkdownField()
     announce = MarkdownField('Short description')
@@ -107,6 +107,19 @@ class Teacher(models.Model):
         if hours is None:
             return None
         return self.__all_free_slots(hours.start, hours.end, period)
+
+    def available_lessons(self, lesson_type):
+        """
+        Get list of lessons, that teacher can lead
+        """
+        for i in self.allowed_lessons.all():
+            if i.pk == lesson_type:
+                Model = i.model_class()
+                if hasattr(Model, 'host'):
+                    return Model.objects.filter(host=self)
+                else:
+                    return Model.objects.all()
+        return []
 
     def timeline_url(self):
         """

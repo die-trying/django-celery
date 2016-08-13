@@ -8,6 +8,7 @@ class Model extends MicroEvent
       create: '/timeline/%s/create/'
       update: '/timeline/%s/%d/update/'
       check_overlap: '/timeline/%s/check_entry/%s/%s'
+      lessons: '/lessons/%s/type/%s/available.json'
     }
     @_set_date(date) if date?
 
@@ -30,8 +31,7 @@ class Model extends MicroEvent
 
   fetch_lessons: () ->
     # Get available lessons from server, based on selected lesson_type
-    url = @form.attr 'data-lessons-url'
-    url += '?lesson_type=' + @lesson_type
+    url = sprintf @urls['lessons'], @username, @lesson_type
     @lessons = []
     $.getJSON url, (response) =>
       for lesson in response

@@ -144,7 +144,7 @@ class HostedLesson(Lesson):
         if self.host is not None:
             my_content_type = ContentType.objects.get_for_model(self)
             try:
-                self.host.acceptable_lessons.get(pk=my_content_type.pk)
+                self.host.allowed_lessons.get(pk=my_content_type.pk)
             except:
                 raise ValidationError('Teacher %s can not accept lesson %s' % (self.host, my_content_type))
 
