@@ -107,6 +107,7 @@ TEMPLATES = [
                 'django.template.context_processors.media',
 
                 'elk.context_processors.support_email',
+                'elk.context_processors.revision',
 
                 'social.apps.django_app.context_processors.backends',
                 'social.apps.django_app.context_processors.login_redirect',

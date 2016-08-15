@@ -8,10 +8,10 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <link rel="stylesheet" href="{% static 'css/vendor.css' %}">
+        <link rel="stylesheet" href="{% static 'css/vendor.css' %}?rev={{ REVISION }}">
         {% block css %}
         {% endblock %}
-        <link rel="stylesheet" href="{% static 'css/app.css' %}">
+        <link rel="stylesheet" href="{% static 'css/app.css' %}?rev={{ REVISION }}">
 
         <base href = "/">
     </head>
@@ -33,7 +33,7 @@
                 helpers: {},
             } // quasi-global namespace
         </script>
-        <script src="{% static 'js/app.js' %}"></script>
+        <script src="{% static 'js/app.js' %}?rev={{ REVISION }}"></script>
         {% include 'elk/analytics.html' %}
     </body>
 </html>

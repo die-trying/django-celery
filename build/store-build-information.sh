@@ -1,6 +1,6 @@
 #!/bin/sh
 
-git rev-parse HEAD > revision.txt
+git rev-parse HEAD > ./elk/static/revision.txt
 
 F='./elk/static/build.txt'
 
