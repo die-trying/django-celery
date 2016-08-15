@@ -77,6 +77,9 @@ class BuySubscriptionTestCase(TestCase):
             self.assertEqual(lesson.active, 0, 'Every lesson in subscription should become inactive now')
 
     def test_mark_as_fully_used(self):
+        """
+        Buy a subscription, than mark all classes from it as used, one by one
+        """
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
         s = Subscription(
             customer=self.customer,

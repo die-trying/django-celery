@@ -162,3 +162,22 @@ class TestClassManager(TestCase):
         c.timeline.is_in_past = MagicMock(return_value=True)
         with self.assertRaises(CannotBeUnscheduled):
             c.unschedule()
+
+    def test_mark_as_fully_used(self):
+        c = self._schedule()
+        c.mark_as_fully_used()
+        c.refresh_from_db()
+        self.assertTrue(c.is_fully_used)
+
+    def test_renew(self):
+        c = self._schedule()
+        c.mark_as_fully_used()
+        c.save()
+        self.assertTrue(c.is_fully_used)
+        self.assertIsNotNone(c.timeline)
+
+        c.renew()
+        c.save()
+
+        self.assertFalse(c.is_fully_used)
+        self.assertIsNone(c.timeline)

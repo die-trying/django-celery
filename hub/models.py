@@ -52,6 +52,15 @@ class BuyableProduct(models.Model):
         self.is_fully_used = True
         self.save()
 
+    def renew(self):
+        """
+        Make a brand-new class, like it was never used before
+        """
+        self.is_fully_used = False
+        self.is_scheduled = False
+        self.timeline = None
+        self.save()
+
     class Meta:
         abstract = True
 

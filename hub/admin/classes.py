@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from elk.admin import BooleanFilter
-from hub.admin.components import BuyableProductModelAdmin
+from hub.admin.components import BuyableProductModelAdmin, mark_as_used, renew
 from hub.models import Class
 
 
@@ -35,7 +35,7 @@ class ClassAdmin(BuyableProductModelAdmin):
     list_display = ('lesson_type', 'customer', 'buy_time', 'available')
     list_filter = (AvailableFilter, BuySubscriptionFilter,)
     search_fields = ('customer__user__first_name', 'customer__user__last_name')
-
+    actions = [mark_as_used, renew]
     fieldsets = (
         (None, {
             'fields': ('customer', 'buy_price', 'lesson_type')
