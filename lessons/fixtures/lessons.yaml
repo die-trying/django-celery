@@ -11,17 +11,17 @@
 - model: lessons.masterclass
   pk: 500
   fields: {name: Master class lesson, slots: 5, internal_name: Ordinary master class lesson,
-     duration: '00:45:00', description: This is a master class lesson}
+     duration: '00:30:00', description: This is a master class lesson}
 
 - model: lessons.happyhour
   pk: 500
   fields: {name: ELK Happy hour, slots: 6, internal_name: Generic happy hour lesson,
-      duration: '00:45:00', description: This is a ELK Happy hour hangouts session}
+      duration: '00:30:00', description: This is a ELK Happy hour hangouts session}
 
 - model: lessons.pairedlesson
   pk: 500
   fields: {name: Paired lesson, slots: 2, internal_name: Paired lesson,
-      duration: '00:45:00', description: This is a a paired lesson}
+      duration: '00:30:00', description: This is a a paired lesson}
 
 - model: lessons.ordinarylesson
   pk: 1000
