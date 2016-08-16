@@ -4,8 +4,8 @@ from with_asserts.mixin import AssertHTMLMixin
 
 from crm.models import Customer
 from elk.utils.testing import mock_request
-from hub.models import Class
 from lessons.models import OrdinaryLesson
+from market.models import Class
 
 from . import views
 

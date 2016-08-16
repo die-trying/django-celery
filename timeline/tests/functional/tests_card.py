@@ -6,8 +6,8 @@ from django.utils import timezone
 from mixer.backend.django import mixer
 
 from elk.utils.testing import ClientTestCase, create_customer, create_teacher
-from hub.models import Class
 from lessons import models as lessons
+from market.models import Class
 from timeline.models import Entry as TimelineEntry
 
 

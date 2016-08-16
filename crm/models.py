@@ -19,8 +19,8 @@ class Customer(models.Model):
 
     Contents everything, related to CRM via properties:
         * payments: payment history: :model:`history.PaymentEvent`
-        * classes: all bought classes: :model:`hub.Class`
-        * subscriptions: all bought subscriptions: :model:`hub.Subscription`
+        * classes: all bought classes: :model:`market.Class`
+        * subscriptions: all bought subscriptions: :model:`market.Subscription`
 
     The model automatically assigned to a current user, so you can access all CRM properties via `request.user.crm`.
     """

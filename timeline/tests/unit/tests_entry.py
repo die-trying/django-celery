@@ -8,8 +8,8 @@ from django.utils import timezone
 from mixer.backend.django import mixer
 
 from elk.utils.testing import create_customer, create_teacher
-from hub.models import Class
 from lessons import models as lessons
+from market.models import Class
 from timeline.models import Entry as TimelineEntry
 
 
@@ -86,7 +86,7 @@ class EntryTestCase(TestCase):
             self.assertEqual(entry.taken_slots, i)  # by the way let's test taken_slots count
             customer = create_customer()
             c = mixer.blend(Class, lesson_type=lesson.get_contenttype(), customer=customer)
-            entry.classes.add(c)  # please don't use it in your code! use :model:`hub.Class`.assign_entry() instead
+            entry.classes.add(c)  # please don't use it in your code! use :model:`market.Class`.assign_entry() instead
             entry.save()
 
         self.assertFalse(entry.is_free)
@@ -95,7 +95,7 @@ class EntryTestCase(TestCase):
         with self.assertRaises(ValidationError):
             customer = create_customer()
             c = mixer.blend(Class, lesson_type=lesson.get_contenttype(), customer=customer)
-            entry.classes.add(c)  # please don't use it in your code! use :model:`hub.Class`.assign_entry() instead
+            entry.classes.add(c)  # please don't use it in your code! use :model:`market.Class`.assign_entry() instead
             entry.save()
 
     def test_assign_entry_to_a_different_teacher(self):

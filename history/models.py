@@ -4,7 +4,7 @@ from django.db import models
 from djmoney.models.fields import MoneyField
 
 from crm.models import Customer
-from hub.models import Class
+from market.models import Class
 
 EVENT_SOURCES = (
     ('customer', 'customer'),

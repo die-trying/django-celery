@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 
 from elk.admin import BooleanFilter, ModelAdmin
-from hub.admin.components import ClassesLeftInline, ClassesPassedInline, SubscriptionsInline
+from market.admin.components import ClassesLeftInline, ClassesPassedInline, SubscriptionsInline
 
 from .models import Customer, RegisteredCustomer
 

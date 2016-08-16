@@ -41,7 +41,7 @@ class Entry(models.Model):
     =====================
 
     Used for planning teachers time, and for scheduled bought
-    classes (:model:`hub.Class`).
+    classes (:model:`market.Class`).
 
     Please import it like this::
         from timeline.models import Entry as TimelineEntry
@@ -72,7 +72,7 @@ class Entry(models.Model):
     i meen a process when particular student registers to a planned event from
     timeline or to a generated automaticaly slot.
 
-    Low-level scheduling logic is incapsulated in :model:`hub.Class`, and the
+    Low-level scheduling logic is incapsulated in :model:`market.Class`, and the
     high-level is the `SortingHat` class. This class's concerns should be about
     teacher working hours, timeline representation, counting spare student slots etc.
 

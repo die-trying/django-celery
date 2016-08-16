@@ -1,0 +1,62 @@
+{% load i18n %}
+{% load l10n %}
+{% load humanize %}
+{% load staticfiles %}
+{% load market.schedule_popup %}
+{% load pretty_loader %}
+
+<div class="modal-dialog schedule-popup">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            <h3 class="modal-title">Schedule a {% schedule_popup_title user.crm.classes.bought_lesson_types %}</h3>
+        </div>
+        <div class="modal-body">
+            <div class="row schedule-popup__filters">
+                <div class="col-md-12">
+                    <div class="form-group schedule-popup__date-selector">
+                        <select name="date" class="selectpicker">
+                            {% for d in user.crm.classes.dates_for_planning %}
+                            <option value="{{ d|date:'Y-m-d' }}">{{ d|naturalday:'SHORT_DATE_FORMAT'|capfirst }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="btn-group lesson_type" data-toggle="buttons">
+                        {% lesson_type_filter user.crm.classes.bought_lesson_types %}
+                    </div>
+                </div>
+            </div>
+            <div class="schedule-popup__content">
+                <div class="schedule-popup__content-loading" rv-class-shown="model.loading" {% pretty_loader %}></div>
+                <div rv-each-record="model.records" class="row schedule-popup__record">
+                    <div class="col-md-1">
+                        <img class="img-circle" rv-if="record.photo" rv-src="record.photo">
+                        <img class="img-circle" rv-unless="record.photo" src="{% static 'no-photo.jpg' %}">
+                    </div>
+                    <div class="col-md-5 record">
+                        <h5 class="schedule-popup__record-name" rv-text="record.name"></h5> <p rv-if="record.author" rv-text="record.author" class="text-muted schedule-popup__record-author"></p>
+                        <p rv-html="record.description"></p>
+                    </div>
+                    <div class="col-md-6 slots">
+                        <div class="btn-group" data-toggle="buttons">
+                            <label rv-each-slot="record.slots" class="btn btn-default schedule-popup__time-label">
+                                <input class="schedule-popup__time-selector" type="radio" rv-name="slot.id" rv-data-teacher="slot.teacher" rv-data-time="slot.time" rv-data-lesson="model.lesson_type" rv-data-date="model.date" rv-after="slot.time"></input>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div rv-unless="model.loaded" class="row">
+                    <div class="col-md-12 schedule-popup__not-loaded">
+                        <p class="text-muted not-found">{% trans 'No lessons found ¯\_(ツ)_/¯. Please check another date.' %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="schedule-popup__step2 schedule-popup__step2-hidden"></div>
+
+        </div>
+        <div class="modal-footer schedule-popup__footer">
+            <div rv-unless="c.response.result" class="schedule-popup__err"><span class="text-warning" rv-text="c.response.text"></span></div>
+            <button type="button" class="btn btn-default btn-primary schedule-popup__submit" rv-disabled='c.submit' rv-data-step2-url='c.step2_url'>Schedule</button>
+        </div>
+    </div>
+</div>

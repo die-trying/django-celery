@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from history.models import PaymentEvent
-from hub.models import Class, Subscription
+from market.models import Class, Subscription
 
 
 @receiver(post_save, sender=Class, dispatch_uid='Log_single_class_buy')

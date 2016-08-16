@@ -24,4 +24,4 @@ Here is a simple deployment checklist:
 ## Pre-launch
 
 2. Create appropriate user logins for all the staff
-1. Remove timeout in hub/assets/scheduling_popup/model.coffee
+1. Remove timeout in market/assets/scheduling_popup/model.coffee

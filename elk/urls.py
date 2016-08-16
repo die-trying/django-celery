@@ -7,7 +7,7 @@ from django.views.generic import TemplateView
 
 """
 URL of every app should be namespaced with the prefix of the app name,
-in example namespace for buy_single url in the hub app is hub:buy_single,
+in example namespace for buy_single url in the market app is market:buy_single,
 and for starting social auth — app:social:begin.
 """
 
@@ -15,7 +15,7 @@ urlpatterns = [
     url(r'^$', login_required(TemplateView.as_view(template_name='acc/index.html'))),
 
     url(r'^accounts/', include('acc.urls', namespace='acc')),
-    url(r'^hub/', include('hub.urls', namespace='hub')),
+    url(r'^market/', include('market.urls', namespace='market')),
     url(r'^history/', include('history.urls', namespace='history')),
     url(r'^timeline/', include('timeline.urls', namespace='timeline')),
     url(r'^lessons/', include('lessons.urls', namespace='lessons')),

@@ -1,6 +1,6 @@
 import environ
 
-from hub.cron import *  # noqa
+from market.cron import *  # noqa
 
 root = environ.Path(__file__) - 3        # three folder back (/a/b/c/ - 3 = /)
 env = environ.Env(DEBUG=(bool, False),)  # set default values and casting
@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'crm',
     'lessons',
     'products',
-    'hub',
+    'market',
     'timeline',
     'teachers',
     'acc',

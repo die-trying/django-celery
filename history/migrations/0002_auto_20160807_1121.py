@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('hub', '0007_auto_20160805_1634'),
+        ('market', '0007_auto_20160805_1634'),
         ('history', '0001_initial'),
     ]
 
@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                 ('os_version_string', models.CharField(max_length=140, null=True)),
                 ('device', models.CharField(max_length=140, null=True)),
                 ('event_type', models.CharField(max_length=5, verbose_name='Event type', choices=[('SCHED', 'Scheduling'), ('CANCEL', 'Cancellation'), ('RESCH', 'Rescheduling')], db_index=True)),
-                ('scheduled_class', models.ForeignKey(to='hub.Class')),
+                ('scheduled_class', models.ForeignKey(to='market.Class')),
             ],
             options={
                 'abstract': False,

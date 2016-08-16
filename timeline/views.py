@@ -9,8 +9,8 @@ from django.views.generic.edit import CreateView, UpdateView
 
 from crm.models import Customer
 from elk.utils import date
-from hub.models import Class
-from hub.sortinghat import SortingHat
+from market.models import Class
+from market.sortinghat import SortingHat
 from teachers.models import Teacher
 from timeline.forms import EntryForm as TimelineEntryForm
 from timeline.models import Entry as TimelineEntry

@@ -1,8 +1,8 @@
 from django.dispatch import receiver
 
-from hub.models import Class
-from hub.signals import class_scheduled, class_starting_student, class_starting_teacher
 from mailer.owl import Owl
+from market.models import Class
+from market.signals import class_scheduled, class_starting_student, class_starting_teacher
 
 
 @receiver(class_scheduled, sender=Class, dispatch_uid='notify_student_class_scheduled')

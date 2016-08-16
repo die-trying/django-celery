@@ -70,7 +70,7 @@ class Lesson(models.Model):
     def timeline_entry_required(cls):
         """
         Does this lesson type require a timeline entry in teachers timeline. If
-        not, :model:`hub.Class` will create it automatically.
+        not, :model:`market.Class` will create it automatically.
         """
         return False
 
@@ -94,7 +94,7 @@ class Lesson(models.Model):
         """
         Every lesson should return an integer of its sorting order, used in filters. etc.
 
-        For usage example, see :model:`hub.Class` manager.
+        For usage example, see :model:`market.Class` manager.
         """
         return None
 
