@@ -4,7 +4,7 @@ from elk.admin import ModelAdmin, TabularInline, write_log_entry
 from hub.models import Class, Subscription
 
 
-class BuyableProductModelAdmin(ModelAdmin):
+class BuyableModelAdmin(ModelAdmin):
     actions = None
 
     def get_queryset(self, request):

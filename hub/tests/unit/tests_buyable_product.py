@@ -5,7 +5,7 @@ from hub.models import Class, Subscription
 from products import models as products
 
 
-class testBuyableProduct(TestCase):
+class testBuyable(TestCase):
     fixtures = ('crm', 'lessons', 'products')
     TEST_PRODUCT_ID = 1
 

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from elk.admin import BooleanFilter
-from hub.admin.components import BuyableProductModelAdmin, ClassesLeftInline, ClassesPassedInline
+from hub.admin.components import BuyableModelAdmin, ClassesLeftInline, ClassesPassedInline
 from hub.models import Subscription
 
 
@@ -17,7 +17,7 @@ class IsFinishedFilter(BooleanFilter):
 
 
 @admin.register(Subscription)
-class SubscriptionAdmin(BuyableProductModelAdmin):
+class SubscriptionAdmin(BuyableModelAdmin):
     list_display = ('customer', '__str__', 'lesson_usage', 'planned_lessons', 'buy_time', 'buy_price')
     list_filter = (IsFinishedFilter,)
     readonly_fields = ('lesson_usage', 'buy_time', 'planned_lessons')

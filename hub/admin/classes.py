@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from elk.admin import BooleanFilter
-from hub.admin.components import BuyableProductModelAdmin, mark_as_used, renew
+from hub.admin.components import BuyableModelAdmin, mark_as_used, renew
 from hub.models import Class
 
 
@@ -28,7 +28,7 @@ class AvailableFilter(BooleanFilter):
 
 
 @admin.register(Class)
-class ClassAdmin(BuyableProductModelAdmin):
+class ClassAdmin(BuyableModelAdmin):
     verbose_name = 'Class'
     verbose_name_plural = 'Purchesed classes'
     model = Class
