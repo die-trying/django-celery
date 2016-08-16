@@ -6,9 +6,6 @@ from djmoney.models.fields import MoneyField
 from lessons.models import HappyHour, LessonWithNative, MasterClass, OrdinaryLesson, PairedLesson
 
 
-# Create your models here.
-
-
 class Product(models.Model):
     ENABLED = (
         (0, 'Inactive'),
@@ -30,7 +27,28 @@ class Product(models.Model):
         abstract = True
 
 
-class Product1(Product):
+class ProductWithLessons(Product):
+
+    def lesson_types(self):
+        """
+        Get ContentTypes of lessons, that are included in the product
+        """
+        return [getattr(self, i).model.get_contenttype() for i in self.LESSONS]
+
+    def classes_by_lesson_type(self, lesson_type):
+        """
+        Get all lessons in subscription by contenttype
+        """
+        for i in self.LESSONS:
+            child_lessons = getattr(self, i)
+            if child_lessons.model.get_contenttype() == lesson_type:
+                return child_lessons.all()
+
+    class Meta:
+        abstract = True
+
+
+class Product1(ProductWithLessons):
     """
     Stores information about subscriptions of the first type. You can admindocs
     desired lessons in the model administration.

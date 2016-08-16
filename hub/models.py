@@ -107,8 +107,8 @@ class Subscription(BuyableProduct):
         When creating new subscription, we should make included lessons
         available for the customer.
         """
-        for lesson_type in self.product.LESSONS:
-            for lesson in getattr(self.product, lesson_type).all():
+        for lesson_type in self.product.lesson_types():
+            for lesson in self.product.classes_by_lesson_type(lesson_type):
                 c = Class(
                     lesson=lesson,
                     subscription=self,
