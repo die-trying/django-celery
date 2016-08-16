@@ -13,7 +13,7 @@ class SortingHat():
     SortingHat is a class for scheduling a lesson. All required parameters should
     be passed to the constructor, like:
 
-        from class.scheduler import SortingHat
+        from market.scheduler import SortingHat
 
         hat = SortingHat(
             customer=request.user.crm
