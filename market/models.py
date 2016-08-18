@@ -140,6 +140,22 @@ class Subscription(BuyableProduct):
         else:
             self.mark_as_fully_used()
 
+    def class_status(self):
+        """
+        Get statistics about classes, purchased via subscription instance.
+        """
+        results = []
+        for lesson_type in self.product.lesson_types():
+            classes = self.classes
+            r = {
+                'name': lesson_type.name,
+                'available': self.classes.available().filter(lesson_type=lesson_type).count(),
+                'used': self.classes.used().filter(lesson_type=lesson_type).count(),
+                'scheduled': classes.scheduled().filter(lesson_type=lesson_type).count(),
+            }
+            results.append(r)
+        return results
+
 
 class ClassesManager(BuyableProductManager):
     """
@@ -220,6 +236,15 @@ class ClassesManager(BuyableProductManager):
         while current < end:
             yield current
             current += timedelta(days=1)
+
+    def used(self):
+        return self.get_queryset().filter(is_fully_used=True)
+
+    def available(self):
+        return self.get_queryset().filter(is_fully_used=False)
+
+    def scheduled(self):
+        return self.get_queryset().filter(is_fully_used=False, is_scheduled=True)
 
     def __now(self):
         return timezone.now()

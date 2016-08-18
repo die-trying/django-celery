@@ -4,7 +4,7 @@ from datetime import datetime
 from django.contrib.contenttypes.models import ContentType
 from mixer.backend.django import mixer
 
-from elk.utils.testing import ClientTestCase, create_customer, create_teacher
+from elk.utils.testing import ClientTestCase, create_teacher
 from lessons import models as lessons
 from market.models import Class
 from teachers.models import WorkingHours
