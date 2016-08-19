@@ -46,5 +46,5 @@ class testBuyable(TestCase):
         s.save()
         self.assertEqual(s.active, 1)
         s.delete()
-        s.refresh_from_db()
-        self.assertEqual(s.active, 0)
+        with self.assertRaises(Subscription.DoesNotExist):
+            s.refresh_from_db()
