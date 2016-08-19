@@ -63,6 +63,16 @@ class BuyableProduct(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ('buy_date',)
+
+
+class SubscriptionManager(BuyableProductManager):
+    use_for_related_fields = True
+
+    def active(self):
+        return self.get_queryset() \
+            .filter(is_fully_used=False) \
+            .first()
 
 
 class Subscription(BuyableProduct):
@@ -75,7 +85,7 @@ class Subscription(BuyableProduct):
 
     The property is accessed later in the history.signals module.
     """
-    objects = BuyableProductManager
+    objects = SubscriptionManager()
     customer = models.ForeignKey(Customer, related_name='subscriptions')
 
     product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'products'})
@@ -148,13 +158,24 @@ class Subscription(BuyableProduct):
         for lesson_type in self.product.lesson_types():
             classes = self.classes
             r = {
-                'name': lesson_type.name,
-                'available': self.classes.available().filter(lesson_type=lesson_type).count(),
-                'used': self.classes.used().filter(lesson_type=lesson_type).count(),
+                'name': lesson_type.model_class()._meta.verbose_name_plural,
+                'available': classes.available().filter(lesson_type=lesson_type).count(),
+                'used': classes.used().filter(lesson_type=lesson_type).count(),
                 'scheduled': classes.scheduled().filter(lesson_type=lesson_type).count(),
             }
+            r['used_and_scheduled'] = r['used'] + r['scheduled']
             results.append(r)
         return results
+
+    def is_fresh_and_shiny(self):
+        """
+        Returns true if subscription should be displayed as new
+        """
+        if self.classes.filter(is_scheduled=True).count():
+            return False
+        if self.classes.filter(is_fully_used=True).count():
+            return False
+        return True
 
 
 class ClassesManager(BuyableProductManager):

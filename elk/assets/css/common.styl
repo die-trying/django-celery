@@ -9,8 +9,19 @@ a.pseudo
     &:not(:hover)
         transition color .5s ease
     &:hover
-        color: #337ab7 // default bootstrap
-        border-color: #337ab7
+        color: #337ab7 // default bootstrap for '.text-primary'
+        border-color: @color
+
+.text-primary>a.pseudo
+    color inherit
+    &:not(:hover)
+        transition color .5s ease
+    &:hover
+        color: #a94442 // default bootstrap for '.text-danger'
+        border-color: @color
+
+.text-muted>a.pseudo, .text-success>a.pseudo, .text-info>a.pseudo, .text-warning>a.pseudo, .text-danger>a.pseudo
+    color inherit
 
 dl.inline
     dd

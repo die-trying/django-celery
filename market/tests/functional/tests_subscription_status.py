@@ -68,3 +68,17 @@ class TestSubscriptionStatus(TestCase):
         self.assertEqual(ordinary_lessons_status['used'], 0)
         self.assertEqual(ordinary_lessons_status['available'], 4)
         self.assertEqual(ordinary_lessons_status['scheduled'], 1)
+
+    def test_is_fresh_and_shiny_true(self):
+        self.assertTrue(self.subscription.is_fresh_and_shiny())
+
+    def test_is_fresh_and_shiny_false_due_to_scheduled(self):
+        c = self.subscription.classes.filter(lesson_type=lessons.OrdinaryLesson.get_contenttype()).first()
+        self._schedule(c)
+        self.assertFalse(self.subscription.is_fresh_and_shiny())
+
+    def test_is_fresh_and_shiny_false_due_to_used(self):
+        c = self.subscription.classes.filter(lesson_type=lessons.OrdinaryLesson.get_contenttype()).first()
+        c.is_fully_used = True
+        c.save()
+        self.assertFalse(self.subscription.is_fresh_and_shiny())
