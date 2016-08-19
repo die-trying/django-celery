@@ -12,7 +12,7 @@
         <p class="lead">Welcome to the alpha-version of the dashboard!</p>
         <p>
          Dashbaord is a place, where you can see interseting staff that is happening right now in the ELK world{% if request.user.crm.can_schedule_classes %}
-            or <a href="#" class="pseudo load_schedule_popup" data-toggle="modal" data-target=".schedule-popup-container">plan a lesson</a>.
+            or <a href="#" class="pseudo livesite-schedule">plan a lesson</a>.
          {% else %}. Please contact <a class="pseudo" href='mailto:{{SUPPORT_EMAIL}}?subject=Reedem my lessons'>Amanda Kinney</a> to redeem you lessons.{% endif %}
         </p>
         <p>We want to develop this tool together with you, so we've launched
@@ -29,7 +29,7 @@
 <div class="row home-page-big-blue-button">
     <div class="col-md-12 text-center">
         {% if request.user.crm.can_schedule_classes %}
-        <button class="btn btn-primary btn-lg load_schedule_popup" data-toggle="modal" data-target=".schedule-popup-container">Plan a lesson</button>
+        <a class="btn btn-primary btn-lg livesite-schedule">Plan a lesson</a>
         {% else %}
         <a class="btn btn-primary btn-lg" href='mailto:{{SUPPORT_EMAIL}}?subject=Reedem my lessons'>Contact Amanda to redeem lessons</a>
         {% endif %}
