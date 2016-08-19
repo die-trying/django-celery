@@ -7,3 +7,9 @@ class TimezoneMiddleware():
     def process_request(self, request):
         tzname = request.session.get('django_timezone', settings.TIME_ZONE)
         timezone.activate(pytz.timezone(tzname))
+
+
+class SaveRefMiddleWare():
+    def process_request(self, request):
+        if request.GET.get('ref') is not None and request.session.get('ref') is None:
+            request.session['ref'] = request.GET['ref']
