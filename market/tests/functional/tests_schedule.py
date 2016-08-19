@@ -139,7 +139,7 @@ class ScheduleTestCase(TestCase):
         customer1 = create_customer()
         customer2 = create_customer()
 
-        paired_lesson = mixer.blend(lessons.PairedLesson, slots=2)
+        paired_lesson = mixer.blend(lessons.PairedLesson, slots=2, host=self.host)
 
         customer1_class = Class(
             customer=customer1,
@@ -172,7 +172,7 @@ class ScheduleTestCase(TestCase):
         """
         Try to schedule bought master class lesson to a paired lesson event
         """
-        paired_lesson = mixer.blend(lessons.PairedLesson, slots=2)
+        paired_lesson = mixer.blend(lessons.PairedLesson, slots=2, host=self.host)
         paired_lesson_entry = mixer.blend(TimelineEntry, lesson=paired_lesson, teacher=self.host, active=1)
 
         paired_lesson_entry.save()

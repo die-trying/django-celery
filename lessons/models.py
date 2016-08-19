@@ -202,12 +202,10 @@ class HappyHour(HostedLesson):
         verbose_name = _("Happy Hour")
 
 
-class PairedLesson(Lesson):
-
+class PairedLesson(HostedLesson):
     @classmethod
-    def can_be_directly_planned(cls):
-        """ Paired lessons can't be planned by user """
-        return False
+    def sort_order(cls):
+        return 500
 
     class Meta(Lesson.Meta):
         verbose_name = _("Paired Lesson")
