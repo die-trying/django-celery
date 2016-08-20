@@ -1,8 +1,24 @@
+from django.conf import settings
 from django.dispatch import receiver
 
+from acc.signals import new_user_registered
 from mailer.owl import Owl
 from market.models import Class
 from market.signals import class_scheduled, class_starting_student, class_starting_teacher
+
+
+@receiver(new_user_registered, dispatch_uid='new_user_notify')
+def new_user_notify(sender, **kwargs):
+    whom_to_notify = kwargs.get('whom', settings.SUPPORT_EMAIL)
+
+    owl = Owl(
+        template='mailer/service/new_user.html',
+        ctx={
+            'user': kwargs['user']
+        },
+        to=[whom_to_notify],
+    )
+    owl.send()
 
 
 @receiver(class_scheduled, sender=Class, dispatch_uid='notify_student_class_scheduled')

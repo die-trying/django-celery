@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 from django.core.files.base import ContentFile
 from requests import HTTPError, request
 
+from acc.signals import new_user_registered
 from crm.models import Customer
 
 
@@ -13,7 +14,7 @@ class SaveSocialProfile(metaclass=ABCMeta):
         - Create a user.crm link to a crm.Customer models
         - Fetch profile photo
 
-    The simplest subclass example is SaveGoogleProfile class
+    The simplest subclass example is SaveGoogleProfile class.
     """
     source_name = 'generic'
     extension = 'jpg'
@@ -77,12 +78,13 @@ def save_profile_picture(strategy, backend, user, response, is_new=False, *args,
     A python-social-auth pipeline entry point for running SaveSocialProfile
     class.
 
-    You should add this to the end of your SOCIAL_AUTH_PIPELINE in your settings,
-    for example:
+    You should add this to the end your SOCIAL_AUTH_PIPELINE in your settings,
+    right after built-it pipelines, like this:
         SOCIAL_AUTH_PIPELINE = (
             'social.pipeline.social_auth.social_details',
             ...
-            'acc.pipelines.save_profile_picture'
+            'acc.pipelines.save_profile_picture',
+            # your other pipelines
         )
     """
     if not is_new:
@@ -95,3 +97,38 @@ def save_profile_picture(strategy, backend, user, response, is_new=False, *args,
     if backend.name == 'facebook':
         profile_saver = SaveFacebookProfile(user=user, response=response, backend=backend)
         profile_saver.run()
+
+
+def save_referral(strategy, backend, user, response, is_new=False, *args, **kwargs):
+    """
+    Store referral inside the customer model
+    """
+    if not is_new:
+        return
+
+    ref = strategy.session_get('ref')
+    if ref is None:
+        return
+
+    user.crm.ref = ref
+    user.crm.save()
+
+
+def notify_staff(strategy, backend, user, response, is_new=False, *args, **kwargs):
+    """
+    Notify SUPPORT_EMAIL and referral about a new student
+    """
+
+    if not is_new:
+        return
+
+    ref = strategy.session_get('ref')
+    if ref is not None:
+        try:
+            teacher = Customer.objects.get(user__username=ref)  # customers are teachers to
+        except:
+            pass
+        finally:
+            new_user_registered.send(sender=notify_staff, user=user, whom_to_notify=teacher.email)
+
+    new_user_registered.send(sender=notify_staff, user=user)

@@ -140,6 +140,8 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.load_extra_data',
     'social.pipeline.user.user_details',
     'acc.pipelines.save_profile_picture',
+    'acc.pipelines.save_referral',
+    'acc.pipelines.notify_staff',
 )
 
 DEBUG_TOOLBAR_CONFIG = {

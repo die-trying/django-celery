@@ -37,6 +37,8 @@ class Customer(models.Model):
     date_arrived = models.DateTimeField(auto_now_add=True)
     birthday = models.DateField(null=True, blank=True)
 
+    ref = models.CharField('Referal code', max_length=140, blank=True)
+
     cancellation_streak = models.SmallIntegerField('Cancelled lesson streak', default=0)
     max_cancellation_count = models.SmallIntegerField('Maximum allowed lessons to cancel', default=7)
 
