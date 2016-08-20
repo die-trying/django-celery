@@ -1,6 +1,6 @@
 from django.utils import timezone
 
-from elk.admin import ModelAdmin, TabularInline, write_log_entry
+from elk.admin import ModelAdmin, TabularInline
 from market.models import Class, Subscription
 
 
@@ -113,31 +113,3 @@ class ClassesPassedInline(ClassesInlineBase):
 
     def when(self, instance):
         return self._datetime(instance.timeline.start) + ' ' + self._time(instance.timeline.start)
-
-
-def mark_as_used(modeladmin, request, queryset):
-    """
-    Admin action to mark classes as fully used
-    """
-    for c in queryset.all():
-        if not c.is_fully_used:
-            c.mark_as_fully_used()
-            write_log_entry(
-                request=request,
-                object=c,
-                change_message='Marked as used',
-            )
-
-
-def renew(modeladmin, request, queryset):
-    """
-    Admin action to mark classes as renewed
-    """
-    for c in queryset.all():
-        if c.is_fully_used:
-            c.renew()
-            write_log_entry(
-                request=request,
-                object=c,
-                change_message='Renewed',
-            )

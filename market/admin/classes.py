@@ -1,7 +1,8 @@
 from django.contrib import admin
 
 from elk.admin import BooleanFilter
-from market.admin.components import BuyableModelAdmin, mark_as_used, renew
+from market.admin.actions import MarkAsUsedForm, mark_as_used, renew
+from market.admin.components import BuyableModelAdmin
 from market.models import Class
 
 
@@ -36,6 +37,10 @@ class ClassAdmin(BuyableModelAdmin):
     list_filter = (AvailableFilter, BuySubscriptionFilter,)
     search_fields = ('customer__user__first_name', 'customer__user__last_name')
     actions = [mark_as_used, renew]
+    action_form = MarkAsUsedForm
+    actions_on_top = False
+    actions_on_bottom = True
+
     fieldsets = (
         (None, {
             'fields': ('customer', 'buy_price', 'lesson_type')

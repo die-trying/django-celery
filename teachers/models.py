@@ -55,6 +55,9 @@ class TeacherManager(models.Manager):
 
         return lessons
 
+    def can_finish_classes(self):
+        return [(t.pk, t.user.crm.full_name) for t in self.get_queryset().filter(active=1)]
+
 
 class Teacher(models.Model):
     """
