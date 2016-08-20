@@ -1,14 +1,14 @@
 - fields:
     active: 1
-    cost: '152.00'
+    cost: '150.00'
     cost_currency: USD
     duration: 42 00:00:00
     happy_hours: [500]
-    internal_name: The very first subscription
+    internal_name: ELK Base subscription
     lessons_with_native: [1000, 1001]
     master_classes: [500]
-    name: Subscription 1
-    ordinary_lessons: [1000, 1001, 1002, 1003]
+    name: ELK Base subscription
+    ordinary_lessons: [1000, 1001, 1002, 1003, 1004]
     paired_lessons: [500]
   model: products.product1
   pk: 1

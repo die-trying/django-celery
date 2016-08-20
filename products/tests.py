@@ -23,5 +23,5 @@ class TestSubscriptionDisplayTestCase(TestCase):
         ordinary_lessons = self.product.classes_by_lesson_type(ordinary_lesson_type)
         master_classes = self.product.classes_by_lesson_type(master_class_type)
 
-        self.assertEqual(len(ordinary_lessons), 4)
+        self.assertEqual(len(ordinary_lessons), 5)  # fill free to modify this if you've changed the first subcription
         self.assertEqual(len(master_classes), 1)

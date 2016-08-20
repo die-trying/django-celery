@@ -1,51 +1,59 @@
-- model: lessons.ordinarylesson
+- fields: {active: 1, announce: Usual ELK curated session, description: Usual ELK
+      curated session, duration: '00:30:00', internal_name: Single currated lesson
+      (DEFAULT), name: Single curated lesson, slots: 1}
+  model: lessons.ordinarylesson
   pk: 500
-  fields: {name: Single curated lesson, slots: 1, internal_name: Single currated lesson (DEFAULT), duration: '00:37:00',
-    description: This is the ordinary curated lesson}
-
-- model: lessons.lessonwithnative
-  pk: 500
-  fields: {name: Native speaker lesson, slots: 1, internal_name: Native speaker lesson (DEFAULT),
-    duration: '00:30:00', description: This is your lesson with a native speaker}
-
-- model: lessons.masterclass
-  pk: 500
-  fields: {name: Master class lesson, slots: 5, internal_name: Ordinary master class lesson,
-     duration: '00:30:00', description: This is a master class lesson}
-
-- model: lessons.happyhour
-  pk: 500
-  fields: {name: ELK Happy hour, slots: 6, internal_name: Generic happy hour lesson,
-      duration: '00:30:00', description: This is a ELK Happy hour hangouts session}
-
-- model: lessons.pairedlesson
-  pk: 500
-  fields: {name: Paired lesson, slots: 2, internal_name: Paired lesson,
-      duration: '00:30:00', description: This is a a paired lesson}
-
-- model: lessons.ordinarylesson
+- fields: {active: 1, announce: This is a first curated lesson of your subscription,
+    description: This is a first curated lesson of your subscription, duration: '00:30:00',
+    internal_name: Curated lesson 1/5, name: First curated lesson, slots: 1}
+  model: lessons.ordinarylesson
   pk: 1000
-  fields: {name: First curated lesson, slots: 1, internal_name: Curated lesson 1/4, duration: '00:30:00',
-    description: Hi there! This is a first curated lesson}
-- model: lessons.ordinarylesson
+- fields: {active: 1, announce: This is a second curated lesson of your subscription,
+    description: This is a second curated lesson of your subscription, duration: '00:30:00',
+    internal_name: Curated lesson 2/5, name: Curated lesson, slots: 1}
+  model: lessons.ordinarylesson
   pk: 1001
-  fields: {name: Curated lesson, slots: 1, internal_name: Curated lesson 2/4, duration: '00:30:00',
-    description: The second curated lesson}
-- model: lessons.ordinarylesson
+- fields: {active: 1, announce: This is a second curated lesson of your subscription,
+    description: This is a second curated lesson of your subscription, duration: '00:30:00',
+    internal_name: Curated lesson 3/4, name: Curated lesson, slots: 1}
+  model: lessons.ordinarylesson
   pk: 1002
-  fields: {name: Curated lesson, slots: 1, internal_name: Curated lesson 3/4, duration: '00:45:00',
-    description: The third curated lesson}
-- model: lessons.ordinarylesson
+- fields: {active: 1, announce: This is a fourth curated lesson of your subscription,
+    description: This is a fourth curated lesson of your subscription, duration: '00:30:00',
+    internal_name: Curated lesson 4/5, name: Curated lesson, slots: 1}
+  model: lessons.ordinarylesson
   pk: 1003
-  fields: {name: Curated lesson, slots: 1, internal_name: Curated lesson 4/4, duration: '00:25:00',
-    description: THe last Curated lesson}
-
-- model: lessons.lessonwithnative
+- fields: {active: 1, announce: 'Fifth, and the last curated session. ', description: 'Fifth,
+      and the last curated session. ', duration: '00:30:00', internal_name: Curated
+      lesson 5/5, name: Curated session, slots: 1}
+  model: lessons.ordinarylesson
+  pk: 1004
+- fields: {active: 1, announce: '', description: This is your lesson with a native
+      speaker, duration: '00:30:00', internal_name: Native speaker lesson (DEFAULT),
+    name: Native speaker lesson, slots: 1}
+  model: lessons.lessonwithnative
+  pk: 500
+- fields: {active: 1, announce: '', description: "Hi there!\r\n\r\nThis is a your\
+      \ first curated **lesson**", duration: '00:30:00', internal_name: Native speaker
+      lesson 1/2, name: Native speaker lesson, slots: 1}
+  model: lessons.lessonwithnative
   pk: 1000
-  fields: {name: Native speaker lesson, slots: 1, internal_name: Native speaker lesson 1/2,
-    duration: '00:30:00', description: "Hi there!\r\n\r\nThis is a your first curated
-      **lesson**"}
-- model: lessons.lessonwithnative
+- fields: {active: 1, announce: '', description: This is your second lesson with a
+      native speaker, duration: '00:30:00', internal_name: Native speaker lesson 2/2,
+    name: Native speaker lesson, slots: 1}
+  model: lessons.lessonwithnative
   pk: 1001
-  fields: {name: Native speaker lesson, slots: 1, internal_name: Native speaker lesson 2/2,
-    duration: '00:30:00', description: This is your second lesson with a native speaker}
+- fields: {active: 1, announce: '', description: This is a master class lesson, duration: '00:30:00',
+    host: null, internal_name: Ordinary master class lesson, name: Master class lesson,
+    slots: 5}
+  model: lessons.masterclass
+  pk: 500
+- fields: {active: 1, announce: '', description: This is a ELK Happy hour hangouts
+      session, duration: '00:30:00', host: null, internal_name: Generic happy hour
+      lesson, name: ELK Happy hour, slots: 6}
+  model: lessons.happyhour
+  pk: 500
+- fields: {active: 1, announce: '', description: This is a a paired lesson, duration: '00:30:00',
+    host: null, internal_name: Paired lesson, name: Paired lesson, slots: 2}
+  model: lessons.pairedlesson
+  pk: 500

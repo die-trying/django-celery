@@ -39,7 +39,7 @@ class TestSubscriptionStatus(TestCase):
         ordinary_lessons_status = status[0]
         self.assertIn('Curated session', ordinary_lessons_status['name'])
         self.assertEqual(ordinary_lessons_status['used'], 0)
-        self.assertEqual(ordinary_lessons_status['available'], 4)
+        self.assertEqual(ordinary_lessons_status['available'], 5)  # fill free to modify it when you've changed the subscription
 
         master_class_status = status[4]
         self.assertIn('Master Class', master_class_status['name'])
@@ -55,7 +55,7 @@ class TestSubscriptionStatus(TestCase):
         status = self.subscription.class_status()
         ordinary_lessons_status = status[0]
         self.assertEqual(ordinary_lessons_status['used'], 1)
-        self.assertEqual(ordinary_lessons_status['available'], 3)
+        self.assertEqual(ordinary_lessons_status['available'], 4)  # fill free to modify it when you've changed the subscription
 
     def test_class_scheduled(self):
         """
@@ -66,7 +66,7 @@ class TestSubscriptionStatus(TestCase):
         status = self.subscription.class_status()
         ordinary_lessons_status = status[0]
         self.assertEqual(ordinary_lessons_status['used'], 0)
-        self.assertEqual(ordinary_lessons_status['available'], 4)
+        self.assertEqual(ordinary_lessons_status['available'], 5)  # fill free to modify it when you've changed the subscription
         self.assertEqual(ordinary_lessons_status['scheduled'], 1)
 
     def test_is_fresh_and_shiny_true(self):
