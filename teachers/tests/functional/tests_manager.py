@@ -256,5 +256,5 @@ class TestTeacherManager(TestCase):
 
     def test_can_finish_classes(self):
         res = Teacher.objects.can_finish_classes()
-        self.assertEqual(res[0][0], self.teacher.pk)
-        self.assertIn(self.teacher.user.crm.full_name, res[0][1])
+        self.assertEqual(res[1][0], self.teacher.pk)
+        self.assertIn(self.teacher.user.crm.full_name, res[1][1])

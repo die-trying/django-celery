@@ -58,7 +58,10 @@ class TeacherManager(models.Manager):
         return lessons
 
     def can_finish_classes(self):
-        return [(t.pk, t.user.crm.full_name) for t in self.get_queryset().filter(active=1)]
+        """
+        TODO: refactor it, admin interface should care about it choices
+        """
+        return [('-1', 'Choose a teacher')] + [(t.pk, t.user.crm.full_name) for t in self.get_queryset().filter(active=1)]
 
 
 class Teacher(models.Model):

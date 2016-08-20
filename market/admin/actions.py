@@ -11,15 +11,21 @@ class MarkAsUsedForm(ActionForm):
     """
     Form for actions that is required to make following actions working
     """
-    teacher = forms.ChoiceField(choices=Teacher.objects.can_finish_classes)
+    teacher = forms.ChoiceField(initial=-1, choices=Teacher.objects.can_finish_classes)
 
 
 def mark_as_used(modeladmin, request, queryset):
     """
     Admin action to mark classes as fully used
     """
-    teacher = get_object_or_404(Teacher, pk=int(request.POST['teacher']))
-    print(teacher)
+    pk = int(request.POST['teacher'])
+
+    # TODO: refactor it!
+    if pk == -1:  # when no teacher is specified
+        pk = request.user.teacher_data.pk
+
+    teacher = get_object_or_404(Teacher, pk=pk)
+
     for c in queryset.all():
         if not c.is_fully_used:
             c.mark_as_fully_used()
@@ -35,7 +41,14 @@ def renew(modeladmin, request, queryset):
     """
     Admin action to mark classes as renewed
     """
-    teacher = get_object_or_404(Teacher, pk=int(request.POST['teacher']))
+    pk = int(request.POST['teacher'])
+
+    # TODO: refactor it!
+    if pk == -1:  # when no teacher is specified
+        pk = request.user.teacher_data.pk
+
+    teacher = get_object_or_404(Teacher, pk=pk)
+
     for c in queryset.all():
         if c.is_fully_used:
             c.renew()
