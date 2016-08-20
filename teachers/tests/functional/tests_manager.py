@@ -253,3 +253,8 @@ class TestTeacherManager(TestCase):
         teachers = Teacher.objects.find_free(date='2032-05-03', lesson_type=ordinary_lesson_type.pk)
         self.assertEquals(len(teachers), 1)
         self.assertEquals(len(teachers[0].free_slots), 4)  # should find all timeline entries because ordinary lesson does not require a timeline entry
+
+    def test_can_finish_classes(self):
+        res = Teacher.objects.can_finish_classes()
+        self.assertEqual(res[1][0], self.teacher.pk)
+        self.assertIn(self.teacher.user.crm.full_name, res[1][1])

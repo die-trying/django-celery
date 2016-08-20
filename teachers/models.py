@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from django.apps import apps
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
@@ -12,6 +12,8 @@ from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
 
 from elk.utils.date import day_range, localize
+
+TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
 
 
 class SlotList(list):
@@ -30,7 +32,7 @@ class TeacherManager(models.Manager):
         iterable of available slots as datetime.
         """
         teachers = []
-        for teacher in self.get_queryset().all():
+        for teacher in self.get_queryset().filter(active=1):
             free_slots = teacher.find_free_slots(date, **kwargs)
             if free_slots:
                 teacher.free_slots = free_slots
@@ -55,6 +57,12 @@ class TeacherManager(models.Manager):
 
         return lessons
 
+    def can_finish_classes(self):
+        """
+        TODO: refactor it, admin interface should care about it choices
+        """
+        return [('-1', 'Choose a teacher')] + [(t.pk, t.user.crm.full_name) for t in self.get_queryset().filter(active=1)]
+
 
 class Teacher(models.Model):
     """
@@ -68,6 +76,10 @@ class Teacher(models.Model):
     Before teacher can host an event, he should be allowed to do that by adding
     event type to the `allowed_lessons` property.
     """
+    ENABLED = (
+        (0, 'Inactive'),
+        (1, 'Active'),
+    )
     objects = TeacherManager()
     user = models.OneToOneField(User, on_delete=models.PROTECT, related_name='teacher_data', limit_choices_to={'is_staff': 1, 'crm__isnull': False})
 
@@ -75,6 +87,23 @@ class Teacher(models.Model):
 
     description = MarkdownField()
     announce = MarkdownField('Short description')
+    active = models.IntegerField(default=1, choices=ENABLED)
+
+    def save(self, *args, **kwargs):
+        """
+        Add new teachers to the 'teachers' group
+        """
+        if self.pk:
+            return
+
+        try:
+            group = Group.objects.get(pk=TEACHER_GROUP_ID)
+            self.user.groups.add(group)
+            self.user.save()
+        except Group.DoesNotExist:
+            pass
+
+        super().save(*args, **kwargs)
 
     def as_dict(self):
         return {
