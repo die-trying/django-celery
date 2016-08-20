@@ -18,7 +18,7 @@ class IsFinishedFilter(BooleanFilter):
 
 @admin.register(Subscription)
 class SubscriptionAdmin(BuyableModelAdmin):
-    list_display = ('customer', '__str__', 'lesson_usage', 'planned_lessons', 'buy_time', 'buy_price')
+    list_display = ('customer', '__str__', 'lesson_usage', 'planned_lessons', 'buy_time',)
     list_filter = (IsFinishedFilter,)
     readonly_fields = ('lesson_usage', 'buy_time', 'planned_lessons')
     inlines = (ClassesLeftInline, ClassesPassedInline)
