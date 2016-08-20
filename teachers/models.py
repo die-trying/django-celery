@@ -30,7 +30,7 @@ class TeacherManager(models.Manager):
         iterable of available slots as datetime.
         """
         teachers = []
-        for teacher in self.get_queryset().all():
+        for teacher in self.get_queryset().filter(active=1):
             free_slots = teacher.find_free_slots(date, **kwargs)
             if free_slots:
                 teacher.free_slots = free_slots
@@ -68,6 +68,10 @@ class Teacher(models.Model):
     Before teacher can host an event, he should be allowed to do that by adding
     event type to the `allowed_lessons` property.
     """
+    ENABLED = (
+        (0, 'Inactive'),
+        (1, 'Active'),
+    )
     objects = TeacherManager()
     user = models.OneToOneField(User, on_delete=models.PROTECT, related_name='teacher_data', limit_choices_to={'is_staff': 1, 'crm__isnull': False})
 
@@ -75,6 +79,7 @@ class Teacher(models.Model):
 
     description = MarkdownField()
     announce = MarkdownField('Short description')
+    active = models.IntegerField(default=1, choices=ENABLED)
 
     def as_dict(self):
         return {
