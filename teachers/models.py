@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from django.apps import apps
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
@@ -12,6 +12,8 @@ from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
 
 from elk.utils.date import day_range, localize
+
+TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
 
 
 class SlotList(list):
@@ -83,6 +85,22 @@ class Teacher(models.Model):
     description = MarkdownField()
     announce = MarkdownField('Short description')
     active = models.IntegerField(default=1, choices=ENABLED)
+
+    def save(self, *args, **kwargs):
+        """
+        Add new teachers to the 'teachers' group
+        """
+        if self.pk:
+            return
+
+        try:
+            group = Group.objects.get(pk=TEACHER_GROUP_ID)
+            self.user.groups.add(group)
+            self.user.save()
+        except Group.DoesNotExist:
+            pass
+
+        super().save(*args, **kwargs)
 
     def as_dict(self):
         return {
