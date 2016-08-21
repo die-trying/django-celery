@@ -54,7 +54,7 @@ cp src/elk/.env .env.$MODE.preserved
 finish
 
 start "Backuping the ${White}${MODE}${Green} database: ${White}${ROLE}${Green}"
-sudo -H pg_dump -U $ROLE|gzip -9 > ${MODE}.sql.preserved.gz
+pg_dump -U $ROLE|gzip -9 > ${MODE}.sql.preserved.gz
 printf " ${Yellow}Done: ${NC}"
 du -h $DIR/$MODE.sql.preserved.gz
 printf "${NC}\n"
