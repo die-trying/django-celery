@@ -10,7 +10,7 @@ class ManualClassLogEntry(models.Model):
     after final moving from vCita
     """
     teacher = models.ForeignKey(Teacher, related_name='manualy_completed_classes')
-    Class = models.ForeignKey(Class)
+    Class = models.ForeignKey(Class, related_name='manualy_completed_classes')
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
