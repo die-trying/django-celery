@@ -5,6 +5,7 @@ from django.utils.translation import ugettext as _
 
 from elk.admin import BooleanFilter, ModelAdmin
 from market.admin.components import ClassesLeftInline, ClassesPassedInline, SubscriptionsInline
+from market.models import Subscription
 
 from .models import Customer, RegisteredCustomer
 
@@ -95,7 +96,7 @@ class ExistingCustomerAdmin(ModelAdmin):
         if not total:
             return '—'
 
-        finished = total.filter(is_fully_used=True)
+        finished = Subscription.objects.filter(pk__in=total, is_fully_used=True)
         return '%d/%d' % (finished.count(), total.count())
 
     def email(self, instance):
