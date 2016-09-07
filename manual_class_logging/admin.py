@@ -1,7 +1,9 @@
 from django.contrib import admin
-from elk.admin import ModelAdmin
-from .models import ManualClassLogEntry
+
 from crm.models import Customer
+from elk.admin import ModelAdmin
+
+from .models import ManualClassLogEntry
 
 
 class StudentFilter(admin.SimpleListFilter):
