@@ -13,7 +13,7 @@
         </div>
         <div class="modal-body">
             <div class="row schedule-popup__filters">
-                <div class="col-md-12">
+                <div class="col-md-3">
                     <div class="form-group schedule-popup__date-selector">
                         <select name="date" class="selectpicker">
                             {% for d in user.crm.classes.dates_for_planning %}
@@ -21,6 +21,8 @@
                             {% endfor %}
                         </select>
                     </div>
+                </div>
+                <div class="col-md-9">
                     <div class="btn-group lesson_type" data-toggle="buttons">
                         {% lesson_type_filter user.crm.classes.bought_lesson_types %}
                     </div>
