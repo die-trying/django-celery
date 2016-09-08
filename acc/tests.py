@@ -1,9 +1,8 @@
 from os.path import basename
 
 import responses
-from django.test import TestCase
 
-from elk.utils.testing import create_user
+from elk.utils.testing import TestCase, create_user
 
 from .pipelines import SaveSocialProfile
 

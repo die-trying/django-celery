@@ -1,8 +1,6 @@
 from datetime import datetime
 
-from django.test import TestCase
-
-from elk.utils.testing import create_customer, create_teacher
+from elk.utils.testing import TestCase, create_customer, create_teacher
 from lessons import models as lessons
 from market.models import Subscription
 from products.models import Product1

@@ -1,11 +1,10 @@
 import json
 
 from django.core.exceptions import ValidationError
-from django.test import TestCase
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
-from elk.utils.testing import ClientTestCase, create_teacher
+from elk.utils.testing import ClientTestCase, TestCase, create_teacher
 
 
 class TestLessonsUnit(TestCase):

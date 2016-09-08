@@ -1,10 +1,9 @@
 from datetime import datetime
 
-from django.test import TestCase
 from django.utils import timezone
 from mixer.backend.django import mixer
 
-from elk.utils.testing import create_teacher
+from elk.utils.testing import TestCase, create_teacher
 from teachers.models import SlotList, WorkingHours
 
 

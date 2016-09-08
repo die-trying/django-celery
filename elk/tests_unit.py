@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta
 
 from django.apps import apps
-from django.test import TestCase
 from django.utils.dateformat import format
 from django.utils.dateparse import parse_date
 
 from elk.utils.date import ago, day_range, fwd
-from elk.utils.testing import create_customer, create_teacher, create_user
+from elk.utils.testing import TestCase, create_customer, create_teacher, create_user
 
 
 class TestDateUtils(TestCase):

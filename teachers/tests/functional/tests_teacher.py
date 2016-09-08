@@ -1,7 +1,6 @@
-from django.test import TestCase
 from mixer.backend.django import mixer
 
-from elk.utils.testing import create_teacher
+from elk.utils.testing import TestCase, create_teacher
 from lessons import models as lessons
 
 

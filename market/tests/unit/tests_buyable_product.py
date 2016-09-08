@@ -1,6 +1,4 @@
-from django.test import TestCase
-
-from elk.utils.testing import create_customer
+from elk.utils.testing import TestCase, create_customer
 from market.models import Class, Subscription
 from products import models as products
 

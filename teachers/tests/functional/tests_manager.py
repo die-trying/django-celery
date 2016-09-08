@@ -2,12 +2,11 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from django.contrib.contenttypes.models import ContentType
-from django.test import TestCase
 from django.utils import timezone
 from django.utils.dateparse import parse_time
 from mixer.backend.django import mixer
 
-from elk.utils.testing import create_teacher
+from elk.utils.testing import TestCase, create_teacher
 from lessons import models as lessons
 from teachers.models import Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry
