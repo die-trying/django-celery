@@ -23,7 +23,6 @@ class EntryCardTest(ClientTestCase):
                                  lesson=self.lesson,
                                  start=timezone.make_aware(datetime(2032, 12, 1, 15, 0), timezone.get_default_timezone())
                                  )
-        super().setUp()
 
     def test_404_for_wrong_teacher(self):
         other_teacher = create_teacher()

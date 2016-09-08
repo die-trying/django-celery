@@ -18,7 +18,6 @@ class SchedulingPopupTestCaseBase(ClientTestCase):
         self.customer = create_customer()
         self.host = create_teacher()
         mixer.blend(WorkingHours, teacher=self.host, weekday=0, start='13:00', end='15:00')  # monday
-        super().setUp()
 
     def _buy_a_lesson(self, lesson):
         c = Class(

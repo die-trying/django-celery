@@ -12,7 +12,6 @@ class TestFormContext(ClientTestCase):
 
     def setUp(self):
         self.teacher = create_teacher()
-        super().setUp()
 
     def test_create_context(self):
         """

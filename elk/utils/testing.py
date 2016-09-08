@@ -19,20 +19,28 @@ def __add_all_lessons(teacher):
         teacher.allowed_lessons.add(lesson)
 
 
-def create_user():
+def create_user(**kwargs):
     """
     Generate a simple user object.
+
+    You can pass `mixer<https://github.com/klen/mixer>` keyword arguments for :model:`crm.Customer`
     """
     user = mixer.blend('auth.user')
-    mixer.blend('crm.customer', user=user)
+    user.crm = create_customer(user=user)
+
     return user
 
 
-def create_customer():
+def create_customer(user=None, **kwargs):
     """
     Generate a simple customer object.
     """
-    user = create_user()
+    if user is None:
+        user = create_user(**kwargs)
+    else:
+        kwargs['timezone'] = kwargs.get('timezone', 'Europe/Moscow')  # the timezone value here defferes from default one in settings.py for early timezone error detection
+        mixer.blend('crm.customer', user=user, **kwargs)
+
     return user.crm
 
 
@@ -51,10 +59,11 @@ def create_teacher(accepts_all_lessons=True):
     return teacher
 
 
-def mock_request(customer=create_customer()):
+def mock_request(customer=None):
     """
     Mock a request object, typicaly used for tests when buying a class
     """
+
     request = Mock()
     request.user_agent.is_mobile = bool(random.getrandbits(1))
     request.user_agent.is_tablet = bool(random.getrandbits(1))
@@ -71,6 +80,10 @@ def mock_request(customer=create_customer()):
         'REMOTE_ADDR': '127.0.0.5',
         'HTTP_USER_AGENT': 'WinXP; U/16',
     }
+
+    if customer is None:
+        customer = create_customer()
+
     request.crm = customer
 
     return request
@@ -85,11 +98,14 @@ class ClientTestCase(TestCase, AssertHTMLMixin):
 
     For examples lurk the working tests.
     """
-    def setUp(self):
-        self.c = Client()
-        self.factory = RequestFactory()
-        self.superuser = User.objects.create_superuser('root', 'root@wheel.com', 'ohGh7jai4Cee')
-        self.c.login(username='root', password='ohGh7jai4Cee')
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.c = Client()
+        cls.factory = RequestFactory()
+        cls.superuser = User.objects.create_superuser('root', 'root@wheel.com', 'ohGh7jai4Cee')
+        create_customer(user=cls.superuser)
+        cls.c.login(username='root', password='ohGh7jai4Cee')
 
-        self.superuser_login = 'root'
-        self.superuser_password = 'ohGh7jai4Cee'  # store, if children will need it
+        cls.superuser_login = 'root'
+        cls.superuser_password = 'ohGh7jai4Cee'  # store, if children will need it

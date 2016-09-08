@@ -28,7 +28,6 @@ class TestCheckEntry(ClientTestCase):
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')
 
         self.entry.save()
-        super().setUp()
 
     def test_check_overlap_true(self):
         overlaps = self.__check_entry(

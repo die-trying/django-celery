@@ -12,7 +12,6 @@ from market.models import Class
 
 class UserCancellationTestCase(ClientTestCase):
     def setUp(self):
-        super().setUp()
         self.customer = create_customer()
         self.teacher = create_teacher()
         self.lesson = mixer.blend(lessons.OrdinaryLesson, customer=self.customer)

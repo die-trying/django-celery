@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from mixer.backend.django import mixer
 
-from elk.utils.testing import ClientTestCase, create_customer, create_teacher
+from elk.utils.testing import ClientTestCase, create_teacher
 from lessons import models as lessons
 from timeline.models import Entry as TimelineEntry
 
@@ -19,8 +19,6 @@ class EntryCRUDTest(ClientTestCase):
         self.teacher = create_teacher()
         self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher, duration=timedelta(minutes=33))
         self.lesson_type = ContentType.objects.get_for_model(lessons.MasterClass).pk
-
-        super().setUp()
 
     def testCRUD(self):
         self._create()

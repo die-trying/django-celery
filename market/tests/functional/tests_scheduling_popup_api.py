@@ -26,8 +26,6 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
         mixer.blend(WorkingHours, teacher=self.second_teacher, weekday=0, start='13:00', end='15:00')  # monday
         mixer.blend(WorkingHours, teacher=self.second_teacher, weekday=4, start='17:00', end='19:00')  # thursday
 
-        super().setUp()
-
     def _buy_a_lesson(self, lesson):
             c = Class(
                 customer=self.customer,

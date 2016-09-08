@@ -42,7 +42,6 @@ class TestLessonsUnit(TestCase):
 class TestLessonsFunctional(ClientTestCase):
     def setUp(self):
         self.teacher = create_teacher()
-        super().setUp()
 
     def testAvailableLessonsJSON(self):
         """
