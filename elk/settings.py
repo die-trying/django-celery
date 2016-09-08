@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'django_user_agents',
     'social.apps.django_app.default',
     'easy_timezones',
+    'timezone_field',
     'django_nose',
     'django.contrib.admindocs',
     'suit',
@@ -107,6 +108,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
+                'django.template.context_processors.tz',
 
                 'elk.context_processors.support_email',
                 'elk.context_processors.revision',

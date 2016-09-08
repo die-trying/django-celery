@@ -1,6 +1,15 @@
-from django.contrib.auth.models import User
+#from django.contrib.auth.models import User
+from elk.utils.testing import ClientTestCase, create_customer
 
-from elk.utils.testing import ClientTestCase
+
+class TestTimezoneMiddleware(ClientTestCase):
+    def setUp(self):
+        self.customer = create_customer()
+
+    def test_timezone_template_context(self):
+        self.assertIsNotNone(self.customer.timezone)
+        response = self.c.get('/')
+        self.assertEqual(response.context['TIME_ZONE'], str(self.customer.timezone))
 
 # this tests are commented out since there is no navbar for students
 # we'll uncomennt the when moving from vCita back to our scheduling system
@@ -13,7 +22,6 @@ from elk.utils.testing import ClientTestCase
 #     def setUp(self):
 #         self.student = User.objects.create_user('student', 'te@ss.a', '123')
 #         self.teacher = User.objects.create_superuser('teacher', 'te@ss.a', '123')
-#         super().setUp()
 #
 #     def testNavBarPublicArea(self):
 #         self.c.login(username='student', password='123')

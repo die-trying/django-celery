@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django_countries.fields import CountryField
+from timezone_field import TimeZoneField
 
 
 # Create your models here.
@@ -36,6 +37,8 @@ class Customer(models.Model):
 
     date_arrived = models.DateTimeField(auto_now_add=True)
     birthday = models.DateField(null=True, blank=True)
+
+    timezone = TimeZoneField(default='Europe/Moscow')
 
     ref = models.CharField('Referal code', max_length=140, blank=True)
 

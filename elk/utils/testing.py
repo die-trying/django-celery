@@ -10,6 +10,7 @@ from unittest.mock import Mock
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.test import Client, RequestFactory, TestCase
+from django.utils import timezone
 from mixer.backend.django import mixer
 from with_asserts.mixin import AssertHTMLMixin
 
@@ -93,16 +94,30 @@ class ClientTestCase(TestCase, AssertHTMLMixin):
     """
     Generic test case with automatic login process and all required assets.
 
-    Composes a django.test.RequestFactory and django.test.Client. Creates a superuser
-    (to avoid permission issues) and logges in with it's credetinals.
+    - Composes a django.test.RequestFactory and django.test.Client.
+    - Creates a superuser (to avoid permission issues) and logges in with it's credetinals.
+    - Resets the timezone (timezone middleware will work as expected)
 
     For examples lurk the working tests.
     """
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+
         cls.c = Client()
         cls.factory = RequestFactory()
+
+        cls.__generate_superuser()
+
+        """
+        Here we reset the timezone, which might be set by mistake inside any other test suite.
+        the timezone support for web requests will work as expected, because
+        of middleware elk.middleware.TimezoneMiddleware
+        """
+        timezone.deactivate()
+
+    @classmethod
+    def __generate_superuser(cls):
         cls.superuser = User.objects.create_superuser('root', 'root@wheel.com', 'ohGh7jai4Cee')
         create_customer(user=cls.superuser)
         cls.c.login(username='root', password='ohGh7jai4Cee')
