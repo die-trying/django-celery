@@ -28,7 +28,7 @@ def create_user(**kwargs):
     You can pass `mixer<https://github.com/klen/mixer>` keyword arguments for :model:`crm.Customer`
     """
     user = mixer.blend('auth.user')
-    user.crm = create_customer(user=user)
+    user.crm = create_customer(user=user, **kwargs)
 
     return user
 
