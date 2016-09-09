@@ -29,13 +29,45 @@ class HasSubscriptionsFilter(BooleanFilter):
         return queryset.filter(subscriptions__isnull=True)
 
 
+class CountryFilter(admin.SimpleListFilter):
+    title = _('Country')
+    parameter_name = 'country'
+
+    def lookups(self, request, model_admin):
+        return (
+            [str(i.country), i.country.name] for i in Customer.objects.distinct('country')
+        )
+
+    def queryset(self, request, queryset):
+        if not self.value():
+            return queryset
+
+        return queryset.filter(country=self.value())
+
+
+class ResponsibleFilter(admin.SimpleListFilter):
+    title = _('Responsible')
+    parameter_name = 'responsible'
+
+    def lookups(self, request, model_admin):
+        return (
+            [i.responsible.pk, str(i.responsible)] for i in Customer.objects.filter(responsible__isnull=False).distinct('responsible')
+        )
+
+    def queryset(self, request, queryset):
+        if not self.value():
+            return queryset
+
+        return queryset.filter(responsible=self.value())
+
+
 @admin.register(Customer)
 class ExistingCustomerAdmin(ModelAdmin):
     """
     The admin module for manager current customers without managing users
     """
-    list_display = ('full_name', 'classes', 'subscriptions', 'country', 'date_arrived')
-    list_filter = (HasClassesFilter, HasSubscriptionsFilter,)
+    list_display = ('full_name', 'country', 'responsible', 'classes', 'subscriptions', 'date_arrived')
+    list_filter = (CountryFilter, ResponsibleFilter, HasClassesFilter, HasSubscriptionsFilter)
     actions = None
     readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions', 'corporate')
     inlines = (SubscriptionsInline, ClassesLeftInline, ClassesPassedInline)
