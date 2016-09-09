@@ -71,6 +71,9 @@ class ExistingCustomerAdmin(ModelAdmin):
         (None, {
             'fields': ('student', 'email', 'arrived', 'classes', 'subscriptions')
         }),
+        ('Attribution', {
+            'fields': ('responsible',)
+        }),
         ('Profile', {
             'fields': ('birthday', 'country', 'native_language', 'profile_photo', 'starting_level', 'current_level')
         }),

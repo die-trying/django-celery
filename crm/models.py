@@ -28,6 +28,7 @@ class Customer(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.PROTECT, null=True, blank=True, related_name='crm')
 
+    responsible = models.ForeignKey('teachers.Teacher', on_delete=models.SET_NULL, null=True, blank=True, related_name='patronized_customers')
     source = models.CharField(max_length=140, default='internal')
 
     customer_first_name = models.CharField('First name', max_length=140, blank=True)
