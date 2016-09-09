@@ -3,7 +3,7 @@ from django.utils import timezone
 
 class TimezoneMiddleware():
     def process_request(self, request):
-        if request.user is not None:
+        if request.user is not None and hasattr(request.user, 'crm'):
             tz = request.user.crm.timezone
             timezone.activate(tz)
 

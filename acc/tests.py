@@ -2,7 +2,7 @@ from os.path import basename
 
 import responses
 
-from elk.utils.testing import TestCase, create_user
+from elk.utils.testing import ClientTestCase, TestCase, create_user
 
 from .pipelines import SaveSocialProfile
 
@@ -59,3 +59,18 @@ class TestSocialPipeline(TestCase):
 
         self.assertEqual(basename(user.crm.profile_photo.name), '%s-testsrc.jpgtest' % user.username)
         self.assertEqual(user.crm.profile_photo.read(), b'testbytes')
+
+
+class TestLoginPage(ClientTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.c.logout()
+
+    def test_login_page_redirect(self):
+        response = self.c.get('/')
+        self.assertRedirects(response, '/accounts/login/?next=/')
+
+    def test_login_page_200(self):
+        response = self.c.get('/accounts/login/?next=/')
+        self.assertEqual(response.status_code, 200)
