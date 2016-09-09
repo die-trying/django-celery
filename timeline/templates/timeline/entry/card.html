@@ -16,7 +16,7 @@
             <dd>{% if object.teacher.user == request.user %}You{% else %}{{ object.teacher.user.crm.full_name }}{% endif %}</dd>
 
             <dt>Start</dt>
-            <dd>{{ object.start | naturalday:'SHORT_DATE_FORMAT' | capfirst }}, {{ object.start | time:'SHORT_TIME_FORMAT'}}</dd>
+            <dd>{{ object.start | naturalday:'SHORT_DATE_FORMAT' | capfirst }}, {{ object.start | time:'TIME_FORMAT'}}</dd>
 
             <dt>Lesson</dt>
             <dd>{{ object.lesson.name }}</dd>

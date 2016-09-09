@@ -55,7 +55,7 @@ class AdminHelpersMixin():
         return capfirst(naturalday(date))
 
     def _time(self, date):
-        return time(date, 'SHORT_TIME_FORMAT')
+        return time(date, 'TIME_FORMAT')
 
 
 class ModelAdmin(admin.ModelAdmin, AdminHelpersMixin):
