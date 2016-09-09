@@ -42,7 +42,7 @@
                     <div class="col-md-6 slots">
                         <div class="btn-group" data-toggle="buttons">
                             <label rv-each-slot="record.slots" class="btn btn-default schedule-popup__time-label">
-                                <input class="schedule-popup__time-selector" type="radio" rv-name="slot.id" rv-data-teacher="slot.teacher" rv-data-time="slot.time" rv-data-lesson="model.lesson_type" rv-data-date="model.date" rv-after="slot.time"></input>
+                                <input class="schedule-popup__time-selector" type="radio" rv-name="slot.id" rv-data-teacher="slot.teacher" rv-data-time="slot.server_time" rv-data-lesson="model.lesson_type" rv-data-date="model.date" rv-after="slot.user_time"></input>
                             </label>
                         </div>
                     </div>

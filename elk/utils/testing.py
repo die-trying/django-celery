@@ -102,6 +102,12 @@ class TestCase(StockTestCase):
         """
         timezone.deactivate()
 
+    def assertIsTime(self, time):
+        """
+        Check if passed argument looks like a time definition
+        """
+        return self.assertRegexpMatches(str(time), r'\d{2}\:\d{2}')
+
 
 class ClientTestCase(TestCase, AssertHTMLMixin):
     """

@@ -1,24 +1,27 @@
 from datetime import datetime, timedelta
 
+import pytz
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.utils import timezone
 from django.utils.dateparse import parse_date
-from django.utils.timezone import make_aware, now
 from django.utils.translation import ugettext_lazy as _
+from django.template.defaultfilters import time
 from django_markdown.models import MarkdownField
 
-from elk.utils.date import day_range, localize
+from elk.utils.date import day_range
 
 TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
 
 
 class SlotList(list):
     def as_dict(self):
-        return [localize(i).strftime('%H:%M') for i in sorted(self)]
+        return [{'server': time(timezone.localtime(i), 'H:i'), 'user': time(timezone.localtime(i), 'TIME_FORMAT')} for i in sorted(self)]
 
 
 class TeacherManager(models.Manager):
@@ -221,7 +224,7 @@ class Teacher(models.Model):
             del kwargs['lesson_type']
 
     def __now(self):
-        return now()
+        return timezone.now()
 
 
 class WorkingHoursManager(models.Manager):
@@ -235,10 +238,13 @@ class WorkingHoursManager(models.Manager):
             hours = self.get(teacher=teacher, weekday=date.weekday())
         except ObjectDoesNotExist:
             return None
-        else:
-            hours.start = make_aware(datetime.combine(date, hours.start))
-            hours.end = make_aware(datetime.combine(date, hours.end))
-            return hours
+
+        server_tz = pytz.timezone(settings.TIME_ZONE)
+
+        hours.start = timezone.make_aware(datetime.combine(date, hours.start), timezone=server_tz)
+        hours.end = timezone.make_aware(datetime.combine(date, hours.end), timezone=server_tz)
+
+        return hours
 
 
 class WorkingHours(models.Model):

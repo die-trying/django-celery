@@ -68,8 +68,8 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
         self.assertEquals(len(records), 2)
         self.assertEquals(len(records[0]['slots']), 1)
 
-        self.assertIn(':', records[0]['slots'][0])  # assert that returned slots carry some time (we dont care about timezones here)
-        self.assertIn(':', records[1]['slots'][0])
+        self.assertIsTime(records[0]['slots'][0]['server'])  # assert that returned slots carry some time (we dont care about timezones here)
+        self.assertIsTime(records[1]['slots'][0]['server'])
 
         self.assertEquals(records[0]['name'], first_master_class.name)
         self.assertEquals(records[1]['name'], second_master_class.name)
@@ -87,8 +87,8 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
         self.assertEquals(len(records[0]['slots']), 5)  # this first teacher works till 15:30
         self.assertEquals(len(records[1]['slots']), 4)  # and the second works till 15:00
 
-        self.assertEquals(records[0]['slots'][-1], '15:00')
-        self.assertEquals(records[1]['slots'][-1], '14:30')
+        self.assertIsTime(records[0]['slots'][-1]['server'])
+        self.assertIsTime(records[1]['slots'][-1]['server'])
 
         self.assertEquals(records[0]['name'], self.first_teacher.user.crm.full_name)
         self.assertEquals(records[1]['name'], self.second_teacher.user.crm.full_name)

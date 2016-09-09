@@ -38,7 +38,7 @@ class ManualClassLogEntriesInline(TabularInline):
 class TeacherAdmin(ModelAdmin):
     list_display = ('__str__', 'manualy_completed_classes', 'lessons_allowed')
 
-    inlines = (ManualClassLogEntriesInline,)
+    inlines = (ManualClassLogEntriesInline, WorkingHoursInline)
 
     def manualy_completed_classes(self, instance):
         return instance.manualy_completed_classes.count()
