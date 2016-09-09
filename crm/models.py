@@ -118,19 +118,3 @@ class Customer(models.Model):
 
     class Meta:
         verbose_name = 'CRM Profile'
-
-
-class RegisteredCustomerManager(models.Manager):
-    def get_queryset(self, exclude_void=True):
-        return super(RegisteredCustomerManager, self).get_queryset().select_related('user').filter(user__isnull=False, user__teacher_data__isnull=True)
-
-
-class RegisteredCustomer(Customer):
-    """
-    A stub customer model for administration purposes
-    """
-    objects = RegisteredCustomerManager()
-
-    class Meta:
-        proxy = True
-        verbose_name = 'Student'
