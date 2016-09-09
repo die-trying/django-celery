@@ -46,6 +46,7 @@ deployment:
       - ssh deployer@128.199.32.70 /home/deployer/.deploy/pre-deploy.sh production
       - rsync -vz --delete -rl --exclude-from=.deploy/exclude ./ deployer@128.199.32.70:/home/dashboard/src/
       - ssh deployer@128.199.32.70 /home/deployer/.deploy/post-deploy.sh production
+  staging:
     branch: staging
     commands:
       - rsync -avz --delete -rl ./.deploy deployer@128.199.32.70:/home/deployer/
