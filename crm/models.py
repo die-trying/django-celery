@@ -3,7 +3,15 @@ from django.db import models
 from django_countries.fields import CountryField
 
 
-# Create your models here.
+class Company(models.Model):
+    name = models.CharField(max_length=140)
+    legal_name = models.CharField(max_length=140)
+
+    def __str__(self):
+        return '%s (%s)' % (self.name, self.legal_name)
+
+    class Meta:
+        verbose_name_plural = 'companies'
 
 
 class CustomerSource(models.Model):
@@ -29,6 +37,8 @@ class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.PROTECT, null=True, blank=True, related_name='crm')
 
     responsible = models.ForeignKey('teachers.Teacher', on_delete=models.SET_NULL, null=True, blank=True, related_name='patronized_customers')
+    company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True, related_name='customers')
+
     source = models.CharField(max_length=140, default='internal')
 
     customer_first_name = models.CharField('First name', max_length=140, blank=True)
@@ -117,4 +127,4 @@ class Customer(models.Model):
         return False
 
     class Meta:
-        verbose_name = 'CRM Profile'
+        verbose_name = 'Profile'

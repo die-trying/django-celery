@@ -37,14 +37,14 @@ class ExistingCustomerAdmin(ModelAdmin):
     list_display = ('full_name', 'classes', 'subscriptions', 'country', 'date_arrived')
     list_filter = (HasClassesFilter, HasSubscriptionsFilter,)
     actions = None
-    readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions')
+    readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions', 'corporate')
     inlines = (SubscriptionsInline, ClassesLeftInline, ClassesPassedInline)
     fieldsets = (
         (None, {
-            'fields': ('student', 'email', 'arrived', 'classes', 'subscriptions')
+            'fields': ('student', 'email', 'arrived', 'classes', 'subscriptions', 'corporate')
         }),
         ('Attribution', {
-            'fields': ('responsible',)
+            'fields': ('responsible', 'company')
         }),
         ('Profile', {
             'fields': ('birthday', 'country', 'native_language', 'profile_photo', 'starting_level', 'current_level')
@@ -73,6 +73,11 @@ class ExistingCustomerAdmin(ModelAdmin):
 
         finished = Subscription.objects.filter(pk__in=total, is_fully_used=True)
         return '%d/%d' % (finished.count(), total.count())
+
+    def corporate(self, instance):
+        if instance.company is not None:
+            return _('True')
+        return _('False')
 
     def email(self, instance):
         return self._email(instance.email)
