@@ -64,7 +64,7 @@ cp $DIR/.env.$MODE elk/.env
 finish
 
 start "Running migrations"
-./manage.py migrate
+./manage.py migrate --noinput
 finish
 
 if [ "$MODE" = "production" ]; then

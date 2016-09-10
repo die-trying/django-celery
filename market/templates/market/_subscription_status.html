@@ -7,23 +7,23 @@
                     {% if s.is_fresh_and_shiny %}
                         <p class="text-primary">(╯°□°）╯ Welcome to the subscription! Come up and <a href="#" class="pseudo livesite-schedule">plan</a> a first lesson! ＼(◎o◎)／</p>
                     {% else %}
-                        <table class="table table-condensed">
+                        <table class="table table-condensed table-no-border">
                             <tbody>
                                 {% for lesson in s.class_status %}
                                 <tr {% if lesson.used_and_scheduled == lesson.available %} class="fully_used" {% endif %}>
-                                    <td><p {% if lesson.used_and_scheduled == lesson.available %} class="text-muted" {% endif %}>{{ lesson.name }}</p></td>
-                                    <td>
+                                    <td class="subscription-status__title"><p {% if lesson.used_and_scheduled == lesson.available %} class="text-muted" {% endif %}>{{ lesson.name }}</p></td>
+                                    <td class="subscription-status__status">
                                         {% if lesson.used_and_scheduled == lesson.available %}
                                             <p class="text-muted">Used</p>
                                         {% else %}
                                             {% if lesson.used_and_scheduled > 0 %}
-                                                <div class="progress">
+                                                <div class="progress subscription-status__progress">
                                                     <div class="progress-bar" role="progressbar" aria-valuenow="{{ lesson.used_and_scheduled }}" aria-valuemin="0" aria-valuemax="{{ lesson.available|add:lesson.used }}">
                                                         {{ lesson.used_and_scheduled }} / {{ lesson.available|add:lesson.used }}
                                                     </div>
                                                 </div>
                                             {% else %}
-                                                <p class="text-success">{{ lesson.available }} lessons available!</p>
+                                                <p class="text-success">{{ lesson.available }} lessons</p>
                                             {% endif %}
                                         {% endif %}
                                     </td>
