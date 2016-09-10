@@ -10,7 +10,7 @@ from django.utils.dateformat import format
 from django.utils.timezone import localtime
 from django.utils.translation import ugettext as _
 
-from teachers.models import Teacher, WorkingHours
+from teachers.models import Absence, Teacher, WorkingHours
 
 MARK_ENTRIES_AUTOMATICALLY_FINISHED_AFTER = timedelta(minutes=60)
 
@@ -206,6 +206,15 @@ class Entry(models.Model):
 
         return True
 
+    def teacher_is_present(self):
+        """
+        Check if teacher has no vacations for the entry period
+        """
+        if Absence.objects.approved().filter(teacher=self.teacher, start__lte=self.end, end__gte=self.start):
+            return False
+
+        return True
+
     def is_in_past(self):
         """
         Check, if timeline entry is in past
@@ -236,6 +245,9 @@ class Entry(models.Model):
 
         if not self.allow_besides_working_hours and not self.is_fitting_working_hours():
             raise ValidationError('Entry time does not fit teachers working hours')
+
+        if not self.teacher_is_present():
+            raise ValidationError('Teacher is not available for the entry period')
 
     def __self_delete_if_needed(self):
         """

@@ -187,13 +187,16 @@ class Teacher(models.Model):
         slots = SlotList()
         slot = start
         while slot + period <= end:
-            if not self.__check_overlap(slot, period):
+            if not self.__check_availability(slot, period):
                 if slot >= self.__now():
                     slots.append(slot)
 
             slot += period
 
         return slots
+
+    def __check_availability(self, start, period):
+        return self.__check_overlap(start, period)
 
     def __check_overlap(self, start, period):
         """
@@ -292,6 +295,11 @@ class WorkingHours(models.Model):
         verbose_name_plural = "Working hours"
 
 
+class AbsenceManager(models.Manager):
+    def approved(self):
+        return self.get_queryset().filter(is_approved=True)
+
+
 class Absence(models.Model):
     ABSENCE_TYPES = (
         ('vacation', _('Vacation')),
@@ -300,6 +308,9 @@ class Absence(models.Model):
         ('bonus', _('Bonus vacation')),
         ('srv', _('System-intiated vacation'))
     )
+
+    objects = AbsenceManager()
+
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='absences')
     type = models.CharField(max_length=32, choices=ABSENCE_TYPES, default='srv')
     start = models.DateTimeField('Start')

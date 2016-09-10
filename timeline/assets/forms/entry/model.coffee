@@ -70,6 +70,8 @@ class Model extends MicroEvent
         @_set_err('besides_hours')
       if response.is_overlapping
         @_set_err('overlap')
+      if not response.teacher_is_present
+        @_set_err('absent')
 
   _get_start_time: () ->
     # Construct start time in server understandable format
@@ -116,5 +118,6 @@ class Model extends MicroEvent
       switch err_type
         when 'overlap' then @overlap = true
         when 'besides_hours' then @besides_hours = true
+        when 'absent' then @absent = true
 
 Project.models.TimelineEntryModel = Model

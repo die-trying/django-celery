@@ -4,11 +4,11 @@ from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_teacher
 from lessons import models as lessons
-from teachers.models import WorkingHours
+from teachers.models import Absence, WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
-class SlotAvailableTest(TestCase):
+class EntryValidationTestCase(TestCase):
     def setUp(self):
         self.teacher = create_teacher()
         self.lesson = mixer.blend(lessons.OrdinaryLesson, teacher=self.teacher)
@@ -19,6 +19,8 @@ class SlotAvailableTest(TestCase):
                                      end=parse_datetime('2016-01-03 12:00'),
                                      )
 
+
+class TestOverlapValidation(EntryValidationTestCase):
     def test_overlap(self):
         """
         Create two entries — one overlapping with the big_entry, and one — not
@@ -77,7 +79,7 @@ class SlotAvailableTest(TestCase):
         with self.assertRaises(ValidationError):
             overlapping_entry.save()
 
-    def test_save_again_entry_that_does_not_allow_overlapping(self):
+    def test_double_save_an_entry_that_does_not_allow_overlapping(self):
         """
         Create an entry that does not allow overlapping and the save it again
         """
@@ -95,6 +97,8 @@ class SlotAvailableTest(TestCase):
 
         self.assertIsNotNone(entry)  # should not throw anything
 
+
+class TestWorkingHoursValiation(EntryValidationTestCase):
     def test_working_hours(self):
         mixer.blend(WorkingHours, teacher=self.teacher, start='12:00', end='13:00', weekday=0)
         entry_besides_hours = TimelineEntry(teacher=self.teacher,
@@ -162,3 +166,75 @@ class SlotAvailableTest(TestCase):
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
         entry.save()
         self.assertIsNotNone(entry.pk)  # should be saved now
+
+
+class TestTeacherPresenceValidation(EntryValidationTestCase):
+    def setUp(self):
+        super().setUp()
+        self.entry = TimelineEntry(
+            teacher=self.teacher,
+            lesson=self.lesson,
+            start=parse_datetime('2032-05-03 13:30'),
+            end=parse_datetime('2032-05-03 14:00'),
+        )
+
+    def test_teacher_available_true(self):
+        self.assertTrue(self.entry.teacher_is_present())
+
+    def test_teacher_available_true_becuase_of_vacation_is_for_another_teacher(self):
+        vacation = Absence(
+            type='vacation',
+            teacher=create_teacher(),  # some other teacher, not the one owning self.entry
+            start=parse_datetime('2032-05-02 00:00'),
+            end=parse_datetime('2032-05-05 23:59'),
+        )
+        vacation.save()
+
+        self.assertTrue(self.entry.teacher_is_present())
+
+    def test_teacher_available_false(self):
+        vacation = Absence(
+            type='vacation',
+            teacher=self.teacher,
+            start=parse_datetime('2032-05-02 00:00'),
+            end=parse_datetime('2032-05-05 23:59'),
+        )
+        vacation.save()
+        self.assertFalse(self.entry.teacher_is_present())
+
+    def test_teacher_available_false_due_to_vacation_starts_inside_of_period(self):
+        vacation = Absence(
+            type='vacation',
+            teacher=self.teacher,
+            start=parse_datetime('2032-05-03 13:45'),
+            end=parse_datetime('2032-05-05 23:59'),
+        )
+        vacation.save()
+        self.assertFalse(self.entry.teacher_is_present())
+
+    def test_teacher_available_false_due_to_vacation_ends_inside_of_period(self):
+        vacation = Absence(
+            type='vacation',
+            teacher=self.teacher,
+            start=parse_datetime('2032-05-02 00:00'),
+            end=parse_datetime('2032-05-03 13:45'),
+        )
+        vacation.save()
+        self.assertFalse(self.entry.teacher_is_present())
+
+    def test_cant_save_due_to_teacher_absence(self):
+        entry = TimelineEntry(
+            teacher=self.teacher,
+            lesson=self.lesson,
+            start=parse_datetime('2016-05-03 13:30'),
+            end=parse_datetime('2016-05-03 14:00'),
+        )
+        vacation = Absence(
+            type='vacation',
+            teacher=self.teacher,
+            start=parse_datetime('2016-05-02 00:00'),
+            end=parse_datetime('2016-05-05 23:59'),
+        )
+        vacation.save()
+        with self.assertRaises(ValidationError):
+            entry.save()
