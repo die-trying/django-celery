@@ -4,10 +4,12 @@ Abstract admin classes. All your ModelAdmins should be subclasses from this Mode
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import naturalday
+from django.db import models
 from django.template.defaultfilters import capfirst, time
 from django.utils.html import format_html
 from django_markdown.models import MarkdownField
 from django_markdown.widgets import AdminMarkdownWidget
+from suit.widgets import SuitSplitDateTimeWidget
 
 admin.site.disable_action('delete_selected')  # disable delete selected action site-wide
 
@@ -63,7 +65,10 @@ class ModelAdmin(admin.ModelAdmin, AdminHelpersMixin):
     Abstract base class for all admin modules. Currently, supports only a minor
     set of helpers
     """
-    formfield_overrides = {MarkdownField: {'widget': AdminMarkdownWidget}}
+    formfield_overrides = {
+        MarkdownField: {'widget': AdminMarkdownWidget},
+        models.DateTimeField: {'widget': SuitSplitDateTimeWidget},
+    }
 
     class Media:  # TODO: if you need to add something here, please create a good build system with gulp
         css = {
