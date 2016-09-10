@@ -4,7 +4,15 @@ from django_countries.fields import CountryField
 from timezone_field import TimeZoneField
 
 
-# Create your models here.
+class Company(models.Model):
+    name = models.CharField(max_length=140)
+    legal_name = models.CharField(max_length=140)
+
+    def __str__(self):
+        return '%s (%s)' % (self.name, self.legal_name)
+
+    class Meta:
+        verbose_name_plural = 'companies'
 
 
 class CustomerSource(models.Model):
@@ -28,6 +36,9 @@ class Customer(models.Model):
     LEVELS = [(a + str(i), a + str(i)) for i in range(1, 4) for a in ('A', 'B', 'C')]
 
     user = models.OneToOneField(User, on_delete=models.PROTECT, null=True, blank=True, related_name='crm')
+
+    responsible = models.ForeignKey('teachers.Teacher', on_delete=models.SET_NULL, null=True, blank=True, related_name='patronized_customers')
+    company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True, related_name='customers')
 
     source = models.CharField(max_length=140, default='internal')
 
@@ -119,20 +130,4 @@ class Customer(models.Model):
         return False
 
     class Meta:
-        verbose_name = 'CRM Profile'
-
-
-class RegisteredCustomerManager(models.Manager):
-    def get_queryset(self, exclude_void=True):
-        return super(RegisteredCustomerManager, self).get_queryset().select_related('user').filter(user__isnull=False, user__teacher_data__isnull=True)
-
-
-class RegisteredCustomer(Customer):
-    """
-    A stub customer model for administration purposes
-    """
-    objects = RegisteredCustomerManager()
-
-    class Meta:
-        proxy = True
-        verbose_name = 'Student'
+        verbose_name = 'Profile'

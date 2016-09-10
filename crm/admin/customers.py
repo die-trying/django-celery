@@ -1,38 +1,10 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as StockUserAdmin
-from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 
+from crm.models import Customer
 from elk.admin import BooleanFilter, ModelAdmin
 from market.admin.components import ClassesLeftInline, ClassesPassedInline, SubscriptionsInline
 from market.models import Subscription
-
-from .models import Customer, RegisteredCustomer
-
-
-# Register your models here.
-
-
-class CustomerInline(admin.StackedInline):
-    model = Customer
-    can_delete = False
-    exclude = ('customer_email', 'customer_first_name', 'customer_last_name')
-    verbose_name = 'CRM Profile'
-
-    def has_add_permission(self, request):
-        return False
-
-admin.site.unregister(User)
-
-
-@admin.register(User)
-class UserAdmin(StockUserAdmin):
-    inlines = (CustomerInline, )
-    fieldsets = (
-        ('Personal info', {
-            'fields': ('username', 'password', 'first_name', 'last_name', 'email', 'is_active', 'is_staff')
-        }),
-    )
 
 
 class HasClassesFilter(BooleanFilter):
@@ -57,19 +29,54 @@ class HasSubscriptionsFilter(BooleanFilter):
         return queryset.filter(subscriptions__isnull=True)
 
 
-@admin.register(RegisteredCustomer)
+class CountryFilter(admin.SimpleListFilter):
+    title = _('Country')
+    parameter_name = 'country'
+
+    def lookups(self, request, model_admin):
+        return (
+            [str(i.country), i.country.name] for i in Customer.objects.distinct('country')
+        )
+
+    def queryset(self, request, queryset):
+        if not self.value():
+            return queryset
+
+        return queryset.filter(country=self.value())
+
+
+class ResponsibleFilter(admin.SimpleListFilter):
+    title = _('Responsible')
+    parameter_name = 'responsible'
+
+    def lookups(self, request, model_admin):
+        return (
+            [i.responsible.pk, str(i.responsible)] for i in Customer.objects.filter(responsible__isnull=False).distinct('responsible')
+        )
+
+    def queryset(self, request, queryset):
+        if not self.value():
+            return queryset
+
+        return queryset.filter(responsible=self.value())
+
+
+@admin.register(Customer)
 class ExistingCustomerAdmin(ModelAdmin):
     """
     The admin module for manager current customers without managing users
     """
-    list_display = ('full_name', 'classes', 'subscriptions', 'country', 'date_arrived')
-    list_filter = (HasClassesFilter, HasSubscriptionsFilter,)
+    list_display = ('full_name', 'country', 'responsible', 'classes', 'subscriptions', 'date_arrived')
+    list_filter = (CountryFilter, ResponsibleFilter, HasClassesFilter, HasSubscriptionsFilter)
     actions = None
-    readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions')
+    readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions', 'corporate')
     inlines = (SubscriptionsInline, ClassesLeftInline, ClassesPassedInline)
     fieldsets = (
         (None, {
-            'fields': ('student', 'email', 'arrived', 'classes', 'subscriptions')
+            'fields': ('student', 'email', 'arrived', 'classes', 'subscriptions', 'corporate')
+        }),
+        ('Attribution', {
+            'fields': ('responsible', 'company')
         }),
         ('Profile', {
             'fields': ('birthday', 'country', 'native_language', 'profile_photo', 'starting_level', 'current_level')
@@ -98,6 +105,11 @@ class ExistingCustomerAdmin(ModelAdmin):
 
         finished = Subscription.objects.filter(pk__in=total, is_fully_used=True)
         return '%d/%d' % (finished.count(), total.count())
+
+    def corporate(self, instance):
+        if instance.company is not None:
+            return _('True')
+        return _('False')
 
     def email(self, instance):
         return self._email(instance.email)
