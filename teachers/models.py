@@ -10,6 +10,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.defaultfilters import time
 from django.utils import timezone
+from django.utils.dateformat import format
 from django.utils.dateparse import parse_date
 from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
@@ -286,3 +287,23 @@ class WorkingHours(models.Model):
     class Meta:
         unique_together = ('teacher', 'weekday')
         verbose_name_plural = "Working hours"
+
+
+class Absence(models.Model):
+    ABSENCE_TYPES = (
+        ('vacation', _('Vacation')),
+        ('unpaid', _('Unpaid')),
+        ('sick', _('Sick leave')),
+        ('bonus', _('Bonus vacation')),
+        ('srv', _('System-intiated vacation'))
+    )
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='absences')
+    type = models.CharField(max_length=32, choices=ABSENCE_TYPES, default='srv')
+    start = models.DateTimeField('Start')
+    end = models.DateTimeField('End')
+    add_date = models.DateTimeField(auto_now_add=True)
+    is_approved = models.BooleanField(default=True)
+
+    def __str__(self):
+        return '%s of %s from %s to %s' % \
+            (self.type, str(self.teacher), format(self.start, 'Y-m-d H:i'), format(self.end, 'Y-m-d H:i'))
