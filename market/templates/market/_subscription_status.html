@@ -1,7 +1,7 @@
 {% with s=request.user.crm.subscriptions.active %}
     {% if s %}
         <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="subscription-status">
                     <h3 class="subscription-status__title">Available lessons <small>{{ s.name_for_user }}</small></h3>
                     {% if s.is_fresh_and_shiny %}
@@ -23,7 +23,7 @@
                                                     </div>
                                                 </div>
                                             {% else %}
-                                                <p class="text-success">{{ lesson.available }} lessons available!</p>
+                                                <p class="text-success">{{ lesson.available }} lessons</p>
                                             {% endif %}
                                         {% endif %}
                                     </td>
