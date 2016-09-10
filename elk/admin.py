@@ -54,7 +54,7 @@ class AdminHelpersMixin():
         )
 
     def _datetime(self, date):
-        return capfirst(naturalday(date))
+        return capfirst(naturalday(date)) + ' ' + self._time(date)
 
     def _time(self, date):
         return time(date, 'TIME_FORMAT')

@@ -93,6 +93,9 @@ class Teacher(models.Model):
     announce = MarkdownField('Short description')
     active = models.IntegerField(default=1, choices=ENABLED)
 
+    class Meta:
+        verbose_name = 'Teacher profile'
+
     def save(self, *args, **kwargs):
         """
         Add new teachers to the 'teachers' group
