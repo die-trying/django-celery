@@ -5,8 +5,11 @@ fixtures with correct relations.
 Every new call returnes a new fixture.
 """
 import random
+from datetime import datetime
 from unittest.mock import Mock
 
+import pytz
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase as StockTestCase
@@ -107,6 +110,16 @@ class TestCase(StockTestCase):
         Check if passed argument looks like a time definition
         """
         return self.assertRegexpMatches(str(time), r'\d{2}\:\d{2}')
+
+    def tzdatetime(self, tz=settings.TIME_ZONE, *args, **kwargs):
+        """
+        Create a timezoned datetime
+        """
+        tz = pytz.timezone(tz)
+        return timezone.make_aware(
+            datetime(*args, **kwargs),
+            timezone=tz,
+        )
 
 
 class ClientTestCase(TestCase, AssertHTMLMixin):

@@ -1,0 +1,182 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Мейн
+X-WR-TIMEZONE:Europe/Moscow
+BEGIN:VTIMEZONE
+TZID:Europe/Moscow
+X-LIC-LOCATION:Europe/Moscow
+BEGIN:STANDARD
+TZOFFSETFROM:+0300
+TZOFFSETTO:+0300
+TZNAME:MSK
+DTSTART:19700101T000000
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+DTSTART;TZID=Europe/Moscow:20160911T210000
+DTEND;TZID=Europe/Moscow:20160911T220000
+RRULE:FREQ=WEEKLY;BYDAY=SU
+DTSTAMP:20160911T173649Z
+UID:q60ak05pj2t108bjpcl3ogrf5k@google.com
+CREATED:20160911T173548Z
+DESCRIPTION:This is a repeated event\, i've created for testing
+LAST-MODIFIED:20160911T173548Z
+LOCATION:
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Repeated event
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20320911T180000Z
+DTEND:20320911T190000Z
+DTSTAMP:20160911T173649Z
+UID:ogsn4ls44qdmq7gk0dr3470n3k@google.com
+CREATED:20160911T173440Z
+DESCRIPTION:Pretty far event i've made for testing
+LAST-MODIFIED:20160911T173440Z
+LOCATION:
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:far-event
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20161008T180000Z
+DTEND:20161008T190000Z
+DTSTAMP:20160911T173649Z
+UID:3l4915680t953gcl52t581cems@google.com
+CREATED:20160911T173049Z
+DESCRIPTION:
+LAST-MODIFIED:20160911T173049Z
+LOCATION:
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:ttest
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20160910T130000Z
+DTEND:20160910T140000Z
+DTSTAMP:20160911T173649Z
+UID:4sulpm21rdsbph6df2nurpp05k@google.com
+CREATED:20160911T135100Z
+DESCRIPTION:
+LAST-MODIFIED:20160911T135100Z
+LOCATION:
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:testev
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20160906T112000Z
+DTEND:20160906T134500Z
+DTSTAMP:20160911T173649Z
+ORGANIZER;CN=unknownorganizer@calendar.google.com:mailto:unknownorganizer@c
+ alendar.google.com
+UID:7kukuqrfedlm2f9t8h35fe05g8engleeua9dulklihu47ua0o969o3qa9ca89c82nds0
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Fedor 
+ Borshev;X-NUM-GUESTS=0:mailto:fedor9@gmail.com
+CREATED:20160724T145944Z
+DESCRIPTION:Чтобы посмотреть подробную информацию об автоматически созданны
+ х мероприятиях\, используйте официальное приложение "Google Календарь". htt
+ p://g.co/calendar\n\nЭто мероприятие создано из сообщения электронной почты
+ \, полученного в Gmail. https://mail.google.com/mail?extsrc=cal&plid=ACUX6D
+ ODUpR73PZyvVVPmssWgJRmqZdk_QFmhic\n
+LAST-MODIFIED:20160911T135036Z
+LOCATION:Simferopol SIP
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Flight to Moscow
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20160515T182000Z
+DTEND:20160515T203500Z
+DTSTAMP:20160911T173649Z
+ORGANIZER;CN=unknownorganizer@calendar.google.com:mailto:unknownorganizer@c
+ alendar.google.com
+UID:7kukuqrfedlm2f9t77utcnm7rn186chmkik4rnrr3bkjpnbejk8bdvdfct89noepufc0
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Fedor 
+ Borshev;X-NUM-GUESTS=0:mailto:fedor9@gmail.com
+CLASS:PRIVATE
+CREATED:20160515T044421Z
+DESCRIPTION:Чтобы посмотреть подробную информацию об автоматически созданны
+ х мероприятиях\, используйте официальное приложение "Google Календарь". htt
+ p://g.co/calendar\n\nЭто мероприятие создано из сообщения электронной почты
+ \, полученного в Gmail. https://mail.google.com/mail?extsrc=cal&plid=ACUX6D
+ OWe_qKPxyRXPBe49ywMIVY8y0dmPZOIfw\n
+LAST-MODIFIED:20160515T204016Z
+LOCATION:Mineralnye Vody MRV
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Flight to Moscow
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20160504T090000Z
+DTEND:20160504T110500Z
+DTSTAMP:20160911T173649Z
+ORGANIZER;CN=unknownorganizer@calendar.google.com:mailto:unknownorganizer@c
+ alendar.google.com
+UID:7kukuqrfedlm2f9tamidslfhiffal9oriqstfi5f5oueb7e3hvs2tdbak5qmahglo9qg
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Fedor 
+ Borshev;X-NUM-GUESTS=0:mailto:fedor9@gmail.com
+CLASS:PRIVATE
+CREATED:20160320T162926Z
+DESCRIPTION:Чтобы посмотреть подробную информацию об автоматически созданны
+ х мероприятиях\, используйте официальное приложение "Google Календарь". htt
+ p://g.co/calendar\n\nЭто мероприятие создано из сообщения электронной почты
+ \, полученного в Gmail. https://mail.google.com/mail?extsrc=cal&plid=ACUX6D
+ N9i9Btm38d-LxtbzdjVEkZUh-qZQVPZgY\n
+LAST-MODIFIED:20160504T110402Z
+LOCATION:Москва DME
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Flight to Минеральные Воды
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20160504
+DTEND;VALUE=DATE:20160510
+DTSTAMP:20160911T173649Z
+ORGANIZER;CN=unknownorganizer@calendar.google.com:mailto:unknownorganizer@c
+ alendar.google.com
+UID:7kukuqrfedlm2f9tv3o44pvaapnnklcufo5l2d6fb0i5mla8186u1q36jqqa32mkvep0
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Fedor 
+ Borshev;X-NUM-GUESTS=0:mailto:fedor9@gmail.com
+CLASS:PRIVATE
+CREATED:20160403T173024Z
+DESCRIPTION:Чтобы посмотреть подробную информацию об автоматически созданны
+ х мероприятиях\, используйте официальное приложение "Google Календарь". htt
+ p://g.co/calendar\n\nЭто мероприятие создано из сообщения электронной почты
+ \, полученного в Gmail. https://mail.google.com/mail?extsrc=cal&plid=ACUX6D
+ O9TgOTcZskif2dDgkxa81V7MP2LbO-dDo\n
+LAST-MODIFIED:20160503T210459Z
+LOCATION:Отель Айс Черри Домбай\, Трасса А155\, д. 118\, Домбай\, Домбай\, 
+ Карачаево-Черкесская Республика\, RU\, 369232
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Stay at Отель Айс Черри Домбай
+TRANSP:TRANSPARENT
+X-APPLE-TRAVEL-ADVISORY-BEHAVIOR:AUTOMATIC
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:This is an event reminder
+TRIGGER:-P0DT0H30M0S
+END:VALARM
+BEGIN:VALARM
+ACTION:AUDIO
+TRIGGER:-PT15H
+X-WR-ALARMUID:B7A97871-41AB-4B95-B3B7-55FE48C3CD2A
+UID:B7A97871-41AB-4B95-B3B7-55FE48C3CD2A
+ATTACH;VALUE=URI:Basso
+X-APPLE-DEFAULT-ALARM:TRUE
+ACKNOWLEDGED:20160503T060001Z
+END:VALARM
+END:VEVENT
+END:VCALENDAR

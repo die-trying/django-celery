@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'acc',
     'history',
     'mailer',
+    'extevents',
     'manual_class_logging',
 
     'djmoney',
