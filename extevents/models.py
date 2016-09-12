@@ -28,25 +28,42 @@ class GoogleCalendar(ExternalEventSource):
     teacher = models.ForeignKey('teachers.Teacher', on_delete=models.CASCADE, related_name='google_calendars')
 
     def poll(self):
+        """
+        Fetch a calendar, then parse it and populate the `event` property with
+        events from it.
+        """
         res = self.fetch_calendar(self.url)
-        ical = Calendar.from_ical(res)
-        self.parse_calendar(ical)
 
-    def parse_calendar(self, ical):
-        ical = Calendar.from_ical(ical)
+        self.events = [event for event in self.parse_events(res)]
+
+    def parse_events(self, ical_str):
+        """
+        Generator of events parsed from ical_str.
+
+        Repeated events are not supported — you will see only the first one.
+        """
+        ical = Calendar.from_ical(ical_str)
 
         for component in ical.walk():
             if component.name == 'VEVENT':
-                (start, end) = self.__event_time(component)
+                event = self.parse_event(component)
 
-                if start < timezone.now():
-                    next
+                if event.start < timezone.now():
+                    continue
 
-                self.events.append(ExternalEvent(
-                    start=start,
-                    end=end,
-                    description=component.get('summary'),
-                ))
+                yield event
+
+    def parse_event(self, event):
+        """
+        Return an :model:`extevents.ExternalEvent` instance built from
+        an icalendar event.
+        """
+        (start, end) = self.__event_time(event)
+        return ExternalEvent(
+            start=start,
+            end=end,
+            description=event.get('summary'),
+        )
 
     def __event_time(self, event):
         """

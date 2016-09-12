@@ -15,7 +15,7 @@ class TestGoogleCalendar(TestCase):
         self.src.save()
 
     def __fixtured_calendar(self):
-        return open('./extevents/fixtures/google.ics', 'r').read()
+        return str(open('./extevents/fixtures/google.ics', 'r').read())
 
     def __fake_event(self, start, end):
         """
@@ -37,17 +37,35 @@ class TestGoogleCalendar(TestCase):
 
         return event
 
+    def test_poll(self):
+        """
+        Test for the poll method to actualy parse the events.
+        """
+        self.src.fetch_calendar = MagicMock(return_value=self.__fixtured_calendar())
+
+        fake_event = MagicMock()
+        fake_event.start = self.tzdatetime('Europe/Moscow', 2011, 1, 1, 12, 1)
+
+        fake_event_parser = MagicMock()
+        fake_event_parser.return_value = fake_event
+
+        self.src.parse_event = fake_event_parser
+
+        self.src.poll()
+
+        self.assertEqual(fake_event_parser.call_count, 6)  # make sure that poll has parsed 6 events
+
     def test_parse_calendar(self):
-        self.src.parse_calendar(self.__fixtured_calendar())
+        events = [ev for ev in self.src.parse_events(self.__fixtured_calendar())]
 
-        self.assertEqual(len(self.src.events), 8)
+        self.assertEqual(len(events), 1)
 
-        ev = self.src.events[0]
+        ev = events[0]
         self.assertIsInstance(ev, models.ExternalEvent)
 
-        # self.assertEqual(ev.description, 'testev')
-        # self.assertEqual(ev.start, self.tzdatetime('Europe/Moscow', 2016, 9, 10, 16, 0))
-        # self.assertEqual(ev.end, self.tzdatetime('Europe/Moscow', 2016, 9, 10, 17, 0))
+        self.assertEqual(ev.description, 'far-event')
+        self.assertEqual(ev.start, self.tzdatetime('Europe/Moscow', 2032, 9, 11, 21, 0))
+        self.assertEqual(ev.end, self.tzdatetime('Europe/Moscow', 2032, 9, 11, 22, 0))
 
     def test_event_time_normal(self):
         start = self.tzdatetime('Europe/Moscow', 2016, 9, 10, 16, 0)
