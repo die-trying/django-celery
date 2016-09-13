@@ -53,6 +53,8 @@ class TestEventSourceSafety(GoogleCalendarTestCase):
                 self.safe_mixer.blend(ExternalEvent, teacher=self.teacher, ext_src=self.src)
             )
 
+        self.assertFalse(self.src._ExternalEventSource__is_safe())
+
 
 class TestEventSourceSafetySig(GoogleCalendarTestCase):
     """
