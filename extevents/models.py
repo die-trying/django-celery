@@ -2,23 +2,74 @@ import datetime
 
 import pytz
 import requests
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
 from icalendar import Calendar
 
 
-class ExternalEvent():
-    def __init__(self, start, end, description):
-        self.start = start
-        self.end = end
-        self.description = description
+class ExternalEvent(models.Model):
+    """
+    Represents single External event.
+
+    ext_src is a contentype of the source, that has generated this event,
+    for example :model:`extevents.GoogleCalendar`. ext_src should be a subsclass
+    of :model:`extevents.ExternalEventSource`.
+
+    """
+    teacher = models.ForeignKey('teachers.Teacher', on_delete=models.CASCADE, related_name='busy_periods')
+
+    ext_src_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'extevents'})
+    ext_src_id = models.PositiveIntegerField()
+    ext_src = GenericForeignKey('ext_src_type', 'ext_src_id')
+
+    start = models.DateTimeField()
+    end = models.DateTimeField()
+    description = models.CharField(max_length=140)
+    last_update = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('teacher', 'ext_src_type', 'ext_src_id', 'start', 'end')
 
 
 class ExternalEventSource(models.Model):
+    """
+    Generic abstract class for an Event source. Subclasses should implement the following:
+        * `poll` method that popuates the self.events list
+        * Relation to :model:`teachers.Teacher`, called 'teacher'
+
+    Usage:
+        # Assuming that teacher is an instance of :model:`teachers.Teacher`
+
+        for calendar in teacher.google_calendars:
+            calendar.poll()  # get new events, implemented in subclass
+            calendar.update()  # update event database, implemented in this class
+
+    This will clean up previous events and store new ones, fetched by the model:`extevents.GoogleCalendar`.poll() method.
+
+    """
     url = models.URLField()
     active = models.BooleanField(default=True)
 
     events = []
+
+    def update(self):
+        self.__clear_previous_events()
+        self.__save_events()
+
+    def __clear_previous_events(self):
+        """
+        Clear saved events where source is current instance.
+        """
+        ExternalEvent.objects.filter(
+            teacher=self.teacher,  # rely upon parent-class created relation
+            ext_src_id=ContentType.objects.get_for_model(self).pk,
+        ).delete()
+
+    def __save_events(self):
+        for ev in self.events:
+            ev.save()
 
     class Meta:
         abstract = True
@@ -63,6 +114,8 @@ class GoogleCalendar(ExternalEventSource):
             start=start,
             end=end,
             description=event.get('summary'),
+            teacher=self.teacher,
+            ext_src=self,
         )
 
     def __event_time(self, event):

@@ -1,47 +1,16 @@
 import datetime
 from unittest.mock import MagicMock
 
-from elk.utils.testing import TestCase, create_teacher
-from extevents import models
+import extevents.models as models
+from extevents.tests import GoogleCalendarTestCase
 
 
-class TestGoogleCalendar(TestCase):
-    def setUp(self):
-        self.teacher = create_teacher()
-        self.src = models.GoogleCalendar(
-            teacher=self.teacher,
-            url='http://testing'
-        )
-        self.src.save()
-
-    def __fixtured_calendar(self):
-        return str(open('./extevents/fixtures/google.ics', 'r').read())
-
-    def __fake_event(self, start, end):
-        """
-        Create a mocked calendar event
-        """
-        event = MagicMock()
-
-        def fake_param(name):
-            if name == 'dtstart':
-                time = MagicMock()
-                time.dt = start
-                return time
-            if name == 'dtend':
-                time = MagicMock()
-                time.dt = end
-                return time
-
-        event.get = fake_param
-
-        return event
-
+class TestGoogleCalendar(GoogleCalendarTestCase):
     def test_poll(self):
         """
         Test for the poll method to actualy parse the events.
         """
-        self.src.fetch_calendar = MagicMock(return_value=self.__fixtured_calendar())
+        self.src.fetch_calendar = MagicMock(return_value=self.fixtured_calendar('./extevents/fixtures/google.ics'))
 
         fake_event = MagicMock()
         fake_event.start = self.tzdatetime('Europe/Moscow', 2011, 1, 1, 12, 1)
@@ -56,9 +25,12 @@ class TestGoogleCalendar(TestCase):
         self.assertEqual(fake_event_parser.call_count, 6)  # make sure that poll has parsed 6 events
 
     def test_parse_calendar(self):
-        events = [ev for ev in self.src.parse_events(self.__fixtured_calendar())]
+        """
+        Parse events from the default fixture.
+        """
+        events = [ev for ev in self.src.parse_events(self.fixtured_calendar('./extevents/fixtures/google.ics'))]  # read and parse the 'google.ics' fixture
 
-        self.assertEqual(len(events), 1)
+        self.assertEqual(len(events), 1)  # there is one one actual event dated 2032 year. All others are in the past.
 
         ev = events[0]
         self.assertIsInstance(ev, models.ExternalEvent)
@@ -71,7 +43,7 @@ class TestGoogleCalendar(TestCase):
         start = self.tzdatetime('Europe/Moscow', 2016, 9, 10, 16, 0)
         end = self.tzdatetime('Europe/Moscow', 2016, 9, 10, 16, 0)
 
-        event = self.__fake_event(start, end)
+        event = self.fake_event(start, end)
 
         (a, b) = self.src._GoogleCalendar__event_time(event)
 
@@ -79,8 +51,14 @@ class TestGoogleCalendar(TestCase):
         self.assertEqual(b, end)
 
     def test_event_time_whole_day(self):
+        """
+        Test case for fixing icalendar type strange behaviour: for the whole-day
+        events it returns an instance of `datetime.date` instead of `datetime.datetime`.
+        Datetime.date is not a usable datetime, because all dates in the app
+        are of `datetime.datetime` type.
+        """
         start = datetime.date(2016, 12, 5)
-        event = self.__fake_event(start, start)
+        event = self.fake_event(start, start)
 
         (a, b) = self.src._GoogleCalendar__event_time(event)
 
