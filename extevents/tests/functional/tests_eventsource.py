@@ -1,4 +1,3 @@
-from django.contrib.contenttypes.models import ContentType
 from mixer.backend.django import mixer
 
 import extevents.models as models
@@ -20,7 +19,7 @@ class TestEventSource(GoogleCalendarTestCase):
             self.src.events.append(mixer.blend(
                 models.ExternalEvent,
                 teacher=self.teacher,
-                ext_src=ContentType.objects.get_for_model(self.src)
+                ext_src=self.src,
             ))
 
     def tearDown(self):
@@ -35,7 +34,7 @@ class TestEventSource(GoogleCalendarTestCase):
                 start=start,
                 end=end,
                 description='testdescr',
-                ext_src=ContentType.objects.get_for_model(models.GoogleCalendar)
+                ext_src=self.src,
             )
             event.save()
             self.assertIsNotNone(event.pk)
@@ -50,7 +49,7 @@ class TestEventSource(GoogleCalendarTestCase):
         for i in range(0, 10):
             mixer.blend(
                 models.ExternalEvent,
-                teacher=some_other_teacher, ext_src=ContentType.objects.get_for_model(self.src)
+                teacher=some_other_teacher, ext_src=self.src,
             )
 
         self.assertEqual(models.ExternalEvent.objects.count(), 20)
@@ -67,7 +66,7 @@ class TestEventSource(GoogleCalendarTestCase):
         for i in range(0, 8):
             mixer.blend(
                 models.ExternalEvent,
-                teacher=self.teacher, ext_src=ContentType.objects.get_for_model(self.src)
+                teacher=self.teacher, ext_src=self.src,
             )
         self.assertEqual(models.ExternalEvent.objects.count(), 18)  # 10 from self.src.events and 8 from now
 
