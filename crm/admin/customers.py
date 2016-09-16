@@ -50,10 +50,10 @@ class ExistingCustomerAdmin(ModelAdmin):
     """
     The admin module for manager current customers without managing users
     """
-    list_display = ('full_name', 'country', 'responsible', 'classes', 'subscriptions', 'date_arrived')
+    list_display = ('full_name', 'country', 'curator', 'classes', 'subscriptions', 'date_arrived')
     list_filter = (
         CountryFilter,
-        ('responsible', admin.RelatedOnlyFieldListFilter),
+        ('curator', admin.RelatedOnlyFieldListFilter),
         ('company', admin.RelatedOnlyFieldListFilter),
         HasClassesFilter,
         HasSubscriptionsFilter
@@ -66,7 +66,7 @@ class ExistingCustomerAdmin(ModelAdmin):
             'fields': ('student', 'email', 'arrived', 'classes', 'subscriptions', 'corporate')
         }),
         ('Attribution', {
-            'fields': ('responsible', 'company')
+            'fields': ('curator', 'company',),
         }),
         ('Profile', {
             'fields': ('birthday', 'country', 'native_language', 'profile_photo', 'starting_level', 'current_level')
