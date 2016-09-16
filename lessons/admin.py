@@ -9,8 +9,14 @@ class LessonAdmin(ModelAdmin):
     """
     Abstract admin for the lessons.
     """
-    list_display = ('internal_name', 'duration')
+    list_display = ['__str__', 'duration']
+    list_filter = []
 
+    def __init__(self, *args, **kwargs):
+        """
+        Add host display for hosted lessons
+        """
+        super().__init__(*args, **kwargs)
 
 @admin.register(OrdinaryLesson)
 class OrdinaryLessonAdmin(LessonAdmin):
