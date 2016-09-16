@@ -45,29 +45,20 @@ class CountryFilter(admin.SimpleListFilter):
         return queryset.filter(country=self.value())
 
 
-class ResponsibleFilter(admin.SimpleListFilter):
-    title = _('Responsible')
-    parameter_name = 'responsible'
-
-    def lookups(self, request, model_admin):
-        return (
-            [i.responsible.pk, str(i.responsible)] for i in Customer.objects.filter(responsible__isnull=False).distinct('responsible')
-        )
-
-    def queryset(self, request, queryset):
-        if not self.value():
-            return queryset
-
-        return queryset.filter(responsible=self.value())
-
-
 @admin.register(Customer)
 class ExistingCustomerAdmin(ModelAdmin):
     """
     The admin module for manager current customers without managing users
     """
-    list_display = ('full_name', 'country', 'responsible', 'classes', 'subscriptions', 'date_arrived')
-    list_filter = (CountryFilter, ResponsibleFilter, HasClassesFilter, HasSubscriptionsFilter)
+    list_display = ('full_name', 'country', 'Languages', 'curator', 'classes', 'subscriptions', 'date_arrived')
+    list_filter = (
+        CountryFilter,
+        ('curator', admin.RelatedOnlyFieldListFilter),
+        ('company', admin.RelatedOnlyFieldListFilter),
+        ('languages', admin.RelatedOnlyFieldListFilter),
+        HasClassesFilter,
+        HasSubscriptionsFilter
+    )
     actions = None
     readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions', 'corporate')
     inlines = (SubscriptionsInline, ClassesLeftInline, ClassesPassedInline)
@@ -76,7 +67,7 @@ class ExistingCustomerAdmin(ModelAdmin):
             'fields': ('student', 'email', 'arrived', 'classes', 'subscriptions', 'corporate')
         }),
         ('Attribution', {
-            'fields': ('responsible', 'company')
+            'fields': ('curator', 'company', 'languages'),
         }),
         ('Profile', {
             'fields': ('birthday', 'country', 'native_language', 'profile_photo', 'starting_level', 'current_level')
@@ -85,6 +76,12 @@ class ExistingCustomerAdmin(ModelAdmin):
             'fields': ('skype', 'facebook', 'instagram', 'twitter', 'linkedin')
         }),
     )
+
+    def Languages(self, instance):
+        if not instance.languages.count():
+            return '-'
+
+        return ', '.join(instance.languages.all().values_list('name', flat=True))
 
     def classes(self, instance):
         total = instance.classes.all()

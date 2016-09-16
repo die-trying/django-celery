@@ -90,7 +90,7 @@ class TestClassManager(TestCase):
         self.assertIn(lessons.OrdinaryLesson.get_contenttype(), lesson_types)
         self.assertIn(lessons.MasterClass.get_contenttype(), lesson_types)
 
-    def test_lesson_type_sorting(self):
+    def test_lesson_type_sorting(self):  # noqa
         """
         Planning dates should be sorted with the in-class defined sort order
         """
@@ -99,6 +99,9 @@ class TestClassManager(TestCase):
         sort_order = {}
         for m in ContentType.objects.filter(app_label='lessons'):
             Model = m.model_class()
+            if not hasattr(Model, 'sort_order'):  # non-sortable models are possibly not lessons
+                continue
+
             order = Model.sort_order()
             if order:
                 sort_order[order] = Model

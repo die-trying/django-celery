@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'django_nose',
     'django.contrib.admindocs',
     'suit',
+    'date_range_filter',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -120,8 +121,15 @@ TEMPLATES = [
 ]
 
 SUIT_CONFIG = {
-    'ADMIN_NAME': 'ELK Dashboard back-office',
-    'MENU_EXCLUDE': ('default',),
+    'ADMIN_NAME': 'ELK back-office',
+    'MENU': (
+        {'app': 'crm', 'icon': 'icon-globe', 'models': ('crm.Customer', 'crm.Company')},
+        {'app': 'market', 'icon': 'icon-shopping-cart', 'models': ('market.Subscription', 'market.Class')},
+        {'app': 'teachers', 'icon': 'icon-briefcase', },
+        {'app': 'lessons', 'icon': 'icon-hand-up', 'label': 'Teaching', 'models': ('lessons.Language', 'lessons.PairedLesson', 'lessons.MasterClass', 'lessons.HappyHour')},
+        {'app': 'manual_class_logging', 'icon': 'icon-circle-arrow-right'},
+        {'app': 'auth', 'label': 'Authorization', 'icon': 'icon-lock', 'models': ('auth.User', 'auth.Group')},
+    ),
 }
 
 AUTHENTICATION_BACKENDS = (

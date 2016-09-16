@@ -11,7 +11,17 @@ from django_markdown.utils import markdown
 from teachers.models import Teacher
 
 
-# Create your models here.
+class Language(models.Model):
+    """
+    Language that teacher can teach and customer can learn.
+    """
+    name = models.CharField(max_length=140)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
 
 
 class Lesson(models.Model):

@@ -36,7 +36,7 @@ class Customer(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.PROTECT, null=True, blank=True, related_name='crm')
 
-    responsible = models.ForeignKey('teachers.Teacher', on_delete=models.SET_NULL, null=True, blank=True, related_name='patronized_customers')
+    curator = models.ForeignKey('teachers.Teacher', on_delete=models.SET_NULL, null=True, blank=True, related_name='patronized_customers')
     company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True, related_name='customers')
 
     source = models.CharField(max_length=140, default='internal')
@@ -59,6 +59,7 @@ class Customer(models.Model):
 
     country = CountryField()
     native_language = models.CharField(max_length=140, null=True, blank=True)
+    languages = models.ManyToManyField('lessons.Language')
 
     starting_level = models.CharField(max_length=2, choices=LEVELS, blank=True, null=True)
     current_level = models.CharField(max_length=2, choices=LEVELS, blank=True, null=True)
