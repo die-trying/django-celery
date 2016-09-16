@@ -12,6 +12,7 @@ defusedxml==0.4.1
 Django==1.8.14
 django-anymail==0.4.2
 django-countries==3.4.1
+-e git+https://github.com/f213/django-suit-daterange-filter@dc6c02fa7a7567baf11fd6e988815a8a094782d4#egg=django_date_range_filter
 django-debug-toolbar==1.4
 django-easy-timezones==0.7.0
 django-environ==0.4.0
@@ -21,7 +22,7 @@ django-money==0.8
 django-nose==1.4.4
 django-redis==4.4.4
 django-redis-cache==1.6.5
-django-suit==0.2.19
+django-suit==0.2.21
 django-user-agents==0.3.0
 django-with-asserts==0.0.1
 docutils==0.12

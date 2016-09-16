@@ -69,6 +69,7 @@ class ModelAdmin(admin.ModelAdmin, AdminHelpersMixin):
         css = {
             "all": ("admin/markitup-fixes.css",)
         }
+        js = ('/admin/jsi18n/',)  # django-suit forgets to include this script
 
 
 class TabularInline(admin.TabularInline, AdminHelpersMixin):

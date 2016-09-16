@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'django_nose',
     'django.contrib.admindocs',
     'suit',
+    'date_range_filter',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

@@ -1,3 +1,4 @@
+from date_range_filter import DateRangeFilter
 from django.contrib import admin
 
 from crm.models import Customer
@@ -36,7 +37,7 @@ class TeacherFilter(admin.SimpleListFilter):
 
 @admin.register(ManualClassLogEntry)
 class ManualClassLogEntryAdmin(ModelAdmin):
-    list_filter = (StudentFilter, TeacherFilter)
+    list_filter = (('timestamp', DateRangeFilter), StudentFilter, TeacherFilter,)
     list_display = ('date', 'lesson_type', 'student', 'teacher',)
     readonly_fields = ('teacher', 'Class')
 
