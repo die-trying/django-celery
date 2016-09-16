@@ -1,8 +1,12 @@
 from django.contrib import admin
 
 from elk.admin import ModelAdmin
+from lessons import models
 
-from .models import HappyHour, LessonWithNative, MasterClass, OrdinaryLesson, PairedLesson
+
+@admin.register(models.Language)
+class LanguageAdmin(ModelAdmin):
+    pass
 
 
 class LessonAdmin(ModelAdmin):
@@ -18,26 +22,24 @@ class LessonAdmin(ModelAdmin):
         """
         super().__init__(*args, **kwargs)
 
-@admin.register(OrdinaryLesson)
-class OrdinaryLessonAdmin(LessonAdmin):
-    pass
+        if hasattr(self.model, 'host'):
+            if 'host' not in self.list_display:
+                self.list_display.insert(0, 'host')
+
+            if 'host' not in self.list_filter:
+                self.list_filter.insert(0, 'host')
 
 
-@admin.register(LessonWithNative)
-class LessonWithNativeAdmin(LessonAdmin):
-    pass
-
-
-@admin.register(PairedLesson)
+@admin.register(models.PairedLesson)
 class PairedLessonAdmin(LessonAdmin):
     pass
 
 
-@admin.register(HappyHour)
+@admin.register(models.HappyHour)
 class HappyHourAdmin(LessonAdmin):
     pass
 
 
-@admin.register(MasterClass)
+@admin.register(models.MasterClass)
 class MasterClassAdmin(LessonAdmin):
     pass

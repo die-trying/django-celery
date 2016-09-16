@@ -50,11 +50,12 @@ class ExistingCustomerAdmin(ModelAdmin):
     """
     The admin module for manager current customers without managing users
     """
-    list_display = ('full_name', 'country', 'curator', 'classes', 'subscriptions', 'date_arrived')
+    list_display = ('full_name', 'country', 'Languages', 'curator', 'classes', 'subscriptions', 'date_arrived')
     list_filter = (
         CountryFilter,
         ('curator', admin.RelatedOnlyFieldListFilter),
         ('company', admin.RelatedOnlyFieldListFilter),
+        ('languages', admin.RelatedOnlyFieldListFilter),
         HasClassesFilter,
         HasSubscriptionsFilter
     )
@@ -66,7 +67,7 @@ class ExistingCustomerAdmin(ModelAdmin):
             'fields': ('student', 'email', 'arrived', 'classes', 'subscriptions', 'corporate')
         }),
         ('Attribution', {
-            'fields': ('curator', 'company',),
+            'fields': ('curator', 'company', 'languages'),
         }),
         ('Profile', {
             'fields': ('birthday', 'country', 'native_language', 'profile_photo', 'starting_level', 'current_level')
@@ -75,6 +76,12 @@ class ExistingCustomerAdmin(ModelAdmin):
             'fields': ('skype', 'facebook', 'instagram', 'twitter', 'linkedin')
         }),
     )
+
+    def Languages(self, instance):
+        if not instance.languages.count():
+            return '-'
+
+        return ', '.join(instance.languages.all().values_list('name', flat=True))
 
     def classes(self, instance):
         total = instance.classes.all()

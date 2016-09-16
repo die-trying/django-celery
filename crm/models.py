@@ -59,6 +59,7 @@ class Customer(models.Model):
 
     country = CountryField()
     native_language = models.CharField(max_length=140, null=True, blank=True)
+    languages = models.ManyToManyField('lessons.Language')
 
     starting_level = models.CharField(max_length=2, choices=LEVELS, blank=True, null=True)
     current_level = models.CharField(max_length=2, choices=LEVELS, blank=True, null=True)

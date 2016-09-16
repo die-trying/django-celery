@@ -1,3 +1,9 @@
+- fields: {name: English}
+  model: lessons.language
+  pk: 1
+- fields: {name: Italian}
+  model: lessons.language
+  pk: 2
 - fields: {active: 1, announce: Usual ELK curated session, description: Usual ELK
       curated session, duration: '00:30:00', internal_name: Single currated lesson
       (DEFAULT), name: Single curated lesson, slots: 1}
