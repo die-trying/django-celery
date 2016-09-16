@@ -10,8 +10,8 @@ class BuyableModelAdmin(ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).filter(active=1)
 
-    def buy_time(self, instance):
-        return self._datetime(instance.buy_date) + ' ' + self._time(instance.buy_date)
+    def purchase_date(self, instance):
+        return self._datetime(instance.buy_date)
 
     def available(self, instance):
         return not instance.is_fully_used
@@ -59,8 +59,8 @@ class ClassesInlineBase(TabularInline):
 
 
 class ClassesLeftInline(ClassesInlineBase):
-    verbose_name = 'Bought lesson'
-    verbose_name_plural = 'Bought lessons left'
+    verbose_name = 'Purchased lesson'
+    verbose_name_plural = 'Purchased lessons left'
     readonly_fields = ('lesson', 'source', 'buy_time')
     fieldsets = (
         (None, {

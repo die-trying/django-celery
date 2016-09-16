@@ -1,3 +1,4 @@
+from date_range_filter import DateRangeFilter
 from django.contrib import admin
 
 from elk.admin import BooleanFilter
@@ -31,10 +32,10 @@ class AvailableFilter(BooleanFilter):
 @admin.register(Class)
 class ClassAdmin(BuyableModelAdmin):
     verbose_name = 'Class'
-    verbose_name_plural = 'Purchesed classes'
+    verbose_name_plural = 'Purchased lessons'
     model = Class
-    list_display = ('lesson_type', 'customer', 'buy_time', 'available')
-    list_filter = (AvailableFilter, BuySubscriptionFilter,)
+    list_display = ('lesson_type', 'customer', 'available', 'purchase_date')
+    list_filter = (('buy_date', DateRangeFilter), BuySubscriptionFilter,)
     search_fields = ('customer__user__first_name', 'customer__user__last_name')
     actions = [mark_as_used, renew]
     action_form = MarkAsUsedForm

@@ -67,7 +67,7 @@ class ModelAdmin(admin.ModelAdmin, AdminHelpersMixin):
 
     class Media:  # TODO: if you need to add something here, please create a good build system with gulp
         css = {
-            "all": ("admin/markitup-fixes.css",)
+            "all": ("admin/markitup-fixes.css", "admin/date_range_filter-fixes.css")
         }
         js = ('/admin/jsi18n/',)  # django-suit forgets to include this script
 
