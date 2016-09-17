@@ -1,5 +1,5 @@
 import datetime
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import extevents.models as models
 from extevents.tests import GoogleCalendarTestCase
@@ -23,6 +23,14 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
         self.src.poll()
 
         self.assertEqual(fake_event_parser.call_count, 6)  # make sure that poll has parsed 6 events
+
+    @patch('extevents.models.Calendar')
+    def test_value_error(self, Calendar):
+        """ Should not throw anything when ical raiss ValueError """
+        Calendar = MagicMock()
+        Calendar.from_ical = MagicMock(side_effect=ValueError)
+        res = [ev for ev in self.src.parse_events('sdfsdf')]
+        self.assertEqual(res, [])
 
     def test_parse_calendar(self):
         """

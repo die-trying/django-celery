@@ -35,22 +35,32 @@ class ExternalEvent(models.Model):
         unique_together = ('teacher', 'ext_src_type', 'ext_src_id', 'start', 'end')
 
 
+class ExternalEventSourceManager(models.Manager):
+    def active(self):
+        return self.get_queryset().filter(active=True).filter(teacher__active=True)
+
+
 class ExternalEventSource(models.Model):
     """
-    Generic abstract class for an Event source. Subclasses should implement the following:
+    Generic abstract class for an external events source. External events source
+    may be google calendar, icloud or anything you want. Subclasses should
+    implement the following two methods:
         * `poll` method that popuates the self.events list
         * Relation to :model:`teachers.Teacher`, called 'teacher'
 
-    Usage:
+    Generic usage:
         # Assuming that teacher is an instance of :model:`teachers.Teacher`
 
         for calendar in teacher.google_calendars:
             calendar.poll()  # get new events, implemented in subclass
             calendar.update()  # update event database, implemented in this class
 
-    This will clean up previous events and store new ones, fetched by the model:`extevents.GoogleCalendar`.poll() method.
-
+    This will clean up previous events and store new ones, fetched
+    by the model:`extevents.GoogleCalendar`.poll() method.
     """
+
+    objects = ExternalEventSourceManager()
+
     url = models.URLField()
     active = models.BooleanField(default=True)
     last_update = models.DateTimeField(auto_now=True)
@@ -69,8 +79,9 @@ class ExternalEventSource(models.Model):
         self.__clear_previous_events()
         self.__save_events()
 
-        self.last_update = timezone.now()
-        self.save()
+        if self.events:
+            self.last_update = timezone.now()
+            self.save()
 
     def __clear_previous_events(self):
         """
@@ -118,9 +129,12 @@ class GoogleCalendar(ExternalEventSource):
         Fetch a calendar, then parse it and populate the `event` property with
         events from it.
         """
-        res = self.fetch_calendar(self.url)
-
-        self.events = [event for event in self.parse_events(res)]
+        try:
+            res = self.fetch_calendar(self.url)
+        except:
+            self.events = []
+        else:
+            self.events = [event for event in self.parse_events(res)]
 
     def parse_events(self, ical_str):
         """
@@ -128,16 +142,21 @@ class GoogleCalendar(ExternalEventSource):
 
         Repeated events are not supported — you will see only the first one.
         """
-        ical = Calendar.from_ical(ical_str)
+        try:
+            ical = Calendar.from_ical(ical_str)
+        except:
+            """
+            Just stop event generation when can't parse calendar
+            """
+            raise StopIteration
 
-        for component in ical.walk():
-            if component.name == 'VEVENT':
-                event = self.parse_event(component)
+        for component in ical.walk('VEVENT'):
+            event = self.parse_event(component)
 
-                if event.start < timezone.now():
-                    continue
+            if event.start < timezone.now():
+                continue
 
-                yield event
+            yield event
 
     def parse_event(self, event):
         """
@@ -174,7 +193,7 @@ class GoogleCalendar(ExternalEventSource):
         return (start, end)
 
     def fetch_calendar(self, url):
-        r = requests.get(url)
+        r = requests.get(url, timeout=5)
         if r.status_code != 200:
             raise FileNotFoundError('Cannot fetch calendar url (%d)', r.status_code)
         return r.text
