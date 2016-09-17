@@ -1,6 +1,6 @@
-import environ
+from datetime import timedelta
 
-from market.cron import *  # noqa
+import environ
 
 root = environ.Path(__file__) - 3        # three folder back (/a/b/c/ - 3 = /)
 env = environ.Env(DEBUG=(bool, False),)  # set default values and casting
@@ -217,6 +217,22 @@ CACHES = {
 
 BROKER_URL = env('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
+
+CELERYBEAT_SCHEDULE = {
+    'check_classes_that_will_start_soon': {
+        'task': 'market.tasks.notify_15min_to_class',
+        'schedule': timedelta(minutes=5),
+    },
+    'mark_classes_as_fully_used': {
+        'task': 'market.tasks.mark_classes_as_fully_used',
+        'schedule': timedelta(minutes=5),
+    },
+    'update_google_calendars': {
+        'task': 'extevents.tasks.update_google_calendars',
+        'schedule': timedelta(minutes=1),
+    },
+}
+
 
 CELERY_TIMEZONE = env('TIME_ZONE')
 
