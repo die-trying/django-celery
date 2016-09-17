@@ -4,3 +4,7 @@
 {% block extrastyle %}
 <link rel="stylesheet" href="{% static 'css/admin.css' %}?rev={{ REVISION }}">
 {% endblock %}
+
+{% block extrajs %}
+<script src="{% static 'js/admin.js' %}?rev={{ REVISION }}"></script>
+{% endblock %}
