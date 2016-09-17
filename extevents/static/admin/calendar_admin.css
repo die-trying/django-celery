@@ -1,0 +1,28 @@
+.field-updated {
+    white-space: nowrap;
+}
+
+/* That's the only way i could imagine to to hide the edit form */
+p.url {
+    display: block;
+    height: 27px;
+    overflow-y: hidden;
+}
+p.url>br { /* sorry */
+    line-height: 200px;
+}
+
+/* Limit the length of displayed URL */
+p.url>a {
+    display: inline-block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 350px;
+    position: relative;
+    top: 5px;
+}
+
+tr.form-row:last-child {
+    display: none;
+}

@@ -1,13 +1,35 @@
 from django.contrib import admin
+from django.db import models
 from django.template.defaultfilters import capfirst
+from suit.widgets import HTML5Input
 
 from elk.admin import ModelAdmin, StackedInline, TabularInline
+from extevents.models import GoogleCalendar
 from manual_class_logging.models import ManualClassLogEntry
 from teachers.models import Teacher, WorkingHours
 
 
 class WorkingHoursInline(StackedInline):
     model = WorkingHours
+
+
+class GooogleCalendarInline(TabularInline):
+    model = GoogleCalendar
+    fields = ('url', 'updated')
+    readonly_fields = ('updated',)
+    extra = 1
+
+    formfield_overrides = {
+        models.URLField: {'widget': HTML5Input(input_type='url', attrs={'placeholder': 'Private Google calendar URL'})},
+    }
+
+    def updated(self, instance):
+        return self._datetime(instance.last_update)
+
+    class Media:
+        css = {
+            'all': ('admin/calendar_admin.css',),
+        }
 
 
 class ManualClassLogEntriesInline(TabularInline):
@@ -37,7 +59,7 @@ class ManualClassLogEntriesInline(TabularInline):
 class TeacherAdmin(ModelAdmin):
     list_display = ('__str__', 'manualy_completed_classes', 'lessons_allowed')
 
-    inlines = (ManualClassLogEntriesInline, WorkingHoursInline)
+    inlines = (ManualClassLogEntriesInline, WorkingHoursInline, GooogleCalendarInline)
 
     def manualy_completed_classes(self, instance):
         return instance.manualy_completed_classes.count()
