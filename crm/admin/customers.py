@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.utils.translation import ugettext as _
 
-from crm.models import Customer
-from elk.admin import BooleanFilter, ModelAdmin
+from crm.models import Customer, CustomerNote
+from elk.admin import BooleanFilter, ModelAdmin, StackedInline
 from market.admin.components import ClassesLeftInline, ClassesPassedInline, SubscriptionsInline
 from market.models import Subscription
 
@@ -45,6 +45,21 @@ class CountryFilter(admin.SimpleListFilter):
         return queryset.filter(country=self.value())
 
 
+class CustomerNotesInline(StackedInline):
+    model = CustomerNote
+    can_delete = False
+    extra = 1
+    template = 'crm/admin/customer_notes.html'
+    fieldsets = (
+        (None, {
+            'fields': ('text',)
+        }),
+    )
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(Customer)
 class ExistingCustomerAdmin(ModelAdmin):
     """
@@ -61,7 +76,7 @@ class ExistingCustomerAdmin(ModelAdmin):
     )
     actions = None
     readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions', 'corporate')
-    inlines = (SubscriptionsInline, ClassesLeftInline, ClassesPassedInline)
+    inlines = (CustomerNotesInline, SubscriptionsInline, ClassesLeftInline, ClassesPassedInline)
     fieldsets = (
         (None, {
             'fields': ('student', 'email', 'arrived', 'classes', 'subscriptions', 'corporate')
@@ -102,6 +117,17 @@ class ExistingCustomerAdmin(ModelAdmin):
 
         finished = Subscription.objects.filter(pk__in=total, is_fully_used=True)
         return '%d/%d' % (finished.count(), total.count())
+
+    def save_formset(self, request, form, formset, change):
+        """
+        Save customer note author
+        """
+        instances = formset.save(commit=False)
+        for instance in instances:
+            if isinstance(instance, CustomerNote):
+                instance.teacher = request.user.teacher_data
+
+        super().save_formset(request, form, formset, change)
 
     def corporate(self, instance):
         if instance.company is not None:

@@ -129,3 +129,14 @@ class Customer(models.Model):
 
     class Meta:
         verbose_name = 'Profile'
+
+
+class CustomerNote(models.Model):
+    teacher = models.ForeignKey('teachers.Teacher', related_name='customer_notes')
+    customer = models.ForeignKey(Customer, related_name='notes')
+    timestamp = models.DateTimeField(auto_now_add=True)
+    text = models.TextField()
+
+    class Meta:
+        verbose_name = "Note"
+        verbose_name_plural = "Customer notes"

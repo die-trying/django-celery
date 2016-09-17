@@ -1,0 +1,41 @@
+@import 'nib'
+
+.customer_notes
+    h1
+        margin-bottom 10px
+        margin-left 0
+
+    &__note + &__note
+        margin-top 30px
+
+    &__text
+        max-width 590px
+
+    &__meta, &__text
+        display inline-block
+        vertical-align top
+
+    &__meta
+        p
+            margin-bottom 0
+
+    &__meta
+        font-size 11px
+
+    &__text
+        margin-left 5px
+        font-size 14px
+
+    .vLargeTextField
+        min-width 450px
+
+    &__existing
+        margin-bottom 30px
+
+    &__add
+        @media print
+            display none
+
+        &__btn
+            margin-top 5px
+            relative: left 197px
