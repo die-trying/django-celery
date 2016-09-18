@@ -5,7 +5,7 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.defaultfilters import time
@@ -204,11 +204,13 @@ class Teacher(models.Model):
             teacher=self,
             start=start,
             end=start + period,
+            allow_overlap=False,
+            allow_besides_working_hours=False,
+            allow_when_teacher_is_busy=False,
         )
-        if entry.is_overlapping():  # entry should not overlap with others
-            return False
-
-        if not entry.teacher_is_present():  # teacher should be present
+        try:
+            entry.clean()
+        except ValidationError:
             return False
 
         return True
