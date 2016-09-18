@@ -228,6 +228,7 @@ class TestTeacherPresenceValidation(EntryValidationTestCase):
             lesson=self.lesson,
             start=parse_datetime('2016-05-03 13:30'),
             end=parse_datetime('2016-05-03 14:00'),
+            allow_when_teacher_is_busy=False,
         )
         vacation = Absence(
             type='vacation',

@@ -79,6 +79,33 @@ class Entry(models.Model):
     So, the prefered situation is when entry is saved by the corresponding
     class, and not by you!
 
+    Timeline entry validation
+    =========================
+    This model is also used to validate a distinct point in the timetable. The common
+    way to validate is to create an entry and run the model clean() method. All checks
+    are configurable by boolean instance parameters:
+        * allow_overlap: allow entries, that overlap with others
+        * allow_when_teacher_is_busy: allow entries, when there is a registered :model:`teachers.Absence`
+        * allow_besides_working_hours: allow entries the don't fit teachers :model:`teachers.WorkingHours`
+
+    By default all this checks are disabled, you should enable them manualy when creating a model:
+    ::
+        TimelineEntry = apps.get_model('timeline.Entry')
+        entry = TimelineEntry(
+            teacher=self,
+            start=start,
+            end=start + period,
+            allow_overlap=False,
+            allow_besides_working_hours=False,
+            allow_when_teacher_is_busy=False,
+        )
+        try:
+            entry.clean()
+        except ValidationError:
+            print "Entry does not fit the timeline!"
+        else:
+            print "Entry fits the timeline"
+
     JSON representation
     ===================
 
@@ -106,6 +133,7 @@ class Entry(models.Model):
     end = models.DateTimeField()
     allow_overlap = models.BooleanField(default=True)
     allow_besides_working_hours = models.BooleanField(default=True)
+    allow_when_teacher_is_busy = models.BooleanField(default=True)
 
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
     lesson_id = models.PositiveIntegerField(null=True, blank=True)
@@ -153,7 +181,7 @@ class Entry(models.Model):
 
     def save(self, *args, **kwargs):
         self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
-        self.__run_pre_save_checks()  # check for overlapping, teacher working hours, etc
+        self.clean()  # check for overlapping, teacher working hours, etc
         self.__update_slots()  # update free slot count, check if no classes were added without spare slots for it
 
         self.__notify_class_that_it_has_been_finished(*args, **kwargs)  # notify a parent class, that it is used and finished
@@ -210,7 +238,7 @@ class Entry(models.Model):
         """
         Check if teacher has no vacations for the entry period
         """
-        if Absence.objects.approved().filter(teacher=self.teacher, start__lte=self.end, end__gte=self.start):
+        if Absence.objects.approved().filter(teacher=self.teacher, start__lt=self.end, end__gt=self.start):
             return False
 
         return True
@@ -239,14 +267,14 @@ class Entry(models.Model):
             'slots_available': self.slots,
         }
 
-    def __run_pre_save_checks(self):
+    def clean(self):
         if not self.allow_overlap and self.is_overlapping():
             raise ValidationError('Entry time overlapes with some other entry of this teacher')
 
         if not self.allow_besides_working_hours and not self.is_fitting_working_hours():
             raise ValidationError('Entry time does not fit teachers working hours')
 
-        if not self.teacher_is_present():
+        if not self.allow_when_teacher_is_busy and not self.teacher_is_present():
             raise ValidationError('Teacher is not available for the entry period')
 
     def __self_delete_if_needed(self):
