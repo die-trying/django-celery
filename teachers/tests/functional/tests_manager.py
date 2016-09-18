@@ -8,7 +8,7 @@ from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_teacher
 from lessons import models as lessons
-from teachers.models import Teacher, WorkingHours
+from teachers.models import Absence, Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
@@ -53,7 +53,7 @@ class TestTeacherManager(TestCase):
 
     def test_get_free_slots(self):
         """
-        Simple unit test for fetching free slots
+        Simple test for fetching free slots
         """
         slots = self.teacher.find_free_slots(date='2032-05-03')
         self.assertEquals(len(slots), 4)
@@ -101,7 +101,20 @@ class TestTeacherManager(TestCase):
         slots = self.teacher.find_free_slots(date='2032-05-03')
         self.assertEquals(len(slots), 2)
 
-    def test_get_free_slots_2002(self):
+    def test_gree_slots_absence_bypass(self):
+        """
+        Create an absence record and check if find_free_slots does not return it
+        """
+        absence = Absence(
+            teacher=self.teacher,
+            start=datetime(2032, 5, 3, 14, 10),
+            end=datetime(2032, 5, 3, 14, 30),
+        )
+        absence.save()
+        slots = self.teacher.find_free_slots(date='2032-05-03')
+        self.assertEqual(len(slots), 3)
+
+    def test_get_free_slots_from_past(self):
         """
         Make sure, that timeline slots are not returned from distant past
         """

@@ -187,7 +187,7 @@ class Teacher(models.Model):
         slots = SlotList()
         slot = start
         while slot + period <= end:
-            if not self.__check_availability(slot, period):
+            if self.__check_availability(slot, period):
                 if slot >= self.__now():
                     slots.append(slot)
 
@@ -196,14 +196,8 @@ class Teacher(models.Model):
         return slots
 
     def __check_availability(self, start, period):
-        return self.__check_overlap(start, period)
-
-    def __check_overlap(self, start, period):
         """
-        Check, if a slot does not overlap with other timeline entries
-
-        This implementtion could be less expensive: it creates a timeline entry
-        per every testing slot
+        Create a test timeline entry and check if teacher is available.
         """
         TimelineEntry = apps.get_model('timeline.Entry')
         entry = TimelineEntry(
@@ -211,7 +205,13 @@ class Teacher(models.Model):
             start=start,
             end=start + period,
         )
-        return entry.is_overlapping()
+        if entry.is_overlapping():  # entry should not overlap with others
+            return False
+
+        if not entry.teacher_is_present():  # teacher should be present
+            return False
+
+        return True
 
     def __delete_lesson_types_that_dont_require_a_timeline_entry(self, kwargs):
         """
