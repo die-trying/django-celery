@@ -29,8 +29,8 @@ class GooogleCalendarInline(TabularInline):
 
     def found_events(self, instance):
         return ExternalEvent.objects \
-            .filter(ext_src_id=instance.pk) \
-            .filter(ext_src_type=ContentType.objects.get_for_model(instance)) \
+            .filter(src_id=instance.pk) \
+            .filter(src_type=ContentType.objects.get_for_model(instance)) \
             .count()
 
     class Media:

@@ -23,11 +23,11 @@ class TestEventSourceSafety(GoogleCalendarTestCase):
         Try to replace 10 events by 8 events
         """
         for i in range(0, 10):
-            mixer.blend(ExternalEvent, teacher=self.teacher, ext_src=self.src)
+            mixer.blend(ExternalEvent, teacher=self.teacher, src=self.src)
 
         for i in range(0, 8):  # create 8 non-saved events
             self.src.events.append(
-                self.safe_mixer.blend(ExternalEvent, teacher=self.teacher, ext_src=self.src)
+                self.safe_mixer.blend(ExternalEvent, teacher=self.teacher, src=self.src)
             )
 
         self.assertTrue(self.src._ExternalEventSource__is_safe())
@@ -37,7 +37,7 @@ class TestEventSourceSafety(GoogleCalendarTestCase):
         Try to replace 10 events by 0 events
         """
         for i in range(0, 10):
-            mixer.blend(ExternalEvent, teacher=self.teacher, ext_src=self.src)
+            mixer.blend(ExternalEvent, teacher=self.teacher, src=self.src)
 
         self.assertFalse(self.src._ExternalEventSource__is_safe())
 
@@ -46,11 +46,11 @@ class TestEventSourceSafety(GoogleCalendarTestCase):
         Try to replace 10 events by 3 events
         """
         for i in range(0, 10):
-            mixer.blend(ExternalEvent, teacher=self.teacher, ext_src=self.src)
+            mixer.blend(ExternalEvent, teacher=self.teacher, src=self.src)
 
         for i in range(0, 3):  # create 3 non-saved events
             self.src.events.append(
-                self.safe_mixer.blend(ExternalEvent, teacher=self.teacher, ext_src=self.src)
+                self.safe_mixer.blend(ExternalEvent, teacher=self.teacher, src=self.src)
             )
 
         self.assertFalse(self.src._ExternalEventSource__is_safe())

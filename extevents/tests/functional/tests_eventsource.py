@@ -19,7 +19,7 @@ class TestEventSource(GoogleCalendarTestCase):
             self.src.events.append(mixer.blend(
                 models.ExternalEvent,
                 teacher=self.teacher,
-                ext_src=self.src,
+                src=self.src,
             ))
 
     def tearDown(self):
@@ -34,7 +34,7 @@ class TestEventSource(GoogleCalendarTestCase):
                 start=start,
                 end=end,
                 description='testdescr',
-                ext_src=self.src,
+                src=self.src,
             )
             event.save()
             self.assertIsNotNone(event.pk)
@@ -49,7 +49,7 @@ class TestEventSource(GoogleCalendarTestCase):
         for i in range(0, 10):
             mixer.blend(
                 models.ExternalEvent,
-                teacher=some_other_teacher, ext_src=self.src,
+                teacher=some_other_teacher, src=self.src,
             )
 
         self.assertEqual(models.ExternalEvent.objects.count(), 20)
@@ -66,7 +66,7 @@ class TestEventSource(GoogleCalendarTestCase):
         for i in range(0, 8):
             mixer.blend(
                 models.ExternalEvent,
-                teacher=self.teacher, ext_src=self.src,
+                teacher=self.teacher, src=self.src,
             )
         self.assertEqual(models.ExternalEvent.objects.count(), 18)  # 10 from self.src.events and 8 from now
 

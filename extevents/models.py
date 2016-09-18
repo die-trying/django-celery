@@ -15,16 +15,16 @@ class ExternalEvent(models.Model):
     """
     Represents single External event.
 
-    ext_src is a contentype of the source, that has generated this event,
-    for example :model:`extevents.GoogleCalendar`. ext_src should be a subsclass
+    src is a contentype of the source, that has generated this event,
+    for example :model:`extevents.GoogleCalendar`. src should be a subsclass
     of :model:`extevents.ExternalEventSource`.
 
     """
     teacher = models.ForeignKey('teachers.Teacher', on_delete=models.CASCADE, related_name='busy_periods')
 
-    ext_src_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'extevents'})
-    ext_src_id = models.PositiveIntegerField()
-    ext_src = GenericForeignKey('ext_src_type', 'ext_src_id')
+    src_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'extevents'})
+    src_id = models.PositiveIntegerField()
+    src = GenericForeignKey('src_type', 'src_id')
 
     start = models.DateTimeField()
     end = models.DateTimeField()
@@ -32,7 +32,7 @@ class ExternalEvent(models.Model):
     last_update = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('teacher', 'ext_src_type', 'ext_src_id', 'start', 'end')
+        unique_together = ('teacher', 'src_type', 'src_id', 'start', 'end')
 
 
 class ExternalEventSourceManager(models.Manager):
@@ -99,8 +99,8 @@ class ExternalEventSource(models.Model):
         """
         return ExternalEvent.objects.filter(
             teacher=self.teacher,  # rely upon parent-class created relation
-            ext_src_id=self.pk,
-            ext_src_type=ContentType.objects.get_for_model(self),
+            src_id=self.pk,
+            src_type=ContentType.objects.get_for_model(self),
         )
 
     def __is_safe(self):
@@ -169,7 +169,7 @@ class GoogleCalendar(ExternalEventSource):
             end=end,
             description=event.get('summary'),
             teacher=self.teacher,
-            ext_src=self,
+            src=self,
         )
 
     def __event_time(self, event):
