@@ -1,5 +1,4 @@
 import json
-from datetime import datetime
 
 from mixer.backend.django import mixer
 
@@ -20,8 +19,8 @@ class TestCheckEntry(ClientTestCase):
         self.entry = TimelineEntry(
             teacher=self.teacher,
             lesson=self.lesson,
-            start=datetime(2016, 1, 18, 14, 10),
-            end=datetime(2016, 1, 18, 14, 40),
+            start=self.tzdatetime('Europe/Moscow', 2016, 1, 18, 14, 10),
+            end=self.tzdatetime('Europe/Moscow', 2016, 1, 18, 14, 40),
             allow_overlap=False,
         )
 
@@ -32,8 +31,8 @@ class TestCheckEntry(ClientTestCase):
         self.absence = Absence(
             type='vacation',
             teacher=self.teacher,
-            start=datetime(2032, 5, 3, 0, 0),
-            end=datetime(2032, 5, 3, 23, 59),
+            start=self.tzdatetime(2032, 5, 3, 0, 0),
+            end=self.tzdatetime(2032, 5, 3, 23, 59),
         )
         self.absence.save()
 

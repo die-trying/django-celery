@@ -111,10 +111,16 @@ class TestCase(StockTestCase):
         """
         return self.assertRegexpMatches(str(time), r'\d{2}\:\d{2}')
 
-    def tzdatetime(self, tz=settings.TIME_ZONE, *args, **kwargs):
+    def tzdatetime(self, *args, **kwargs):
         """
         Create a timezoned datetime
         """
+        if isinstance(args[0], int):
+            tz = settings.TIME_ZONE
+        else:
+            tz = args[0]
+            args = args[1:]
+
         tz = pytz.timezone(tz)
         return timezone.make_aware(
             datetime(*args, **kwargs),

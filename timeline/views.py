@@ -132,8 +132,8 @@ def calendar_json(request, username):
 @staff_member_required
 def check_entry(request, username, start, end):
     entry = TimelineEntry(
-        start=parse_datetime(start),
-        end=parse_datetime(end),
+        start=timezone.make_aware(parse_datetime(start)),
+        end=timezone.make_aware(parse_datetime(end)),
         teacher=get_object_or_404(Teacher, user__username=username),
     )
     return JsonResponse({
