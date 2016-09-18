@@ -1,10 +1,11 @@
 from django.contrib import admin
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.template.defaultfilters import capfirst
 from suit.widgets import HTML5Input
 
 from elk.admin import ModelAdmin, StackedInline, TabularInline
-from extevents.models import GoogleCalendar
+from extevents.models import ExternalEvent, GoogleCalendar
 from manual_class_logging.models import ManualClassLogEntry
 from teachers.models import Teacher, WorkingHours
 
@@ -15,8 +16,8 @@ class WorkingHoursInline(StackedInline):
 
 class GooogleCalendarInline(TabularInline):
     model = GoogleCalendar
-    fields = ('url', 'updated')
-    readonly_fields = ('updated',)
+    fields = ('url', 'updated', 'found_events')
+    readonly_fields = ('updated', 'found_events')
     extra = 1
 
     formfield_overrides = {
@@ -25,6 +26,12 @@ class GooogleCalendarInline(TabularInline):
 
     def updated(self, instance):
         return self._datetime(instance.last_update)
+
+    def found_events(self, instance):
+        return ExternalEvent.objects \
+            .filter(ext_src_id=instance.pk) \
+            .filter(ext_src_type=ContentType.objects.get_for_model(instance)) \
+            .count()
 
     class Media:
         css = {
