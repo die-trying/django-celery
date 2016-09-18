@@ -10,6 +10,7 @@ from django.utils.dateformat import format
 from django.utils.timezone import localtime
 from django.utils.translation import ugettext as _
 
+from extevents.models import ExternalEvent
 from teachers.models import Absence, Teacher, WorkingHours
 
 MARK_ENTRIES_AUTOMATICALLY_FINISHED_AFTER = timedelta(minutes=60)
@@ -87,6 +88,7 @@ class Entry(models.Model):
         * allow_overlap: allow entries, that overlap with others
         * allow_when_teacher_is_busy: allow entries, when there is a registered :model:`teachers.Absence`
         * allow_besides_working_hours: allow entries the don't fit teachers :model:`teachers.WorkingHours`
+        * allow_when_teacher_has_external_events: allow entries that overlap some :model:`extevents.ExternalEvent`, e.g. teachers google calendar
 
     By default all this checks are disabled, you should enable them manualy when creating a model:
     ::
@@ -98,6 +100,7 @@ class Entry(models.Model):
             allow_overlap=False,
             allow_besides_working_hours=False,
             allow_when_teacher_is_busy=False,
+            allow_when_teacher_has_external_events=False,
         )
         try:
             entry.clean()
@@ -134,6 +137,7 @@ class Entry(models.Model):
     allow_overlap = models.BooleanField(default=True)
     allow_besides_working_hours = models.BooleanField(default=True)
     allow_when_teacher_is_busy = models.BooleanField(default=True)
+    allow_when_teacher_has_external_events = models.BooleanField(default=True)
 
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
     lesson_id = models.PositiveIntegerField(null=True, blank=True)
@@ -243,6 +247,15 @@ class Entry(models.Model):
 
         return True
 
+    def teacher_has_no_events(self):
+        """
+        Check if teaher has no external events registered
+        """
+        if ExternalEvent.objects.filter(teacher=self.teacher, start__lt=self.end, end__gt=self.start):
+            return False
+
+        return True
+
     def is_in_past(self):
         """
         Check, if timeline entry is in past
@@ -276,6 +289,9 @@ class Entry(models.Model):
 
         if not self.allow_when_teacher_is_busy and not self.teacher_is_present():
             raise ValidationError('Teacher is not available for the entry period')
+
+        if not self.allow_when_teacher_has_external_events and not self.teacher_has_no_events():
+            raise ValidationError('Teacher has external events in this period')
 
     def __self_delete_if_needed(self):
         """

@@ -207,6 +207,7 @@ class Teacher(models.Model):
             allow_overlap=False,
             allow_besides_working_hours=False,
             allow_when_teacher_is_busy=False,
+            allow_when_teacher_has_external_events=False,
         )
         try:
             entry.clean()

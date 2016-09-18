@@ -3,6 +3,7 @@ from django.utils.dateparse import parse_datetime
 from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_teacher
+from extevents.models import ExternalEvent
 from lessons import models as lessons
 from teachers.models import Absence, WorkingHours
 from timeline.models import Entry as TimelineEntry
@@ -237,5 +238,72 @@ class TestTeacherPresenceValidation(EntryValidationTestCase):
             end=parse_datetime('2016-05-05 23:59'),
         )
         vacation.save()
+        with self.assertRaises(ValidationError):
+            entry.save()
+
+
+class TestExternalEventValidation(EntryValidationTestCase):
+    def setUp(self):
+        super().setUp()
+        self.entry = TimelineEntry(
+            teacher=self.teacher,
+            lesson=self.lesson,
+            start=parse_datetime('2032-05-03 13:30'),
+            end=parse_datetime('2032-05-03 14:00'),
+        )
+
+    def test_teacher_available_true(self):
+        self.assertTrue(self.entry.teacher_has_no_events())
+
+    def test_teacher_available_true_becuase_of_event_is_for_another_teacher(self):
+        mixer.blend(
+            ExternalEvent,
+            teacher=create_teacher(),  # some other teacher, not the one owning self.entry
+            start=parse_datetime('2032-05-02 00:00'),
+            end=parse_datetime('2032-05-05 23:59'),
+        )
+        self.assertTrue(self.entry.teacher_has_no_events())
+
+    def test_teacher_available_false(self):
+        mixer.blend(
+            ExternalEvent,
+            teacher=self.teacher,
+            start=parse_datetime('2032-05-02 00:00'),
+            end=parse_datetime('2032-05-05 23:59'),
+        )
+        self.assertFalse(self.entry.teacher_has_no_events())
+
+    def test_teacher_has_events_due_to_event_starts_inside_of_period(self):
+        mixer.blend(
+            ExternalEvent,
+            teacher=self.teacher,
+            start=parse_datetime('2032-05-03 13:45'),
+            end=parse_datetime('2032-05-05 23:59'),
+        )
+        self.assertFalse(self.entry.teacher_has_no_events())
+
+    def test_teacher_has_events_due_to_event_ends_inside_of_period(self):
+        mixer.blend(
+            ExternalEvent,
+            teacher=self.teacher,
+            start=parse_datetime('2032-05-02 00:00'),
+            end=parse_datetime('2032-05-03 13:45'),
+        )
+        self.assertFalse(self.entry.teacher_has_no_events())
+
+    def test_cant_save_due_to_teacher_has_events(self):
+        entry = TimelineEntry(
+            teacher=self.teacher,
+            lesson=self.lesson,
+            start=parse_datetime('2016-05-03 13:30'),
+            end=parse_datetime('2016-05-03 14:00'),
+            allow_when_teacher_has_external_events=False,
+        )
+        mixer.blend(
+            ExternalEvent,
+            teacher=self.teacher,
+            start=parse_datetime('2016-05-02 00:00'),
+            end=parse_datetime('2016-05-05 23:59'),
+        )
         with self.assertRaises(ValidationError):
             entry.save()

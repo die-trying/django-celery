@@ -140,4 +140,5 @@ def check_entry(request, username, start, end):
         'is_overlapping': entry.is_overlapping(),
         'is_fitting_hours': entry.is_fitting_working_hours(),
         'teacher_is_present': entry.teacher_is_present(),
+        'teacher_has_no_events': entry.teacher_has_no_events(),
     }, safe=False)
