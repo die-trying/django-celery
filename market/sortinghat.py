@@ -167,7 +167,7 @@ class SortingHat():
             """
             Should not be thrown in normal circumstances. When you see this error,
             check the method :model:`market.class`.can_be_scheduled() — there are all
-            the reasons, that throw this excpetions. You can comment them one by one
+            the reasons, that throw this excpetion. You can comment them one by one
             any find the reason.
             """
             self.__set_err('E_CANT_SCHEDULE')

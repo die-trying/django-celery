@@ -1,5 +1,6 @@
 import json
 
+from django.test import override_settings
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
@@ -78,6 +79,7 @@ class TestCheckEntry(ClientTestCase):
         )
         self.assertFalse(res['teacher_is_present'])
 
+    @override_settings(TIME_ZONE='Europe/Moscow')
     def __check_entry(self, start, end):
         response = self.c.get(
             '/timeline/%s/check_entry/%s/%s/' % (self.teacher.user.username, start, end)
