@@ -35,7 +35,7 @@ class TestSubscriptionStatus(TestCase):
         self.assertEqual(len(status), 5)
 
         ordinary_lessons_status = status[0]
-        self.assertIn('Curated session', ordinary_lessons_status['name'])
+        self.assertIn('Single', ordinary_lessons_status['name'])
         self.assertEqual(ordinary_lessons_status['used'], 0)
         self.assertEqual(ordinary_lessons_status['available'], 5)  # fill free to modify it when you've changed the subscription
 

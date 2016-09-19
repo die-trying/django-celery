@@ -24,7 +24,7 @@ class TestLessonsUnit(TestCase):
 
     def test_type_verbose_name(self):
         l = mixer.blend(lessons.OrdinaryLesson)
-        self.assertEqual(str(l.type_verbose_name), 'curated session')
+        self.assertIn('single', str(l.type_verbose_name))
 
     def test_assure_markdown_is_rendered(self):
         l = mixer.blend(lessons.OrdinaryLesson, description='**bold**')

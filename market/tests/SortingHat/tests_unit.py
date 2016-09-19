@@ -124,7 +124,7 @@ class TestScheduler(TestCase):
         s._SortingHat__get_class = Mock(return_value=None)
         s.find_a_class()
         self.assertEquals(s.err, 'E_CLASS_NOT_FOUND')
-        self.assertIn('curated session', s.msg)
+        self.assertIn('single', s.msg)
 
     def test_find_a_class_ok(self):
         s = self.get_the_hat()
