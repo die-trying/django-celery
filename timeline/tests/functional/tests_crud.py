@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from mixer.backend.django import mixer
 
-from elk.utils.testing import ClientTestCase, create_customer, create_teacher
+from elk.utils.testing import ClientTestCase, create_teacher
 from lessons import models as lessons
 from timeline.models import Entry as TimelineEntry
 

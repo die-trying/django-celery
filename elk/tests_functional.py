@@ -1,6 +1,6 @@
-from django.contrib.auth.models import User
-
-from elk.utils.testing import ClientTestCase
+# from django.contrib.auth.models import User
+#
+# from elk.utils.testing import ClientTestCase
 
 # this tests are commented out since there is no navbar for students
 # we'll uncomennt the when moving from vCita back to our scheduling system
