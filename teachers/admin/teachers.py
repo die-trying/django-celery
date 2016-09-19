@@ -1,14 +1,42 @@
 from django.contrib import admin
+from django.contrib.contenttypes.models import ContentType
+from django.db import models
 from django.template.defaultfilters import capfirst
-from django.utils.dateformat import format
+from suit.widgets import HTML5Input
 
-from elk.admin import ModelAdmin, TabularInline
+from elk.admin import ModelAdmin, StackedInline, TabularInline
+from extevents.models import ExternalEvent, GoogleCalendar
 from manual_class_logging.models import ManualClassLogEntry
 from teachers.models import Teacher, WorkingHours
 
 
-class WorkingHoursInline(admin.StackedInline):
+class WorkingHoursInline(StackedInline):
     model = WorkingHours
+
+
+class GooogleCalendarInline(TabularInline):
+    model = GoogleCalendar
+    fields = ('url', 'updated', 'found_events')
+    readonly_fields = ('updated', 'found_events')
+    extra = 1
+
+    formfield_overrides = {
+        models.URLField: {'widget': HTML5Input(input_type='url', attrs={'placeholder': 'Private Google calendar URL'})},
+    }
+
+    def updated(self, instance):
+        return self._datetime(instance.last_update)
+
+    def found_events(self, instance):
+        return ExternalEvent.objects \
+            .filter(src_id=instance.pk) \
+            .filter(src_type=ContentType.objects.get_for_model(instance)) \
+            .count()
+
+    class Media:
+        css = {
+            'all': ('admin/calendar_admin.css',),
+        }
 
 
 class ManualClassLogEntriesInline(TabularInline):
@@ -25,7 +53,7 @@ class ManualClassLogEntriesInline(TabularInline):
         return capfirst(instance.Class.lesson_type.model_class()._meta.verbose_name)
 
     def completion_time(self, instance):
-        return capfirst(format(instance.timestamp, 'b d h:m a'))
+        return self._datetime(instance.timestamp)
 
     def has_add_permission(self, request):
         return False
@@ -38,7 +66,7 @@ class ManualClassLogEntriesInline(TabularInline):
 class TeacherAdmin(ModelAdmin):
     list_display = ('__str__', 'manualy_completed_classes', 'lessons_allowed')
 
-    inlines = (ManualClassLogEntriesInline,)
+    inlines = (ManualClassLogEntriesInline, WorkingHoursInline, GooogleCalendarInline)
 
     def manualy_completed_classes(self, instance):
         return instance.manualy_completed_classes.count()

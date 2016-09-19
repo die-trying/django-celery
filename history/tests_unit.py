@@ -1,6 +1,4 @@
-from django.test import TestCase
-
-from elk.utils.testing import create_customer, mock_request
+from elk.utils.testing import TestCase, create_customer, mock_request
 from history.models import PaymentEvent
 from lessons.models import OrdinaryLesson
 from market.models import Class, Subscription

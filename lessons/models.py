@@ -180,23 +180,24 @@ class OrdinaryLesson(Lesson):
         return 100
 
     class Meta(Lesson.Meta):
-        verbose_name = _("Curated session")
+        verbose_name = _("Single session")
+        verbose_name_plural = _("Single lessons")
 
 
 class LessonWithNative(Lesson):
     @classmethod
     def sort_order(cls):
-        return 200
+        return 300
 
     class Meta(Lesson.Meta):
-        verbose_name = _("Native speaker session")
-        verbose_name_plural = _("Native speakers")
+        verbose_name = _("Native speaker")
+        verbose_name_plural = _("Native speaker sessions")
 
 
 class MasterClass(HostedLesson):
     @classmethod
     def sort_order(cls):
-        return 300
+        return 400
 
     class Meta(HostedLesson.Meta):
         verbose_name = _("Master Class")
@@ -206,7 +207,7 @@ class MasterClass(HostedLesson):
 class HappyHour(HostedLesson):
     @classmethod
     def sort_order(cls):
-        return 400
+        return 500
 
     class Meta(HostedLesson.Meta):
         verbose_name = _("Happy Hour")
@@ -215,7 +216,8 @@ class HappyHour(HostedLesson):
 class PairedLesson(HostedLesson):
     @classmethod
     def sort_order(cls):
-        return 500
+        return 200
 
     class Meta(Lesson.Meta):
-        verbose_name = _("Paired Lesson")
+        verbose_name = _("Paired session")
+        verbose_name_plural = ("Paired lessons")

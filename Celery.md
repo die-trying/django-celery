@@ -23,7 +23,11 @@ Create a file named `cron.py` in your application, and follow Celery [documentat
 
 Then, add a line to `settings.py`:
 ```python
-from your_app.cron import *  # noqa
-```
 
-This will populate django settings with your Celery configuration.
+CELERYBEAT_SCHEDULE = {
+    'check_classes_that_will_start_soon': {
+        'task': 'market.tasks.notify_15min_to_class',
+        'schedule': timedelta(minutes=1),
+    },
+
+```

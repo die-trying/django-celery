@@ -1,6 +1,4 @@
-from django.test import TestCase
-
-from elk.utils.testing import create_teacher
+from elk.utils.testing import TestCase, create_teacher
 
 
 class TestTeacherUnit(TestCase):

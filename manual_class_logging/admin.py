@@ -42,7 +42,7 @@ class ManualClassLogEntryAdmin(ModelAdmin):
     readonly_fields = ('teacher', 'Class')
 
     def date(self, instance):
-        return self._datetime(instance.timestamp) + ' ' + self._time(instance.timestamp)
+        return self._datetime(instance.timestamp)
 
     date.admin_order_field = 'timestamp'
 

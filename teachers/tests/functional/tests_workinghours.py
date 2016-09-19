@@ -9,7 +9,7 @@ from teachers.models import WorkingHours
 class TestWorkingHours(ClientTestCase):
     def setUp(self):
         self.teacher = create_teacher()
-        super().setUp()
+        
 
     def test_hours(self):
         """

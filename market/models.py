@@ -484,7 +484,7 @@ class Class(BuyableProduct):
             self.customer.save()
 
         entry = self.timeline
-        entry.classes.remove(self, bulk=True)  # expcitly disable runnin of self.save()
+        entry.classes.remove(self, bulk=True)  # expcitly disable running of self.save()
         self.timeline = None
         entry.save()
 

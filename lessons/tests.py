@@ -1,11 +1,10 @@
 import json
 
 from django.core.exceptions import ValidationError
-from django.test import TestCase
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
-from elk.utils.testing import ClientTestCase, create_teacher
+from elk.utils.testing import ClientTestCase, TestCase, create_teacher
 
 
 class TestLessonsUnit(TestCase):
@@ -25,7 +24,7 @@ class TestLessonsUnit(TestCase):
 
     def test_type_verbose_name(self):
         l = mixer.blend(lessons.OrdinaryLesson)
-        self.assertEqual(str(l.type_verbose_name), 'curated session')
+        self.assertIn('single', str(l.type_verbose_name))
 
     def test_assure_markdown_is_rendered(self):
         l = mixer.blend(lessons.OrdinaryLesson, description='**bold**')
@@ -42,7 +41,6 @@ class TestLessonsUnit(TestCase):
 class TestLessonsFunctional(ClientTestCase):
     def setUp(self):
         self.teacher = create_teacher()
-        super().setUp()
 
     def testAvailableLessonsJSON(self):
         """

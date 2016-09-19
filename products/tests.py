@@ -1,5 +1,4 @@
-from django.test import TestCase
-
+from elk.utils.testing import TestCase
 from lessons import models as lessons
 from products.models import Product1
 

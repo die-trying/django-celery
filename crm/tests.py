@@ -1,8 +1,7 @@
-from django.test import TestCase
 from mixer.backend.django import mixer
 
 from crm.models import Customer
-from elk.utils.testing import create_customer
+from elk.utils.testing import TestCase, create_customer
 from lessons import models as lessons
 from market.models import Class
 

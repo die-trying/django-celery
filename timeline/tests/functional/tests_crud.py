@@ -20,8 +20,6 @@ class EntryCRUDTest(ClientTestCase):
         self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher, duration=timedelta(minutes=33))
         self.lesson_type = ContentType.objects.get_for_model(lessons.MasterClass).pk
 
-        super().setUp()
-
     def testCRUD(self):
         self._create()
         self._update()

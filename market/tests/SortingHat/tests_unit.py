@@ -1,12 +1,11 @@
 from datetime import datetime
 from unittest.mock import Mock
 
-from django.test import TestCase
 from django.utils import timezone
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
-from elk.utils.testing import create_customer, create_teacher
+from elk.utils.testing import TestCase, create_customer, create_teacher
 from market.exceptions import CannotBeScheduled
 from market.models import Class, Subscription
 from market.sortinghat import SortingHat
@@ -125,7 +124,7 @@ class TestScheduler(TestCase):
         s._SortingHat__get_class = Mock(return_value=None)
         s.find_a_class()
         self.assertEquals(s.err, 'E_CLASS_NOT_FOUND')
-        self.assertIn('curated session', s.msg)
+        self.assertIn('single', s.msg)
 
     def test_find_a_class_ok(self):
         s = self.get_the_hat()

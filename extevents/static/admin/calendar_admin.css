@@ -1,0 +1,6 @@
+.field-updated {
+    white-space: nowrap;
+}
+.dynamic-google_calendars input[name^="google_calendars"] {
+    min-width: 450px;
+}

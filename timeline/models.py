@@ -10,7 +10,8 @@ from django.utils.dateformat import format
 from django.utils.timezone import localtime
 from django.utils.translation import ugettext as _
 
-from teachers.models import Teacher, WorkingHours
+from extevents.models import ExternalEvent
+from teachers.models import Absence, Teacher, WorkingHours
 
 MARK_ENTRIES_AUTOMATICALLY_FINISHED_AFTER = timedelta(minutes=60)
 
@@ -79,6 +80,35 @@ class Entry(models.Model):
     So, the prefered situation is when entry is saved by the corresponding
     class, and not by you!
 
+    Timeline entry validation
+    =========================
+    This model is also used to validate a distinct point in the timetable. The common
+    way to validate is to create an entry and run the model clean() method. All checks
+    are configurable by boolean instance parameters:
+        * allow_overlap: allow entries, that overlap with others
+        * allow_when_teacher_is_busy: allow entries, when there is a registered :model:`teachers.Absence`
+        * allow_besides_working_hours: allow entries the don't fit teachers :model:`teachers.WorkingHours`
+        * allow_when_teacher_has_external_events: allow entries that overlap some :model:`extevents.ExternalEvent`, e.g. teachers google calendar
+
+    By default all this checks are disabled, you should enable them manualy when creating a model:
+    ::
+        TimelineEntry = apps.get_model('timeline.Entry')
+        entry = TimelineEntry(
+            teacher=self,
+            start=start,
+            end=start + period,
+            allow_overlap=False,
+            allow_besides_working_hours=False,
+            allow_when_teacher_is_busy=False,
+            allow_when_teacher_has_external_events=False,
+        )
+        try:
+            entry.clean()
+        except ValidationError:
+            print "Entry does not fit the timeline!"
+        else:
+            print "Entry fits the timeline"
+
     JSON representation
     ===================
 
@@ -106,6 +136,8 @@ class Entry(models.Model):
     end = models.DateTimeField()
     allow_overlap = models.BooleanField(default=True)
     allow_besides_working_hours = models.BooleanField(default=True)
+    allow_when_teacher_is_busy = models.BooleanField(default=True)
+    allow_when_teacher_has_external_events = models.BooleanField(default=True)
 
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
     lesson_id = models.PositiveIntegerField(null=True, blank=True)
@@ -153,7 +185,7 @@ class Entry(models.Model):
 
     def save(self, *args, **kwargs):
         self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
-        self.__run_pre_save_checks()  # check for overlapping, teacher working hours, etc
+        self.clean()  # check for overlapping, teacher working hours, etc
         self.__update_slots()  # update free slot count, check if no classes were added without spare slots for it
 
         self.__notify_class_that_it_has_been_finished(*args, **kwargs)  # notify a parent class, that it is used and finished
@@ -194,14 +226,31 @@ class Entry(models.Model):
         if self.lesson:
             self.__get_data_from_lesson()   # When the entry is not saved, we can run into situation when we know the lesson, but don't know the end of entry.
 
-        try:
-            hours_start = self.teacher.working_hours.get(weekday=self.start.weekday())
-            hours_end = self.teacher.working_hours.get(weekday=self.end.weekday())
+        hours_start = WorkingHours.objects.for_date(teacher=self.teacher, date=self.start.strftime('%Y-%m-%d'))
+        hours_end = WorkingHours.objects.for_date(teacher=self.teacher, date=self.end.strftime('%Y-%m-%d'))
 
-        except WorkingHours.DoesNotExist:  # no working hours found for start date or end date
+        if hours_start is None or hours_end is None:
             return False
 
-        if not hours_start.does_fit(self.start.time()) or not hours_end.does_fit(self.end.time()):
+        if not hours_start.does_fit(self.start) or not hours_end.does_fit(self.end):
+            return False
+
+        return True
+
+    def teacher_is_present(self):
+        """
+        Check if teacher has no vacations for the entry period
+        """
+        if Absence.objects.approved().filter(teacher=self.teacher, start__lt=self.end, end__gt=self.start):
+            return False
+
+        return True
+
+    def teacher_has_no_events(self):
+        """
+        Check if teaher has no external events registered
+        """
+        if ExternalEvent.objects.filter(teacher=self.teacher, start__lt=self.end, end__gt=self.start):
             return False
 
         return True
@@ -230,12 +279,18 @@ class Entry(models.Model):
             'slots_available': self.slots,
         }
 
-    def __run_pre_save_checks(self):
+    def clean(self):
         if not self.allow_overlap and self.is_overlapping():
             raise ValidationError('Entry time overlapes with some other entry of this teacher')
 
         if not self.allow_besides_working_hours and not self.is_fitting_working_hours():
             raise ValidationError('Entry time does not fit teachers working hours')
+
+        if not self.allow_when_teacher_is_busy and not self.teacher_is_present():
+            raise ValidationError('Teacher is not available for the entry period')
+
+        if not self.allow_when_teacher_has_external_events and not self.teacher_has_no_events():
+            raise ValidationError('Teacher has external events in this period')
 
     def __self_delete_if_needed(self):
         """

@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
 
 from django.apps import apps
-from django.test import TestCase
 from django.utils.dateformat import format
 from django.utils.dateparse import parse_date
 
+import elk.templatetags.custom_humanize as humanize
 from elk.utils.date import ago, day_range, fwd
-from elk.utils.testing import create_customer, create_teacher, create_user
+from elk.utils.testing import TestCase, create_customer, create_teacher, create_user
 
 
 class TestDateUtils(TestCase):
@@ -24,7 +25,7 @@ class TestDateUtils(TestCase):
 
         self.assertEqual(fwd(days=16), format(datetime.now() + timedelta(days=16), 'Y-m-d'))
 
-    def testDayRange(self):
+    def test_day_range(self):
         r = day_range('2016-02-28')
         self.assertEquals(r, ('2016-02-28 00:00:00', '2016-02-28 23:59:59'))
 
@@ -59,3 +60,11 @@ class TestFixtures(TestCase):
         allowed_lessons = teacher.allowed_lessons.all()
         self.assertGreater(allowed_lessons.count(), 0)
         self.assertEqual(allowed_lessons[0].app_label, 'lessons')
+
+
+class TestTemplateTags(TestCase):
+    def test_naturaltime_stripping(self):
+        with patch('elk.templatetags.custom_humanize.humanize') as mocked_humanize:  # patching stock django 'humanize'
+            mocked_humanize.naturaltime = MagicMock(return_value='some staff from now')
+            result = humanize.naturaltime(100500)
+            self.assertEqual(result, 'some staff')

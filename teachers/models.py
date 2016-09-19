@@ -1,24 +1,28 @@
 from datetime import datetime, timedelta
 
+import pytz
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.template.defaultfilters import time
+from django.utils import timezone
+from django.utils.dateformat import format
 from django.utils.dateparse import parse_date
-from django.utils.timezone import make_aware, now
 from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
 
-from elk.utils.date import day_range, localize
+from elk.utils.date import day_range
 
 TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
 
 
 class SlotList(list):
     def as_dict(self):
-        return [localize(i).strftime('%H:%M') for i in sorted(self)]
+        return [{'server': time(timezone.localtime(i), 'H:i'), 'user': time(timezone.localtime(i), 'TIME_FORMAT')} for i in sorted(self)]
 
 
 class TeacherManager(models.Manager):
@@ -88,6 +92,9 @@ class Teacher(models.Model):
     description = MarkdownField()
     announce = MarkdownField('Short description')
     active = models.IntegerField(default=1, choices=ENABLED)
+
+    class Meta:
+        verbose_name = 'Teacher profile'
 
     def save(self, *args, **kwargs):
         """
@@ -180,7 +187,7 @@ class Teacher(models.Model):
         slots = SlotList()
         slot = start
         while slot + period <= end:
-            if not self.__check_overlap(slot, period):
+            if self.__check_availability(slot, period):
                 if slot >= self.__now():
                     slots.append(slot)
 
@@ -188,20 +195,26 @@ class Teacher(models.Model):
 
         return slots
 
-    def __check_overlap(self, start, period):
+    def __check_availability(self, start, period):
         """
-        Check, if a slot does not overlap with other timeline entries
-
-        This implementtion could be less expensive: it creates a timeline entry
-        per every testing slot
+        Create a test timeline entry and check if teacher is available.
         """
         TimelineEntry = apps.get_model('timeline.Entry')
         entry = TimelineEntry(
             teacher=self,
             start=start,
             end=start + period,
+            allow_overlap=False,
+            allow_besides_working_hours=False,
+            allow_when_teacher_is_busy=False,
+            allow_when_teacher_has_external_events=False,
         )
-        return entry.is_overlapping()
+        try:
+            entry.clean()
+        except ValidationError:
+            return False
+
+        return True
 
     def __delete_lesson_types_that_dont_require_a_timeline_entry(self, kwargs):
         """
@@ -221,7 +234,7 @@ class Teacher(models.Model):
             del kwargs['lesson_type']
 
     def __now(self):
-        return now()
+        return timezone.now()
 
 
 class WorkingHoursManager(models.Manager):
@@ -235,10 +248,13 @@ class WorkingHoursManager(models.Manager):
             hours = self.get(teacher=teacher, weekday=date.weekday())
         except ObjectDoesNotExist:
             return None
-        else:
-            hours.start = make_aware(datetime.combine(date, hours.start))
-            hours.end = make_aware(datetime.combine(date, hours.end))
-            return hours
+
+        server_tz = pytz.timezone(settings.TIME_ZONE)
+
+        hours.start = timezone.make_aware(datetime.combine(date, hours.start), timezone=server_tz)
+        hours.end = timezone.make_aware(datetime.combine(date, hours.end), timezone=server_tz)
+
+        return hours
 
 
 class WorkingHours(models.Model):
@@ -280,3 +296,31 @@ class WorkingHours(models.Model):
     class Meta:
         unique_together = ('teacher', 'weekday')
         verbose_name_plural = "Working hours"
+
+
+class AbsenceManager(models.Manager):
+    def approved(self):
+        return self.get_queryset().filter(is_approved=True)
+
+
+class Absence(models.Model):
+    ABSENCE_TYPES = (
+        ('vacation', _('Vacation')),
+        ('unpaid', _('Unpaid')),
+        ('sick', _('Sick leave')),
+        ('bonus', _('Bonus vacation')),
+        ('srv', _('System-intiated vacation'))
+    )
+
+    objects = AbsenceManager()
+
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='absences')
+    type = models.CharField(max_length=32, choices=ABSENCE_TYPES, default='srv')
+    start = models.DateTimeField('Start')
+    end = models.DateTimeField('End')
+    add_date = models.DateTimeField(auto_now_add=True)
+    is_approved = models.BooleanField(default=True)
+
+    def __str__(self):
+        return '%s of %s from %s to %s' % \
+            (self.type, str(self.teacher), format(self.start, 'Y-m-d H:i'), format(self.end, 'Y-m-d H:i'))

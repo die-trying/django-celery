@@ -34,7 +34,7 @@ def lesson_type_filter(types):
             checked=checked,
             val=lesson_type.pk,
             query_type=query_type,  # what popup should query — available teachers (for regular lessons), or avaialbe slots (for lesson_types)
-            name=lesson_type.model_class()._meta.verbose_name_plural
+            name=lesson_type.model_class()._meta.verbose_name
         )
     return result
 

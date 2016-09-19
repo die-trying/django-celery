@@ -23,7 +23,7 @@
             {% for payment in user.crm.payments.all %}
                 <tr>
                     <th class="payments-history__first-column">{{ forloop.counter }}</th>
-                    <td class="payments-history__date-column">{{ payment.time | naturalday:"SHORT_DATE_FORMAT" | capfirst }}, {{ payment.time | time:"SHORT_TIME_FORMAT" }}</td>
+                    <td class="payments-history__date-column">{{ payment.time | naturalday:"SHORT_DATE_FORMAT" | capfirst }}, {{ payment.time | time:"TIME_FORMAT" }}</td>
                     <td class="payments-history__product-column">{{ payment.product.name_for_user }}</td>
                     <td class="payments-history__price-column">{% money_localize payment.price %}</td>
                 </tr>
