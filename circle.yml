@@ -12,6 +12,7 @@ machine:
 dependencies:
   pre:
     - pip install --upgrade pip
+    - pip install flake8 mccabe pycodestyle pyflakes
     - chmod +x ./build/*.sh
 
   post:
