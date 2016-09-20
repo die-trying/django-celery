@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.template.defaultfilters import capfirst
 from suit.widgets import HTML5Input
@@ -28,10 +27,7 @@ class GooogleCalendarInline(TabularInline):
         return self._datetime(instance.last_update)
 
     def found_events(self, instance):
-        return ExternalEvent.objects \
-            .filter(src_id=instance.pk) \
-            .filter(src_type=ContentType.objects.get_for_model(instance)) \
-            .count()
+        return ExternalEvent.objects.by_src(instance).count()
 
     class Media:
         css = {
