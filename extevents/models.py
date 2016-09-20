@@ -1,7 +1,9 @@
 import datetime
+from copy import deepcopy
 
 import pytz
 import requests
+from dateutil.rrule import rrulestr
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -122,6 +124,8 @@ class ExternalEventSource(models.Model):
 
 
 class GoogleCalendar(ExternalEventSource):
+    EXTERNAL_EVENT_WEEK_COUNT = 8  # last all recurring events in 8 weeks to the future
+
     teacher = models.ForeignKey('teachers.Teacher', on_delete=models.CASCADE, related_name='google_calendars')
 
     def poll(self):
@@ -134,27 +138,65 @@ class GoogleCalendar(ExternalEventSource):
         except:
             self.events = []
         else:
-            self.events = [event for event in self.parse_events(res)]
+            self.events = list(event for event in self.parse_events(res))
 
     def parse_events(self, ical_str):
         """
         Generator of events parsed from ical_str.
-
-        Repeated events are not supported — you will see only the first one.
         """
         try:
             ical = Calendar.from_ical(ical_str)
         except:
-            """
-            Just stop event generation when can't parse calendar
-            """
             raise StopIteration
 
-        for component in ical.walk('VEVENT'):
-            event = self.parse_event(component)
+        yield from self.__simple_events(ical)  # first, parse all non-recurring events
+        yield from self.__recurring_events(ical)  # second — generate instances of ExternalEvent for every recurring event
 
-            if event.start < timezone.now():
+    def __simple_events(self, ical):
+        """
+        Generate non-recurring events from icalendar. Ignore events in the past.
+        """
+        for ev in ical.walk('VEVENT'):
+            if ev.get('rrule') is None:  # rrule is a repeating rule from icalendar RFC
+                event = self.parse_event(ev)
+
+                if event.start < timezone.now():
+                    continue
+
+                yield event
+
+    def __recurring_events(self, ical):
+        """
+        Generate recurring events from icalendar. Ignore events from the past except the first one.
+        """
+        for ev in ical.walk('VEVENT'):
+            rrule = ev.get('rrule')  # rrule is a repeating rule from icalendar RFC
+            if rrule is not None:
+                basic_event = self.parse_event(ev)
+
+                yield basic_event  # return basic event as the first event of the spree
+                yield from self.__recurring_event_generator(rrule, basic_event)
+
+    def __recurring_event_generator(self, rrule, basic_event):
+        """
+        The main generator of recuring events.
+        Input — generation rule (http://icalendar.readthedocs.io/en/latest/api.html#icalendar.prop.vRecur) and the source event(:model:`extevents.ExternalEvent`).
+        Output — bunch of events, starting from the next future event, ending in timedelta(weeks=self.EXTERNAL_EVENT_WEEK_COUNT)
+        """
+        generating_rule = "RRULE:" + rrule.to_ical().decode()  # build a string, parsable by dateutil.rrulestr, see https://dateutil.readthedocs.io/en/stable/rrule.html
+
+        length = basic_event.end - basic_event.start  # basic length of event, apllited to all generated events
+
+        for i in rrulestr(s=generating_rule, dtstart=basic_event.start):
+            if i < timezone.now():
                 continue
+
+            if (i - timezone.now()) > datetime.timedelta(weeks=self.EXTERNAL_EVENT_WEEK_COUNT):
+                raise StopIteration
+
+            event = deepcopy(basic_event)
+            event.start = i
+            event.end = i + length
 
             yield event
 

@@ -1,5 +1,6 @@
 from elk.utils.testing import TestCase, create_teacher
 from unittest.mock import MagicMock
+from os.path import join
 
 import extevents.models as models
 
@@ -18,10 +19,12 @@ class GoogleCalendarTestCase(TestCase):
         )
         self.src.save()
 
-    def fixtured_calendar(self, src):
+    def read_fixture(self, src):
         """
         Read an .ICS file and return it's content
         """
+        src = join('./extevents/fixtures/', src)
+
         return str(open(src, 'r').read())
 
     def fake_event(self, start, end):
