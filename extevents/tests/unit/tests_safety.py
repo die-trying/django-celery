@@ -32,6 +32,23 @@ class TestEventSourceSafety(GoogleCalendarTestCase):
 
         self.assertTrue(self.src._ExternalEventSource__is_safe())
 
+    def test_is_safe_to_delete_10_recurring_event(self):
+        """
+        Try to replace 12 events (10 of them recurring) with 2 events
+        """
+        mixer.blend(ExternalEvent, teacher=self.teacher, src=self.src)  # some event
+        parent_event = mixer.blend(ExternalEvent, teacher=self.teacher, src=self.src)  # this event will be parent to 10 others
+
+        for i in range(0, 10):
+            mixer.blend(ExternalEvent, teacher=self.teacher, src=self.src, parent=parent_event)
+
+        for i in range(0, 2):  # create 2 non-saved events
+            self.src.events.append(
+                self.safe_mixer.blend(ExternalEvent, teacher=self.teacher, src=self.src)
+            )
+
+        self.assertTrue(self.src._ExternalEventSource__is_safe())
+
     def test_unsafe_with_zero_events(self):
         """
         Try to replace 10 events by 0 events

@@ -28,6 +28,8 @@ class ExternalEvent(models.Model):
     src_id = models.PositiveIntegerField()
     src = GenericForeignKey('src_type', 'src_id')
 
+    parent = models.ForeignKey('self', null=True, blank=True)
+
     start = models.DateTimeField()
     end = models.DateTimeField()
     description = models.CharField(max_length=140)
@@ -114,7 +116,7 @@ class ExternalEventSource(models.Model):
         if len(self.events) == 0 and self.previous_events().count() > 1:
             return False
 
-        if self.previous_events().count() > 4 and self.previous_events().count() / len(self.events) > 2:
+        if self.previous_events().filter(parent__isnull=True).count() > 4 and self.previous_events().filter(parent__isnull=True).count() / len(self.events) > 2:
             return False
 
         return True
@@ -197,6 +199,8 @@ class GoogleCalendar(ExternalEventSource):
             event = deepcopy(basic_event)
             event.start = i
             event.end = i + length
+
+            event.parent = basic_event
 
             yield event
 

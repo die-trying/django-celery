@@ -75,6 +75,20 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
             self.assertEqual(ev.src, self.src)
 
     @patch('extevents.models.timezone')
+    def test_recurring_events_do_store_parent(self, timezone):
+        """
+        Generated recurring events should store parent event.
+        """
+        timezone.now = MagicMock(return_value=self.tzdatetime('UTC', 2023, 9, 11, 10, 0))
+        ical = Calendar.from_ical(self.read_fixture('recurring.ics'))
+
+        events = list(self.src._GoogleCalendar__recurring_events(ical))
+
+        parent_event = events.pop(0)
+        for ev in events:
+            self.assertEqual(ev.parent, parent_event)
+
+    @patch('extevents.models.timezone')
     def test_simple_and_recurring_events_mixup(self, timezone):
         timezone.now = MagicMock(return_value=self.tzdatetime('UTC', 2023, 9, 11, 10, 0))
         events = list(self.src.parse_events(self.read_fixture('simple-plus-recurring.ics')))  # read and parse the 'simple.ics' fixture
