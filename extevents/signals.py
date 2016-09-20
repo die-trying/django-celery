@@ -10,7 +10,7 @@ unsafe_calendar_update = Signal(providing_args=['instance'])
 def unsafe_calendar_update_notify(sender, **kwargs):
     src = kwargs['instance']
     owl = Owl(
-        template='mailer/service/unsafe_calendar_update.html',
+        template='mail/service/unsafe_calendar_update.html',
         ctx={
             'teacher': str(src.teacher),
             'previous_events_count': src.previous_events().count(),

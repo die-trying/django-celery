@@ -228,16 +228,16 @@ CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
 
 CELERYBEAT_SCHEDULE = {
     'check_classes_that_will_start_soon': {
-        'task': 'market.tasks.notify_15min_to_class',
-        'schedule': timedelta(minutes=5),
+        'task': 'timeline.tasks.notify_15min_to_class',
+        'schedule': timedelta(minutes=1),
     },
     'mark_classes_as_fully_used': {
         'task': 'market.tasks.mark_classes_as_fully_used',
-        'schedule': timedelta(minutes=5),
+        'schedule': timedelta(minutes=1),
     },
     'update_google_calendars': {
         'task': 'extevents.tasks.update_google_calendars',
-        'schedule': timedelta(minutes=1),
+        'schedule': timedelta(minutes=5),
     },
 }
 

@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.core import mail
 from django.utils import timezone
 from mixer.backend.django import mixer
 
@@ -94,6 +95,21 @@ class ScheduleTestCase(TestCase):
         )
         c.save()
         self.assertEquals(c.timeline, entry)
+
+    def test_schedule_email(self):
+        lesson = products.OrdinaryLesson.get_default()
+        c = self._buy_a_lesson(lesson)
+        c.schedule(
+            teacher=self.host,
+            date=datetime(2016, 8, 17, 10, 1),
+            allow_besides_working_hours=True,
+        )
+        c.save()
+
+        self.assertEqual(len(mail.outbox), 2)  # 1 email for the teacher and 1 email for the student
+        self.assertEqual(mail.outbox[0].to[0], self.customer.user.email)
+        self.assertIn(self.customer.user.email, mail.outbox[0].to)
+        self.assertIn(self.host.user.email, mail.outbox[1].to)
 
     def test_cant_automatically_schedule_lesson_that_requires_a_timeline_entry(self):
         """
