@@ -188,7 +188,7 @@ class GoogleCalendar(ExternalEventSource):
             and '23:59' to the end time.
             """
             start = datetime.datetime.combine(start, datetime.time.min.replace(tzinfo=pytz.timezone('UTC')))  # 00:00 in UTC timezone
-            end = datetime.datetime.combine(end, datetime.time.min.replace(tzinfo=pytz.timezone('UTC')))  # 23:59 in UTC timezone
+            end = datetime.datetime.combine(end, datetime.time.max.replace(tzinfo=pytz.timezone('UTC')))  # 23:59 in UTC timezone
 
         return (start, end)
 

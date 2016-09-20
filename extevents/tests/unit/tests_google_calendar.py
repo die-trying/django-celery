@@ -71,4 +71,4 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
         (a, b) = self.src._GoogleCalendar__event_time(event)
 
         self.assertEqual(a, self.tzdatetime('UTC', 2016, 12, 5, 0, 0))
-        self.assertEqual(b, self.tzdatetime('UTC', 2016, 12, 5, 0, 0))
+        self.assertEqual(b, self.tzdatetime('UTC', 2016, 12, 5, 23, 59, 59, 999999))
