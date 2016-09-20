@@ -27,6 +27,7 @@ ALLOWED_HOSTS = [
 
 SUPPORT_EMAIL = 'help@elk.today'
 SERVER_EMAIL = 'django@elk.today'
+EMAIL_NOTIFICATIONS_FROM = env('EMAIL_NOTIFICATIONS_FROM')
 
 ADMINS = [
     ('Fedor Borshev', 'f@f213.in'),
@@ -217,7 +218,6 @@ ANYMAIL = {
 }
 EMAIL_BACKEND = env('EMAIL_BACKEND')
 EMAIL_ASYNC = env.bool('EMAIL_ASYNC')
-EMAIL_NOTIFICATIONS_FROM = env('EMAIL_NOTIFICATIONS_FROM')
 
 CACHES = {
     'default': env.cache(),

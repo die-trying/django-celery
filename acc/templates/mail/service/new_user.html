@@ -8,7 +8,7 @@ Dashboard: {{ user.crm.full_name }}, a new student!
 {% block body %}
 {% trans 'Hi there!' %}
 
-{% trans "We've got a registered student from" %} {{ user.crm.source }} — {{ user.crm.full_name }}.
+{% trans "We've got a registered student via" %} {{ user.crm.source }} — {{ user.crm.full_name }}.
 
 {% include 'mailer/_signature.html' %}
 {% endblock %}
