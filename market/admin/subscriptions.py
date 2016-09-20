@@ -14,7 +14,7 @@ class IsFinishedFilter(BooleanFilter):
         return queryset.filter(is_fully_used=True)
 
     def f(self, request, queryset):
-        return queryset.filer(is_fully_used=False)
+        return queryset.filter(is_fully_used=False)
 
 
 @admin.register(Subscription)
