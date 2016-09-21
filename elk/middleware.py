@@ -1,5 +1,6 @@
-from django.contrib.gis.geoip import GeoIP
 from django.utils import timezone
+
+from elk.geoip import GeoIP
 
 
 class TimezoneMiddleware():
@@ -17,7 +18,14 @@ class SaveRefMiddleWare():
 
 class GuessCountryMiddleWare():
     def process_request(self, request):
-        g = GeoIP()
-        ip = request.META.get('REMOTE_ADDR')
-        country = g.country(ip)
-        request.session['country'] = country['country_code']
+        if request.session.get('country') is None:
+            ip = request.META.get('REMOTE_ADDR')
+            try:
+                g = GeoIP(ip)
+            except:
+                return
+
+            request.session['country'] = g.country.iso_code
+
+            if request.user is None or request.user.id is None:
+                request.session['guessed_time_zone'] = g.location.time_zone

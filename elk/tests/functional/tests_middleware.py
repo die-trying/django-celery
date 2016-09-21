@@ -21,9 +21,30 @@ class TestTimezoneMiddleware(ClientTestCase):
 
 
 class TestGuessCountryMiddleware(ClientTestCase):
-    def test_country_guessing(self):
+    def setUp(self):
+        self.c.login(username=self.superuser_login, password=self.superuser_password)
+
+    def test_country_guessing_US(self):
         self.c.get('/', REMOTE_ADDR='8.8.8.8')
         self.assertEqual(self.c.session.get('country'), 'US')
 
+    def test_country_guessing_RU(self):
+        """
+        We need 2 tests to clear session
+        """
         self.c.get('/', REMOTE_ADDR='195.218.200.11')
         self.assertEqual(self.c.session.get('country'), 'RU')
+
+    def test_timezone_guessing_passed_when_user_is_registered(self):
+        self.c.get('/', REMOTE_ADDR='77.37.209.115')
+        self.assertIsNone(self.c.session.get('guessed_time_zone'))
+
+    def test_timezone_guessing_RU(self):
+        self.c.logout()
+        self.c.get('/', REMOTE_ADDR='77.37.209.115')
+        self.assertEqual(self.c.session.get('guessed_time_zone'), 'Europe/Moscow')
+
+    def test_timezone_guessing_US(self):
+        self.c.logout()
+        self.c.get('/', REMOTE_ADDR='71.192.161.223')
+        self.assertEqual(self.c.session.get('guessed_time_zone'), 'America/New_York')
