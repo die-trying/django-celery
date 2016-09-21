@@ -58,7 +58,6 @@ INSTALLED_APPS = [
     'django_markdown',
     'django_user_agents',
     'social.apps.django_app.default',
-    'easy_timezones',
     'timezone_field',
     'django_nose',
     'django.contrib.admindocs',
@@ -87,7 +86,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.admindocs.middleware.XViewMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    #'easy_timezones.middleware.EasyTimezoneMiddleware',
+    'elk.middleware.GuessCountryMiddleWare',
     'elk.middleware.TimezoneMiddleware',
     'elk.middleware.SaveRefMiddleWare',
 ]
@@ -153,6 +152,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.load_extra_data',
     'social.pipeline.user.user_details',
     'acc.pipelines.save_profile_picture',
+    'acc.pipelines.save_country',
     'acc.pipelines.save_referral',
     'acc.pipelines.notify_staff',
 )
@@ -244,8 +244,7 @@ CELERYBEAT_SCHEDULE = {
 
 CELERY_TIMEZONE = env('TIME_ZONE')
 
-GEOIP_DATABASE = './geolite/GeoLiteCity.dat'
-GEOIPV6_DATABASE = './geolite/GeoLiteCityv6.dat'
+GEOIP_PATH = './geolite/'
 
 
 # Uncomment this lines to catch all runtime warnings as errors

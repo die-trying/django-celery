@@ -99,6 +99,20 @@ def save_profile_picture(strategy, backend, user, response, is_new=False, *args,
         profile_saver.run()
 
 
+def save_country(strategy, backend, user, response, is_new=False, *args, **kwargs):
+    """
+    Save country guessed by geotargeting
+    """
+    if not is_new:
+        return
+
+    country = strategy.session_get('country')
+
+    if country is not None:
+        user.crm.country = country
+        user.crm.save()
+
+
 def save_referral(strategy, backend, user, response, is_new=False, *args, **kwargs):
     """
     Store referral inside the customer model

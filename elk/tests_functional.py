@@ -19,6 +19,16 @@ class TestTimezoneMiddleware(ClientTestCase):
         self.assertEqual(response.context['user'], self.customer.user)  # we should now be logged in with generated user, not the default one
         self.assertEqual(response.context['TIME_ZONE'], 'Africa/Addis_Ababa')
 
+
+class TestGuessCountryMiddleware(ClientTestCase):
+    def test_country_guessing(self):
+        self.c.get('/', REMOTE_ADDR='8.8.8.8')
+        self.assertEqual(self.c.session.get('country'), 'US')
+
+        self.c.get('/', REMOTE_ADDR='195.218.200.11')
+        self.assertEqual(self.c.session.get('country'), 'RU')
+
+
 # this tests are commented out since there is no navbar for students
 # we'll uncomennt the when moving from vCita back to our scheduling system
 
