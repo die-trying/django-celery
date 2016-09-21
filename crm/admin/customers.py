@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.utils.translation import ugettext as _
 
 from crm.models import Customer, CustomerNote
-from elk.admin import BooleanFilter, ModelAdmin, StackedInline
+from elk.admin import ModelAdmin, StackedInline
+from elk.admin.filters import BooleanFilter
 from market.admin.components import ClassesLeftInline, ClassesPassedInline, SubscriptionsInline
 from market.models import Subscription
 

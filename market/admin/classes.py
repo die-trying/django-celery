@@ -1,7 +1,7 @@
 from date_range_filter import DateRangeFilter
 from django.contrib import admin
 
-from elk.admin import BooleanFilter
+from elk.admin.filters import BooleanFilter
 from market.admin.actions import MarkAsUsedForm, mark_as_used, renew
 from market.admin.components import BuyableModelAdmin
 from market.models import Class
