@@ -25,7 +25,7 @@ class GuessCountryMiddleWare():
             except:
                 return
 
-            request.session['country'] = g.country.iso_code
+            request.session['country'] = g.country
 
             if request.user is None or request.user.id is None:
-                request.session['guessed_time_zone'] = g.location.time_zone
+                request.session['guessed_time_zone'] = g.timezone
