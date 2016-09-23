@@ -6,6 +6,7 @@ from requests import HTTPError, request
 
 from acc.signals import new_user_registered
 from crm.models import Customer
+from elk.logging import logger
 
 
 class SaveSocialProfile(metaclass=ABCMeta):
@@ -44,7 +45,7 @@ class SaveSocialProfile(metaclass=ABCMeta):
             response = request('GET', url)
             response.raise_for_status()
         except HTTPError:
-            pass
+            logger.error('Error fetching user avatar', exc_info=True, extra={'response': response})
         else:
             self.profile_picture = ContentFile(response.content)
 
@@ -113,7 +114,7 @@ def save_country(strategy, backend, user, response, is_new=False, *args, **kwarg
             user.crm.country = country
             user.crm.save()
         except:
-            pass
+            logger.warning("Incorrect country during self-registration")
 
 
 def save_timezone(strategy, backend, user, response, is_new=False, *args, **kwargs):
@@ -127,7 +128,10 @@ def save_timezone(strategy, backend, user, response, is_new=False, *args, **kwar
             user.crm.timezone = timezone
             user.crm.save()
         except ValidationError:
-            pass
+            logger.warning("Incorrect timezone during self-registration")
+
+    else:
+        logger.warning("Could not guess timezone during self-registration")
 
 
 def save_referral(strategy, backend, user, response, is_new=False, *args, **kwargs):
