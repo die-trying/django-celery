@@ -37,14 +37,14 @@ class TestGuessCountryMiddleware(ClientTestCase):
 
     def test_timezone_guessing_passed_when_user_is_registered(self):
         self.c.get('/', REMOTE_ADDR='77.37.209.115')
-        self.assertIsNone(self.c.session.get('guessed_time_zone'))
+        self.assertIsNone(self.c.session.get('guessed_timezone'))
 
     def test_timezone_guessing_RU(self):
         self.c.logout()
         self.c.get('/', REMOTE_ADDR='77.37.209.115')
-        self.assertEqual(self.c.session.get('guessed_time_zone'), 'Europe/Moscow')
+        self.assertEqual(self.c.session.get('guessed_timezone'), 'Europe/Moscow')
 
     def test_timezone_guessing_US(self):
         self.c.logout()
         self.c.get('/', REMOTE_ADDR='71.192.161.223')
-        self.assertEqual(self.c.session.get('guessed_time_zone'), 'America/New_York')
+        self.assertEqual(self.c.session.get('guessed_timezone'), 'America/New_York')

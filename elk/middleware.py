@@ -28,4 +28,4 @@ class GuessCountryMiddleWare():
             request.session['country'] = g.country
 
             if request.user is None or request.user.id is None:
-                request.session['guessed_time_zone'] = g.timezone
+                request.session['guessed_timezone'] = g.timezone

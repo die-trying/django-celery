@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from mixer.backend.django import mixer
 
 from crm.models import Customer
@@ -44,3 +45,12 @@ class CustomerTestCase(TestCase):
         )
         c.save()
         self.assertTrue(customer.can_schedule_classes())
+
+    def test_invalid_timezone(self):
+        """
+        Assign an invalid timezone to the customer
+        """
+        c = create_customer()
+        with self.assertRaises(ValidationError):
+            c.timezone = 'Noga/Test'
+            c.save()

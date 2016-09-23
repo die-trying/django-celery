@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from requests import HTTPError, request
 
@@ -107,10 +108,26 @@ def save_country(strategy, backend, user, response, is_new=False, *args, **kwarg
         return
 
     country = strategy.session_get('country')
-
     if country is not None:
-        user.crm.country = country
-        user.crm.save()
+        try:
+            user.crm.country = country
+            user.crm.save()
+        except:
+            pass
+
+
+def save_timezone(strategy, backend, user, response, is_new=False, *args, **kwargs):
+    if not is_new:
+        return
+
+    timezone = strategy.session_get('guessed_timezone')
+
+    if timezone is not None:
+        try:
+            user.crm.timezone = timezone
+            user.crm.save()
+        except ValidationError:
+            pass
 
 
 def save_referral(strategy, backend, user, response, is_new=False, *args, **kwargs):

@@ -153,6 +153,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.user.user_details',
     'acc.pipelines.save_profile_picture',
     'acc.pipelines.save_country',
+    'acc.pipelines.save_timezone',
     'acc.pipelines.save_referral',
     'acc.pipelines.notify_staff',
 )
