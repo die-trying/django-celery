@@ -196,21 +196,21 @@ if not DEBUG:
         'dsn': env('SENTRY_DSN'),
     }
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'sentry': {
-            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'sentry': {
+                'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+            },
         },
-    },
-    'loggers': {
-        'app': {
-            'level': 'DEBUG',
-            'handlers': ['sentry'],
+        'loggers': {
+            'app': {
+                'level': 'DEBUG',
+                'handlers': ['sentry'],
+            },
         },
-    },
-}
+    }
 
 SOCIAL_AUTH_URL_NAMESPACE = 'acc:social'
 
