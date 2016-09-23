@@ -11,6 +11,8 @@ from teachers.models import Teacher, WorkingHours
 
 class WorkingHoursInline(StackedInline):
     model = WorkingHours
+    verbose_name = 'Weekday'
+    verbose_name_plural = 'Comfortable hours'
 
 
 class GooogleCalendarInline(TabularInline):
