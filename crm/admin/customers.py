@@ -77,6 +77,7 @@ class ExistingCustomerAdmin(ModelAdmin):
     )
     actions = None
     readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions', 'corporate')
+    search_fields = ('user__first_name', 'user__last_name')
     inlines = (CustomerNotesInline, SubscriptionsInline, ClassesLeftInline, ClassesPassedInline)
     fieldsets = (
         (None, {
