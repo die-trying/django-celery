@@ -23,6 +23,7 @@ DEBUG = env('DEBUG')    # False if not in os.environ
 ALLOWED_HOSTS = [
     'a.elk.today',
     'a-staging.elk.today',
+    '127.0.0.1',
 ]
 
 SUPPORT_EMAIL = 'help@elk.today'
@@ -63,6 +64,7 @@ INSTALLED_APPS = [
     'django.contrib.admindocs',
     'suit',
     'date_range_filter',
+    'raven.contrib.django.raven_compat',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -187,6 +189,53 @@ INTERNAL_IPS = [
     '91.197.114.155',
     '91.197.113.166',
 ]
+
+RAVEN_CONFIG = {
+    'dsn': env('SENTRY_DSN'),
+}
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s '
+                      '%(process)d %(thread)d %(message)s'
+        },
+    },
+    'handlers': {
+        'sentry': {
+            'level': 'WARNING',  # To capture more than ERROR, change to WARNING, INFO, etc.
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+            'tags': {'custom-tag': 'x'},
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        }
+    },
+    'loggers': {
+        'root': {
+            'level': 'WARNING',
+            'handlers': ['sentry'],
+        },
+        'django.db.backends': {
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        'raven': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        'sentry.errors': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+    },
+}
 
 SOCIAL_AUTH_URL_NAMESPACE = 'acc:social'
 
