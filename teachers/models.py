@@ -157,6 +157,28 @@ class Teacher(models.Model):
                     return [Model.get_default()]  # all non-hosted lessons except the default one are for subscriptions, nobody needs to host or plan them
         return []
 
+    def available_lesson_types(self):
+        """
+        Get contenttypes of lessons, allowed to host
+        """
+        lesson_types = {}
+        for i in self.allowed_lessons.all():
+            Model = i.model_class()
+
+            if not hasattr(Model, 'sort_order'):
+                continue
+
+            if hasattr(Model, 'host') and not self.available_lessons(i):  # hosted lessons should be returned only if they have lessons
+                continue
+
+            lesson_types[Model.sort_order()] = i
+
+        result = []  # sort by sort_order defined in the lessons
+        for i in sorted(list(lesson_types.keys())):
+            result.append(lesson_types[i])
+
+        return result
+
     def timeline_url(self):
         """
         Get teacher's timeline URL

@@ -9,7 +9,7 @@
             <div class="timeline-entry-form__lesson">
                 <div class="form-group">
                     <select required name="lesson_type" id="{{ form.lesson_type.id_for_label }}" class="form-control" title="Event type">
-                    {% for lesson_type in teacher.allowed_lessons.all %}
+                    {% for lesson_type in teacher.available_lesson_types %}
                         <option value = "{{ lesson_type.pk }}">{{ lesson_type.name }}</option>
                     {% endfor %}
                     </select>
