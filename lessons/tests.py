@@ -38,35 +38,68 @@ class TestLessonsUnit(TestCase):
         self.assertEqual(result['available_slots_count'], 100500)
 
 
-class TestLessonsFunctional(ClientTestCase):
+class TestLessonsAPI(ClientTestCase):
+    fixtures = ('lessons',)
+
     def setUp(self):
         self.teacher = create_teacher()
 
-    def testAvailableLessonsJSON(self):
+    def test_non_hosted_lessons_json(self):
         """
-        Fetch JSON with lessons of certain type, available to generated user
+        Fetch JSON with non-hosted lessons, available to the generated teacher
         """
-        for lesson in (lessons.OrdinaryLesson, lessons.MasterClass, lessons.HappyHour):
-            self.__test_lesson(lesson)
+        lesson_type = lessons.OrdinaryLesson.get_contenttype()
 
-    def __test_lesson(self, klass):
-        mocked_lessons = {}
-
-        for i in range(0, 55):
-            mocked_lesson = mixer.blend(klass, host=self.teacher)
-            mocked_lessons[mocked_lesson.pk] = mocked_lesson
-
-        lesson_type_id = klass.get_contenttype().pk
-
-        response = self.c.get('/lessons/%s/type/%d/available.json' % (self.teacher.user.username, lesson_type_id))
+        response = self.c.get('/lessons/%s/type/%d/available.json' % (self.teacher.user.username, lesson_type.pk))
 
         self.assertEquals(response.status_code, 200)
+
         got_lessons = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(len(got_lessons), 1)
 
-        self.assertEqual(len(got_lessons), 55)
+    def test_non_hosted_lesson_passed_other_lessons(self):
+        """
+        Check, if non-hosted lessons output bypasses non-default non-hosted lessons
+        """
+        for i in range(0, 5):
+            mixer.blend(lessons.OrdinaryLesson)
 
-        for i in got_lessons:
-            mocked_lesson = mocked_lessons[i['id']]
-            self.assertEqual(i['name'], mocked_lesson.name)
-            self.assertEqual(i['duration'], str(mocked_lesson.duration))
-            self.assertEqual(i['required_slots'], mocked_lesson.slots)
+        # copy-paste from previous test
+        lesson_type = lessons.OrdinaryLesson.get_contenttype()
+
+        response = self.c.get('/lessons/%s/type/%d/available.json' % (self.teacher.user.username, lesson_type.pk))
+
+        self.assertEquals(response.status_code, 200)
+
+        got_lessons = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(len(got_lessons), 1)
+        # copy-paste end
+
+        default_lesson = lessons.OrdinaryLesson.get_default()
+
+        got_lesson = got_lessons[0]
+
+        self.assertDictEqual(got_lesson, default_lesson.as_dict())
+
+    def test_hosted_lessons_json(self):
+        """
+        Fetch JSON with hosted lessons, available to the generated teacher
+        """
+        for klass in (lessons.MasterClass, lessons.HappyHour):
+            mocked_lessons = {}
+            for i in range(0, 5):
+                mocked_lesson = mixer.blend(klass, host=self.teacher)
+                mocked_lessons[mocked_lesson.pk] = mocked_lesson
+
+            lesson_type_id = klass.get_contenttype().pk
+
+            response = self.c.get('/lessons/%s/type/%d/available.json' % (self.teacher.user.username, lesson_type_id))
+
+            self.assertEquals(response.status_code, 200)
+            got_lessons = json.loads(response.content.decode('utf-8'))
+
+            self.assertEqual(len(got_lessons), 5)
+
+            for i in got_lessons:
+                mocked_lesson = mocked_lessons[i['id']]
+                self.assertDictEqual(i, mocked_lesson.as_dict())

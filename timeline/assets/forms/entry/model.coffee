@@ -41,6 +41,9 @@ class Model extends MicroEvent
 
         @lessons.push lesson
 
+      if @lessons.length is 1  # if we've got only 1 lesson — it should be the default one
+        @lessons[0].selected = ' selected '
+
       @trigger 'lessons_fetched'
 
   set_lesson: () ->

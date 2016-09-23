@@ -16,7 +16,7 @@
                 </div>
                 <div class="form-group">
                     <select required name="lesson_id" id="{{ form.lesson_id.id_for_label }}" class="form-control" title="Choose a lesson">
-                        <option rv-each-lesson="model.lessons" rv-value="lesson.id" rv-text="lesson.name"></option>
+                        <option rv-each-lesson="model.lessons" rv-value="lesson.id" rv-text="lesson.name" rv-selected="lesson.selected"></option>
                     </select>
                 </div>
             </div>

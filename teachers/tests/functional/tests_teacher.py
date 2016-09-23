@@ -5,7 +5,7 @@ from lessons import models as lessons
 
 
 class TestTeacherFunctional(TestCase):
-    fixtures = ('crm', 'teachers')
+    fixtures = ('crm', 'teachers', 'lessons')
 
     def setUp(self):
         self.teacher = create_teacher(accepts_all_lessons=False)
@@ -21,7 +21,7 @@ class TestTeacherFunctional(TestCase):
         self.teacher.allowed_lessons.add(lessons.MasterClass.get_contenttype())
         master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
 
-        res = self.teacher.available_lessons(lesson_type=lessons.MasterClass.get_contenttype().pk)
+        res = self.teacher.available_lessons(lesson_type=lessons.MasterClass.get_contenttype())
         self.assertEqual(len(res), 1)
         self.assertEqual(res[0], master_class)
 
@@ -30,20 +30,20 @@ class TestTeacherFunctional(TestCase):
         another_teacher.allowed_lessons.add(lessons.MasterClass.get_contenttype())
 
         mixer.blend(lessons.MasterClass, host=another_teacher)
-        res = self.teacher.available_lessons(lesson_type=lessons.MasterClass.get_contenttype().pk)
+        res = self.teacher.available_lessons(lesson_type=lessons.MasterClass.get_contenttype())
 
         self.assertEqual(len(res), 0)
 
     def test_unhosted_lessons_ok(self):
-        ordinary_lesson = mixer.blend(lessons.OrdinaryLesson)
         self.teacher.allowed_lessons.add(lessons.OrdinaryLesson.get_contenttype())
+        self.teacher.save()
 
-        res = self.teacher.available_lessons(lesson_type=lessons.OrdinaryLesson.get_contenttype().pk)
+        res = self.teacher.available_lessons(lesson_type=lessons.OrdinaryLesson.get_contenttype())
         self.assertEqual(len(res), 1)
-        self.assertEqual(res[0], ordinary_lesson)
+        self.assertEqual(res[0].get_contenttype(), lessons.OrdinaryLesson.get_contenttype())
 
     def test_unhosted_lessons_fail_due_to_no_permission(self):
         mixer.blend(lessons.OrdinaryLesson)
-        res = self.teacher.available_lessons(lesson_type=lessons.OrdinaryLesson.get_contenttype().pk)
+        res = self.teacher.available_lessons(lesson_type=lessons.OrdinaryLesson.get_contenttype())
 
         self.assertEqual(len(res), 0)

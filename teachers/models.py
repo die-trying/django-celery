@@ -149,12 +149,12 @@ class Teacher(models.Model):
         Get list of lessons, that teacher can lead
         """
         for i in self.allowed_lessons.all():
-            if i.pk == lesson_type:
+            if i == lesson_type:
                 Model = i.model_class()
                 if hasattr(Model, 'host'):
                     return Model.objects.filter(host=self)
                 else:
-                    return Model.objects.all()
+                    return [Model.get_default()]  # all non-hosted lessons except the default one are for subscriptions, nobody needs to host or plan them
         return []
 
     def timeline_url(self):
