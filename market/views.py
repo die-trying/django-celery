@@ -1,6 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 
 from market.sortinghat import SortingHat
 from teachers.models import Teacher
@@ -12,6 +14,7 @@ def teachers(request, date, lesson_type):
     Return of JSON of time slots, avaialbe for planning. The used method is
     :model:`teachers.Teacher`.find_free, filtering is done via :model:`timeline.Entry`.
     """
+    date = timezone.make_aware(parse_datetime(date + ' 00:00:00'))
     teachers_with_slots = Teacher.objects.find_free(date=date, lesson_type=lesson_type)
     if not teachers_with_slots:
         raise Http404('No free teachers found')

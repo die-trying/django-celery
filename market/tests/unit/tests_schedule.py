@@ -44,7 +44,7 @@ class TestScheduleLowLevel(TestCase):
         c = self._buy_a_lesson()
         c.schedule(
             teacher=self.teacher,
-            date=datetime(2016, 12, 1, 7, 25),  # monday
+            date=self.tzdatetime(2016, 12, 1, 7, 25),  # monday
             allow_besides_working_hours=True,
         )
         self.assertIsNone(c.timeline.pk)
@@ -56,7 +56,7 @@ class TestScheduleLowLevel(TestCase):
         with self.assertRaises(CannotBeScheduled):
             c.schedule(
                 teacher=self.teacher,
-                date=datetime(2016, 12, 1, 7, 27)  # wednesday
+                date=self.tzdatetime(2016, 12, 1, 7, 27)  # wednesday
             )
             c.save()
 

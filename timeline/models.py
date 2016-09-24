@@ -226,8 +226,8 @@ class Entry(models.Model):
         if self.lesson:
             self.__get_data_from_lesson()   # When the entry is not saved, we can run into situation when we know the lesson, but don't know the end of entry.
 
-        hours_start = WorkingHours.objects.for_date(teacher=self.teacher, date=self.start.strftime('%Y-%m-%d'))
-        hours_end = WorkingHours.objects.for_date(teacher=self.teacher, date=self.end.strftime('%Y-%m-%d'))
+        hours_start = WorkingHours.objects.for_date(teacher=self.teacher, date=self.start)
+        hours_end = WorkingHours.objects.for_date(teacher=self.teacher, date=self.end)
 
         if hours_start is None or hours_end is None:
             return False

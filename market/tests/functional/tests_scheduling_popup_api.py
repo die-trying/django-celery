@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 
 from django.contrib.contenttypes.models import ContentType
+from django.test import override_settings
 from mixer.backend.django import mixer
 
 from elk.utils.testing import ClientTestCase, create_teacher
@@ -77,6 +78,7 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
         self.assertEquals(records[0]['host']['name'], self.first_teacher.user.crm.full_name)
         self.assertEquals(records[1]['host']['name'], self.second_teacher.user.crm.full_name)
 
+    @override_settings(TIME_ZONE='Europe/Moscow')
     def test_filter_by_date(self):
         response = self.c.get('/market/2032-05-03/type/%d/teachers.json' % lessons.OrdinaryLesson.get_contenttype().pk)
         self.assertEquals(response.status_code, 200)

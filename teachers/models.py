@@ -11,7 +11,6 @@ from django.db import models
 from django.template.defaultfilters import time
 from django.utils import timezone
 from django.utils.dateformat import format
-from django.utils.dateparse import parse_date
 from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
 
@@ -137,8 +136,7 @@ class Teacher(models.Model):
         if len(kwargs.keys()):
             return self.__find_timeline_entries(date=date, **kwargs)
 
-        # otherwise — return all available time
-        # based on working hours
+        # otherwise — return all available time based on working hours
         hours = WorkingHours.objects.for_date(teacher=self, date=date)
         if hours is None:
             return None
@@ -193,7 +191,6 @@ class Teacher(models.Model):
         Returns an iterable of slots as datetime objects.
         """
         TimelineEntry = apps.get_model('timeline.entry')
-
         slots = SlotList()
         for entry in TimelineEntry.objects.filter(teacher=self, start__range=day_range(date), **kwargs):
             slots.append(entry.start)
@@ -262,16 +259,19 @@ class Teacher(models.Model):
 class WorkingHoursManager(models.Manager):
     def for_date(self, date, teacher):
         """
-        Returns an iterable of date objects for start of working time and end of
-        working time for the distinct date.
+        Return working hours object for the date.
+
+        All working hours objects are returned in the server timezone, defined
+        in settings.TIME_ZONE
         """
-        date = parse_date(date)
+        server_tz = pytz.timezone(settings.TIME_ZONE)
+
+        date = timezone.localtime(date, timezone=server_tz)
+
         try:
             hours = self.get(teacher=teacher, weekday=date.weekday())
         except ObjectDoesNotExist:
             return None
-
-        server_tz = pytz.timezone(settings.TIME_ZONE)
 
         hours.start = timezone.make_aware(datetime.combine(date, hours.start), timezone=server_tz)
         hours.end = timezone.make_aware(datetime.combine(date, hours.end), timezone=server_tz)

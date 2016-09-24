@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 
 from django.utils import timezone
 from mixer.backend.django import mixer
@@ -11,7 +11,7 @@ class TestSlotsIterable(TestCase):
     def _generate_slots(self):
         teacher = create_teacher()
         mixer.blend(WorkingHours, teacher=teacher, weekday=0, start='13:00', end='15:00')
-        return teacher.find_free_slots(date='2032-05-03')
+        return teacher.find_free_slots(date=self.tzdatetime(2032, 5, 3))
 
     def test_as_dict(self):
         slots = self._generate_slots()
@@ -22,7 +22,7 @@ class TestSlotsIterable(TestCase):
 
     def test_sort(self):
         def dt(*args):
-            return timezone.make_aware(datetime(*args))
+            return timezone.make_aware(datetime.datetime(*args))
 
         slots = SlotList()
         for i in (dt(2016, 1, 1, 13, 0), dt(2016, 1, 1, 11, 0), dt(2016, 1, 1, 11, 1), dt(2016, 1, 1, 14, 0)):

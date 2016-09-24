@@ -3,7 +3,7 @@
     models.
 """
 from copy import copy
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from django.utils.dateformat import format
 
@@ -30,6 +30,9 @@ def day_range(d):
     """
     Return a day range for model query — a tuple with start of the day and end of the day
     """
+    if isinstance(d, date):
+        d = d.strftime('%Y-%m-%d')
+
     return (
         d + ' 00:00:00',
         d + ' 23:59:59',
