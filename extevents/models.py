@@ -11,7 +11,6 @@ from django.utils import timezone
 from icalendar import Calendar
 
 from elk.logging import logger
-from extevents.signals import unsafe_calendar_update
 
 
 class ExternalEventManager(models.Manager):
@@ -85,7 +84,7 @@ class ExternalEventSource(models.Model):
         Notifies support when unsafe calendar update is performed, i.e. too much events got deleted.
         """
         if not self.__is_safe():  # warn admins if calendar update is unsafe
-            unsafe_calendar_update.send(sender=self.__class__, instance=self)
+            logger.warning('Unsafe calendar update')
 
         self.__clear_previous_events()
         self.__save_events()
