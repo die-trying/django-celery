@@ -46,14 +46,19 @@ class TeacherManager(models.Manager):
         """
         Find all lessons, that are planned to a date. Accepts keyword agruments
         for filtering output of :model:`timeline.Entry`.
+
+        TODO: unittest this method
         """
         TimelineEntry = apps.get_model('timeline.entry')
 
-        lessons = [i.lesson for i in TimelineEntry.objects.filter(start__range=day_range(date), **kwargs).distinct('lesson_id')]
+        start = date
+        end = date.replace(hour=23, minute=59)
+
+        lessons = [i.lesson for i in TimelineEntry.objects.filter(start__range=(start, end), **kwargs).distinct('lesson_id')]
 
         for lesson in lessons:
             lesson.free_slots = SlotList()
-            for entry in TimelineEntry.objects.filter(lesson_id=lesson.pk, start__range=day_range(date)):
+            for entry in TimelineEntry.objects.filter(lesson_id=lesson.pk, start__range=(start, end)):
                 if entry.is_free:
                     lesson.free_slots.append(entry.start)
                     lesson.available_slots_count = entry.slots - entry.taken_slots

@@ -33,6 +33,7 @@ def lessons(request, date, lesson_type):
     """
     Return a JSON of avaialble time slots for distinct date and lesson_type
     """
+    date = timezone.make_aware(parse_datetime(date + ' 00:00:00'))
     lessons = Teacher.objects.find_lessons(date=date, lesson_type=lesson_type)
     if not lessons:
         raise Http404('No lessons found on this date')
