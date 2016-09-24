@@ -1,0 +1,64 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Мейн
+X-WR-TIMEZONE:Europe/Moscow
+BEGIN:VTIMEZONE
+TZID:Europe/Moscow
+X-LIC-LOCATION:Europe/Moscow
+BEGIN:STANDARD
+TZOFFSETFROM:+0300
+TZOFFSETTO:+0300
+TZNAME:MSK
+DTSTART:19700101T000000
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+DTSTART;TZID=Europe/Moscow:20230918T210000
+DTEND;TZID=Europe/Moscow:20230918T220000
+DTSTAMP:20160911T173649Z
+ORGANIZER;CN=unknownorganizer@calendar.google.com:mailto:unknownorganizer@c
+ alendar.google.com
+UID:7kukuqrfedlm2f9t77utcnm7rn186chmkik4rnrr3bkjpnbejk8bdvdfct89noepufc0
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Fedor
+ Borshev;X-NUM-GUESTS=0:mailto:fedor9@gmail.com
+CLASS:PRIVATE
+CREATED:20160515T044421Z
+DESCRIPTION:Чтобы посмотреть подробную информацию об автоматически созданны
+ х мероприятиях\, используйте официальное приложение "Google Календарь". htt
+ p://g.co/calendar\n\nЭто мероприятие создано из сообщения электронной почты
+ \, полученного в Gmail. https://mail.google.com/mail?extsrc=cal&plid=ACUX6D
+ OWe_qKPxyRXPBe49ywMIVY8y0dmPZOIfw\n
+LAST-MODIFIED:20160515T204016Z
+LOCATION:Mineralnye Vody MRV
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Flight to Moscow
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Europe/Moscow:20230918T210000
+DTEND;TZID=Europe/Moscow:20230918T220000
+DTSTAMP:20160911T173649Z
+ORGANIZER;CN=unknownorganizer@calendar.google.com:mailto:unknownorganizer@c
+ alendar.google.com
+UID:7kukuqrfedlm2f9t77utcnm7rn186chmkik4rnrr3bkjpnbejk8bdvdfct89noepufc0
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Fedor
+ Borshev;X-NUM-GUESTS=0:mailto:fedor9@gmail.com
+CLASS:PRIVATE
+CREATED:20160515T044421Z
+DESCRIPTION:Чтобы посмотреть подробную информацию об автоматически созданны
+ х мероприятиях\, используйте официальное приложение "Google Календарь". htt
+ p://g.co/calendar\n\nЭто мероприятие создано из сообщения электронной почты
+ \, полученного в Gmail. https://mail.google.com/mail?extsrc=cal&plid=ACUX6D
+ OWe_qKPxyRXPBe49ywMIVY8y0dmPZOIfw\n
+LAST-MODIFIED:20160515T204016Z
+LOCATION:Mineralnye Vody MRV
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Flight to Moscow
+TRANSP:TRANSPARENT
+END:VEVENT
+END:VCALENDAR

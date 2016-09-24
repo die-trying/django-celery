@@ -38,7 +38,7 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
         """
         Parse events from the default fixture.
         """
-        events = list(self.src.parse_events(self.read_fixture('simple.ics')))  # read and parse the 'simple.ics' fixture
+        events = list(self.src.parse_events(self.read_fixture('simple.ics')))
 
         self.assertEqual(len(events), 1)  # there is one one actual event dated 2032 year. All others are in the past.
 
@@ -91,7 +91,7 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
     @patch('extevents.models.timezone')
     def test_simple_and_recurring_events_mixup(self, timezone):
         timezone.now = MagicMock(return_value=self.tzdatetime('UTC', 2023, 9, 11, 10, 0))
-        events = list(self.src.parse_events(self.read_fixture('simple-plus-recurring.ics')))  # read and parse the 'simple.ics' fixture
+        events = list(self.src.parse_events(self.read_fixture('simple-plus-recurring.ics')))
 
         """
         1 event from 2032

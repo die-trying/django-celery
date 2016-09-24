@@ -44,9 +44,6 @@ class ExternalEvent(models.Model):
     description = models.CharField(max_length=140)
     last_update = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        unique_together = ('teacher', 'src_type', 'src_id', 'start', 'end')
-
 
 class ExternalEventSourceManager(models.Manager):
     def active(self):
