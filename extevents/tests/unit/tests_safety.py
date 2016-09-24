@@ -83,9 +83,9 @@ class TestEventSourceSafetySig(GoogleCalendarTestCase):
     def test_signal_emission(self):
         self.src._ExternalEventSource__is_safe = MagicMock(return_value=False)
 
-        with patch('extevents.models.unsafe_calendar_update') as mocked_sig:
-            mocked_sig.send = MagicMock()
+        with patch('extevents.models.logger') as logger:
+            logger.warning = MagicMock()
 
             self.src.update()
 
-            self.assertTrue(mocked_sig.send.called)  # previous call should emit the unsafety signal
+            self.assertTrue(logger.warning.called)  # previous call should emit the unsafety signal
