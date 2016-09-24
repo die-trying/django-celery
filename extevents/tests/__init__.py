@@ -1,5 +1,5 @@
 from elk.utils.testing import TestCase, create_teacher
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from os.path import join
 
 import extevents.models as models
@@ -18,6 +18,10 @@ class GoogleCalendarTestCase(TestCase):
             url='http://testing'
         )
         self.src.save()
+
+        patcher = patch('extevents.models.timezone')
+        timezone = patcher.start()
+        timezone.now = MagicMock(return_value=self.tzdatetime('UTC', 2023, 9, 11, 10, 0))
 
     def read_fixture(self, src):
         """

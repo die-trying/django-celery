@@ -1,13 +1,11 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from extevents.models import ExternalEvent
 from extevents.tests import GoogleCalendarTestCase
 
 
 class TestGoogleCalendar(GoogleCalendarTestCase):
-    @patch('extevents.models.timezone')
-    def test_event_saving(self, timezone):
-        timezone.now = MagicMock(return_value=self.tzdatetime('UTC', 2023, 9, 11, 10, 0))
+    def test_event_saving(self):
         self.src.fetch_calendar = MagicMock(
             return_value=self.read_fixture('simple-plus-recurring.ics')
         )
@@ -28,12 +26,10 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
         loaded_event_count = ExternalEvent.objects.all().count()
         self.assertEqual(loaded_event_count, assumed_events_count)
 
-    @patch('extevents.models.timezone')
-    def test_repeated_event_saving(self, timezone):
+    def test_repeated_event_saving(self):
         """
         Try to save to identical events — nothing should fail
         """
-        timezone.now = MagicMock(return_value=self.tzdatetime('UTC', 2023, 9, 11, 10, 0))
         self.src.fetch_calendar = MagicMock(
             return_value=self.read_fixture('event-overlap.ics')
         )

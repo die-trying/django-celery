@@ -10,6 +10,7 @@ from django.db import models
 from django.utils import timezone
 from icalendar import Calendar
 
+from elk.logging import logger
 from extevents.signals import unsafe_calendar_update
 
 
@@ -144,6 +145,7 @@ class GoogleCalendar(ExternalEventSource):
         try:
             res = self.fetch_calendar(self.url)
         except:
+            logger.warning('Could not fetch google calendar')
             self.events = []
         else:
             self.events = list(event for event in self.parse_events(res))
@@ -155,6 +157,7 @@ class GoogleCalendar(ExternalEventSource):
         try:
             ical = Calendar.from_ical(ical_str)
         except:
+            logger.warning('Could not parse ical string')
             raise StopIteration
 
         yield from self.__simple_events(ical)  # first, parse all non-recurring events
@@ -169,6 +172,9 @@ class GoogleCalendar(ExternalEventSource):
                 event = self.parse_event(ev)
 
                 if event.start < timezone.now():
+                    continue
+
+                if (event.start - timezone.now()) > datetime.timedelta(weeks=self.EXTERNAL_EVENT_WEEK_COUNT):
                     continue
 
                 yield event

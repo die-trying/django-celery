@@ -40,33 +40,29 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
         """
         events = list(self.src.parse_events(self.read_fixture('simple.ics')))
 
-        self.assertEqual(len(events), 1)  # there is one one actual event dated 2032 year. All others are in the past.
+        self.assertEqual(len(events), 1)  # there is one one actual event dated 2023 year. All others are in the past.
 
         ev = events[0]
         self.assertIsInstance(ev, models.ExternalEvent)
 
         self.assertEqual(ev.description, 'far-event')
-        self.assertEqual(ev.start, self.tzdatetime('Europe/Moscow', 2032, 9, 11, 21, 0))
-        self.assertEqual(ev.end, self.tzdatetime('Europe/Moscow', 2032, 9, 11, 22, 0))
+        self.assertEqual(ev.start, self.tzdatetime('Europe/Moscow', 2023, 9, 11, 21, 0))
+        self.assertEqual(ev.end, self.tzdatetime('Europe/Moscow', 2023, 9, 11, 22, 0))
 
     def test_simple_events_ignores_recurring_events(self):
         ical = Calendar.from_ical(self.read_fixture('recurring.ics'))
         events = list(self.src._GoogleCalendar__simple_events(ical))
         self.assertEqual(len(events), 0)  # this test will fail in 2023, see fixtures/recurring.ics:19
 
-    @patch('extevents.models.timezone')
-    def test_recurring_events_count(self, timezone):
-        timezone.now = MagicMock(return_value=self.tzdatetime('UTC', 2023, 9, 11, 10, 0))
+    def test_recurring_events_count(self):
         ical = Calendar.from_ical(self.read_fixture('recurring.ics'))
         events = list(self.src._GoogleCalendar__recurring_events(ical))
         self.assertEqual(len(events), self.src.EXTERNAL_EVENT_WEEK_COUNT + 1)  # weekly event should repeat as many times as recurring is configured
 
-    @patch('extevents.models.timezone')
-    def test_recurring_events_are_the_same(self, timezone):
+    def test_recurring_events_are_the_same(self):
         """
         All generated events should be the same besides the length
         """
-        timezone.now = MagicMock(return_value=self.tzdatetime('UTC', 2023, 9, 11, 10, 0))
         ical = Calendar.from_ical(self.read_fixture('recurring.ics'))
 
         for ev in self.src._GoogleCalendar__recurring_events(ical):
@@ -74,12 +70,10 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
             self.assertEqual(ev.end - ev.start, datetime.timedelta(hours=1))  # all generated events should have similar length
             self.assertEqual(ev.src, self.src)
 
-    @patch('extevents.models.timezone')
-    def test_recurring_events_do_store_parent(self, timezone):
+    def test_recurring_events_do_store_parent(self):
         """
         Generated recurring events should store parent event.
         """
-        timezone.now = MagicMock(return_value=self.tzdatetime('UTC', 2023, 9, 11, 10, 0))
         ical = Calendar.from_ical(self.read_fixture('recurring.ics'))
 
         events = list(self.src._GoogleCalendar__recurring_events(ical))
@@ -90,12 +84,12 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
 
     @patch('extevents.models.timezone')
     def test_simple_and_recurring_events_mixup(self, timezone):
-        timezone.now = MagicMock(return_value=self.tzdatetime('UTC', 2023, 9, 11, 10, 0))
+        timezone.now = MagicMock(return_value=self.tzdatetime('UTC', 2023, 9, 1, 10, 0))
         events = list(self.src.parse_events(self.read_fixture('simple-plus-recurring.ics')))
 
         """
-        1 event from 2032
-        1 event from 2016 — the root of recurring events
+        1 normal event
+        1 event from 2018 — the root of recurring events
         8 events generated in 8 weeks from 2023
         """
         assumed_event_count = 1 + 1 + self.src.EXTERNAL_EVENT_WEEK_COUNT
