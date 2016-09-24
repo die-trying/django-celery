@@ -3,11 +3,13 @@ from datetime import datetime, timedelta
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from djmoney.models.fields import MoneyField
 
 from crm.models import Customer
+from elk.logging import logger
 from market.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from market.signals import class_scheduled, class_unscheduled
 from timeline.models import Entry as TimelineEntry
@@ -495,16 +497,16 @@ class Class(BuyableProduct):
         TODO: This method should raise exceptions for each situation,
         when a class cannot be scheduled
         """
-        if self.is_scheduled:
-            return False
-
-        if not entry.is_free:
+        if self.is_scheduled or not entry.is_free:
             return False
 
         if self.lesson_type != entry.lesson_type:
             return False
 
-        if not entry.allow_besides_working_hours and not entry.is_fitting_working_hours():
+        try:
+            entry.clean()
+        except ValidationError:
+            logger.error("Timeline entry can't be scheduled")
             return False
 
         return True
