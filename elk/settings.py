@@ -133,7 +133,8 @@ SUIT_CONFIG = {
         {'app': 'crm', 'icon': 'icon-globe', 'models': ('crm.Customer', 'crm.Company')},
         {'app': 'market', 'icon': 'icon-shopping-cart', 'models': ('market.Subscription', 'market.Class')},
         {'app': 'teachers', 'icon': 'icon-briefcase', },
-        {'app': 'lessons', 'icon': 'icon-hand-up', 'label': 'Teaching', 'models': ('lessons.Language', 'lessons.PairedLesson', 'lessons.MasterClass', 'lessons.HappyHour')},
+        {'app': 'accounting', 'icon': 'icon-gift', },
+        {'app': 'lessons', 'icon': 'icon-headphones', 'label': 'Teaching', 'models': ('lessons.Language', 'lessons.PairedLesson', 'lessons.MasterClass', 'lessons.HappyHour')},
         {'app': 'manual_class_logging', 'icon': 'icon-circle-arrow-right'},
         {'app': 'auth', 'label': 'Authorization', 'icon': 'icon-lock', 'models': ('auth.User', 'auth.Group')},
     ),
@@ -260,6 +261,10 @@ CELERYBEAT_SCHEDULE = {
     'update_google_calendars': {
         'task': 'extevents.tasks.update_google_calendars',
         'schedule': timedelta(minutes=5),
+    },
+    'bill_timeline_entries': {
+        'task': 'accounting.tasks.bill_timeline_entries',
+        'schedule': timedelta(minutes=1),
     },
 }
 
