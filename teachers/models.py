@@ -100,7 +100,7 @@ class Teacher(models.Model):
     allowed_lessons = models.ManyToManyField(ContentType, related_name='+', blank=True, limit_choices_to={'app_label': 'lessons'})
 
     description = MarkdownField()
-    announce = MarkdownField('Short description')
+    announce = models.TextField(max_length=140)
     active = models.IntegerField(default=1, choices=ENABLED)
 
     class Meta:
@@ -110,15 +110,13 @@ class Teacher(models.Model):
         """
         Add new teachers to the 'teachers' group
         """
-        if self.pk:
-            return
-
-        try:
-            group = Group.objects.get(pk=TEACHER_GROUP_ID)
-            self.user.groups.add(group)
-            self.user.save()
-        except Group.DoesNotExist:
-            pass
+        if not self.pk:
+            try:
+                group = Group.objects.get(pk=TEACHER_GROUP_ID)
+                self.user.groups.add(group)
+                self.user.save()
+            except Group.DoesNotExist:
+                pass
 
         super().save(*args, **kwargs)
 
