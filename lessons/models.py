@@ -180,7 +180,7 @@ class OrdinaryLesson(Lesson):
         return 100
 
     class Meta(Lesson.Meta):
-        verbose_name = _("Single session")
+        verbose_name = _("Single lesson")
         verbose_name_plural = _("Single lessons")
 
 
@@ -219,5 +219,5 @@ class PairedLesson(HostedLesson):
         return 200
 
     class Meta(Lesson.Meta):
-        verbose_name = _("Paired session")
+        verbose_name = _("Paired lesson")
         verbose_name_plural = ("Paired lessons")
