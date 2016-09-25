@@ -1,5 +1,5 @@
 from abc import abstractproperty
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -253,10 +253,8 @@ class ClassesManager(BuyableProductManager):
 
         Currently retures 7 future days for everyone.
         """
-        current = datetime.now()
-        end = current + timedelta(days=7)
-
-        while current < end:
+        current = timezone.now()
+        for i in range(0, 7):
             yield current
             current += timedelta(days=1)
 
