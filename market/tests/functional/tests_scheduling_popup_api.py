@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from django.contrib.contenttypes.models import ContentType
 from django.test import override_settings
@@ -78,7 +79,12 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
         self.assertEquals(records[0]['host']['name'], self.first_teacher.user.crm.full_name)
         self.assertEquals(records[1]['host']['name'], self.second_teacher.user.crm.full_name)
 
-    def test_filter_by_lesson_type_timezone(self):
+    @patch('teachers.models.timezone.now')
+    def test_filter_by_lesson_type_timezone(self, now):
+        """
+        Create 24 master classes and make sure they are accessible in the same timezone
+        """
+        now.return_value = self.tzdatetime(2032, 5, 1)
         master_class = mixer.blend(lessons.MasterClass, host=self.first_teacher)
         start = self.tzdatetime('Europe/Moscow', 2032, 5, 3, 0, 0)
         for i in range(0, 24):
@@ -90,8 +96,11 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
                 end=start + timedelta(hours=1)
             )
             start += timedelta(hours=1)
+            print(start)
 
+        self.c.login(username=self.superuser_login, password=self.superuser_password)  # need to login once again due to timezone change
         response = self.c.get('/market/2032-05-03/type/%d/lessons.json' % lessons.MasterClass.get_contenttype().pk)
+
         self.assertEquals(response.status_code, 200)
         records = json.loads(response.content.decode('utf-8'))
         self.assertEquals(len(records), 1)

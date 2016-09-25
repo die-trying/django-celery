@@ -248,10 +248,79 @@ class TestTeacherManager(TestCase):
         self.assertEquals(len(free_teachers), 0)
 
     def test_get_teachers_by_lesson_that_does_not_require_a_timeline_entry(self):
-        ordinary_lesson_type = ContentType.objects.get_for_model(lessons.OrdinaryLesson)
+        ordinary_lesson_type = lessons.OrdinaryLesson.get_contenttype()
         teachers = Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 3), lesson_type=ordinary_lesson_type.pk)
         self.assertEquals(len(teachers), 1)
         self.assertEquals(len(teachers[0].free_slots), 4)  # should find all timeline entries because ordinary lesson does not require a timeline entry
+
+    def test_find_lessons_return_nothing(self):
+        res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3))
+        self.assertEqual(len(res), 0)  # should not throw anything
+
+    @patch('teachers.models.timezone.now')
+    def test_find_lessons_return_a_lesson(self, now):
+        now.return_value = self.tzdatetime(2032, 5, 2)
+        master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
+        mixer.blend(
+            TimelineEntry,
+            teacher=self.teacher,
+            lesson=master_class,
+            start=self.tzdatetime(2032, 5, 3, 15, 30),
+        )
+        res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3))
+        self.assertEqual(len(res), 1)
+
+    @patch('teachers.models.timezone.now')
+    def test_find_lessons_ignore_passed_lessons(self, now):
+        now.return_value = self.tzdatetime(2032, 5, 3, 15, 31)
+        master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
+        mixer.blend(
+            TimelineEntry,
+            teacher=self.teacher,
+            lesson=master_class,
+            start=self.tzdatetime(2032, 5, 3, 15, 30),
+        )
+        res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3))
+        self.assertEqual(len(res), 0)
+
+    @patch('teachers.models.timezone.now')
+    def test_find_lessons_traverses_filter_args(self, now):
+        now.return_value = self.tzdatetime(2032, 5, 2)
+        master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
+        paired_lesson = mixer.blend(lessons.PairedLesson, host=self.teacher)
+        mixer.blend(
+            TimelineEntry,
+            teacher=self.teacher,
+            lesson=master_class,
+            start=self.tzdatetime(2032, 5, 3, 15, 30),
+        )
+        mixer.blend(
+            TimelineEntry,
+            teacher=self.teacher,
+            lesson=paired_lesson,
+            start=self.tzdatetime(2032, 5, 3, 16, 30),
+        )
+
+        res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3))
+        self.assertEqual(len(res), 2)
+
+        res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3), lesson_type=master_class.get_contenttype())
+        self.assertEqual(len(res), 1)
+
+    @patch('teachers.models.timezone.now')
+    def test_find_lessons_ignores_non_free_entries(self, now):
+        now.return_value = self.tzdatetime(2032, 5, 2)
+        master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
+        mixer.blend(
+            TimelineEntry,
+            teacher=self.teacher,
+            lesson=master_class,
+            start=self.tzdatetime(2032, 5, 3, 15, 30),
+            slots=5,
+            taken_slots=5,
+        )
+        res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3))
+        self.assertEqual(len(res), 0)
 
     def test_can_finish_classes(self):
         res = Teacher.objects.can_finish_classes()

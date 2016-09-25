@@ -42,28 +42,34 @@ class TeacherManager(models.Manager):
                 teachers.append(teacher)
         return teachers
 
-    def find_lessons(self, date, **kwargs):
+    def find_lessons(self, date, **kwargs):  # noqa
         """
         Find all lessons, that are planned to a date. Accepts keyword agruments
         for filtering output of :model:`timeline.Entry`.
 
-        TODO: unittest this method
+        TODO: refactor this method
         """
         TimelineEntry = apps.get_model('timeline.entry')
 
-        start = date
         end = date.replace(hour=23, minute=59)
 
-        lessons = [i.lesson for i in TimelineEntry.objects.filter(start__range=(start, end), **kwargs).distinct('lesson_id')]
+        lessons = []
+        for i in TimelineEntry.objects.filter(start__range=(timezone.now(), end)).filter(**kwargs).distinct('lesson_id'):
+            lessons.append(i.lesson)
 
         for lesson in lessons:
             lesson.free_slots = SlotList()
-            for entry in TimelineEntry.objects.filter(lesson_id=lesson.pk, start__range=(start, end)):
+            for entry in TimelineEntry.objects.filter(lesson_id=lesson.pk, start__range=(timezone.now(), end)):
                 if entry.is_free:
                     lesson.free_slots.append(entry.start)
                     lesson.available_slots_count = entry.slots - entry.taken_slots
 
-        return lessons
+        result = []
+        for lesson in lessons:
+            if len(lesson.free_slots):
+                result.append(lesson)
+
+        return result
 
     def can_finish_classes(self):
         """
