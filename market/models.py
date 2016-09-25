@@ -230,14 +230,6 @@ class ClassesManager(BuyableProductManager):
 
         return [sort_order[i] for i in sorted(sort_order.keys())]
 
-    def to_be_marked_as_used(self):
-        """
-        List of classes, that should be marked as used by now
-        """
-        return self.get_queryset().filter(is_scheduled=True) \
-            .filter(is_fully_used=False) \
-            .filter(timeline__end__lt=self.__now() - MARK_CLASSES_AS_USED_AFTER)
-
     def find_student_classes(self, lesson_type):
         """
         Find students, that can schedule a lesson_type
