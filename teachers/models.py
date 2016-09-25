@@ -300,7 +300,7 @@ class WorkingHours(models.Model):
 
     weekday = models.IntegerField('Weekday', choices=WEEKDAYS)
     start = models.TimeField('Start hour (EDT)')
-    end = models.TimeField('End hoour(EDT)')
+    end = models.TimeField('End hour (EDT)')
 
     def as_dict(self):
         return {

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.db import models
-from suit.widgets import HTML5Input
+from suit.widgets import HTML5Input, SuitTimeWidget
 
 from elk.admin import ModelAdmin, StackedInline, TabularInline
 from extevents.models import ExternalEvent, GoogleCalendar
@@ -11,6 +11,9 @@ class WorkingHoursInline(StackedInline):
     model = WorkingHours
     verbose_name = 'Weekday'
     verbose_name_plural = 'Comfortable hours'
+    formfield_overrides = {
+        models.TimeField: {'widget': SuitTimeWidget(attrs={'placeholder': '16:45', 'maxlength': '5', 'class': 'numonly'})}
+    }
 
 
 class GooogleCalendarInline(TabularInline):
