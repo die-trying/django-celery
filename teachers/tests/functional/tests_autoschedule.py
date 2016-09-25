@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from django.contrib.contenttypes.models import ContentType
-from django.utils.dateparse import parse_time
 from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_teacher
@@ -23,33 +22,6 @@ class TestTeacherManager(TestCase):
 
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=1, start='17:00', end='19:00')  # thursday
-
-    def test_working_hours_for_date(self):
-        """
-        Get datetime.datetime objects for start and end working hours
-        """
-        working_hours_monday = WorkingHours.objects.for_date(teacher=self.teacher, date=self.tzdatetime(2032, 5, 3))
-        self.assertIsNotNone(working_hours_monday)
-        self.assertEqual(working_hours_monday.start.strftime('%Y-%m-%d %H:%M'), '2032-05-03 13:00')
-        self.assertEqual(working_hours_monday.end.strftime('%Y-%m-%d %H:%M'), '2032-05-03 15:00')
-
-        working_hours_wed = WorkingHours.objects.for_date(teacher=self.teacher, date=self.tzdatetime(2016, 5, 5))
-        self.assertIsNone(working_hours_wed)  # should not throw DoesNotExist
-
-    def test_working_hours_fits(self):
-        hours = mixer.blend(WorkingHours, teacher=self.teacher, start='12:00', end='13:00', weekday=7)
-
-        def test_fit(t):
-            return hours.does_fit(
-                parse_time(t)
-            )
-
-        self.assertFalse(test_fit('11:30'))
-        self.assertFalse(test_fit('13:30'))
-
-        self.assertTrue(test_fit('12:00'))
-        self.assertTrue(test_fit('13:00'))
-        self.assertTrue(test_fit('12:30'))
 
     def test_get_free_slots(self):
         """

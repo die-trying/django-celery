@@ -269,14 +269,15 @@ class WorkingHoursManager(models.Manager):
         All working hours objects are returned in the server timezone, defined
         in settings.TIME_ZONE
         """
-        server_tz = pytz.timezone(settings.TIME_ZONE)
 
-        date = timezone.localtime(date, timezone=server_tz)
+        date = timezone.localtime(date)
 
         try:
             hours = self.get(teacher=teacher, weekday=date.weekday())
         except ObjectDoesNotExist:
             return None
+
+        server_tz = pytz.timezone(settings.TIME_ZONE)
 
         hours.start = timezone.make_aware(datetime.combine(date, hours.start), timezone=server_tz)
         hours.end = timezone.make_aware(datetime.combine(date, hours.end), timezone=server_tz)
