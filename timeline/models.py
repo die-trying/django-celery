@@ -41,7 +41,7 @@ class Entry(models.Model):
     Single timeline entry
     =====================
 
-    Used for planning teachers time, and for scheduled bought
+    Used for planning teachers time, and for scheduled purchased
     classes (:model:`market.Class`).
 
     Please import it like this::
@@ -146,7 +146,7 @@ class Entry(models.Model):
     slots = models.SmallIntegerField('Student slots', default=1)
     taken_slots = models.SmallIntegerField('Students', default=0)
 
-    # TODO — disable assigning of bought classes to inactive entries
+    # TODO — disable assigning of purchased classes to inactive entries
     active = models.SmallIntegerField(choices=ENABLED, default=1)
 
     is_finished = models.BooleanField(default=False)

@@ -196,7 +196,7 @@ class TestScheduler(TestCase):
         hat.__get_class() should return subscription lessons first.
 
         Buy a single lesson, then buy a subscription. Check, if get_class()
-        would return a subscription lesson instead of single bought class.
+        would return a subscription lesson instead of single purchased class.
         """
         s = self.get_the_hat()
         self._buy_a_lesson(lessons.OrdinaryLesson.get_default())

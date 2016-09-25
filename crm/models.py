@@ -28,8 +28,8 @@ class Customer(models.Model):
 
     Contents everything, related to CRM via properties:
         * payments: payment history: :model:`history.PaymentEvent`
-        * classes: all bought classes: :model:`market.Class`
-        * subscriptions: all bought subscriptions: :model:`market.Subscription`
+        * classes: all purchased classes: :model:`market.Class`
+        * subscriptions: all purchased subscriptions: :model:`market.Subscription`
 
     The model automatically assigned to a current user, so you can access all CRM properties via `request.user.crm`.
     """
@@ -124,7 +124,7 @@ class Customer(models.Model):
 
     def can_schedule_classes(self):
         """
-        Determine, if user has bought classes
+        Determine, if user has purchased classes
         """
         if self.classes.filter(is_fully_used=False).exclude(is_scheduled=True).count():
             return True

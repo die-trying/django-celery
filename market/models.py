@@ -79,7 +79,7 @@ class SubscriptionManager(BuyableProductManager):
 
 class Subscription(BuyableProduct):
     """
-    Represents a single bought subscription.
+    Represents a single purchased subscription.
 
     When buying a subscription, one should store request in the `request`
     property of this instance. This is neeed for the log entry to contain
@@ -126,7 +126,7 @@ class Subscription(BuyableProduct):
                     subscription=self,
                     customer=self.customer,
                     buy_price=self.buy_price,
-                    buy_source='subscription',  # store a sign, that class is bought by subscription
+                    buy_source='subscription',  # store a sign, that class is purchased by subscription
                 )
                 if hasattr(self, 'request'):
                     c.request = self.request  # bypass request object for later analysis
@@ -210,7 +210,7 @@ class ClassesManager(BuyableProductManager):
             .filter(is_scheduled=True, timeline__start__range=(self.__now(), self.__now() + delta)) \
             .filter(**kwargs)
 
-    def bought_lesson_types(self):
+    def purchased_lesson_types(self):
         """
         Get ContentTypes of lessons, available to user
         """
@@ -273,7 +273,7 @@ class ClassesManager(BuyableProductManager):
 
 class Class(BuyableProduct):
     """
-    Represents a single bought lesson.
+    Represents a single purchased lesson.
 
     Purpose
     =======
@@ -296,7 +296,7 @@ class Class(BuyableProduct):
     scheduled, and if it is, delete() just un-schedules it.
 
     For backup purposes, the delete method is redefined in :model:`market.BuyableProduct`
-    for completely disabling deletion of anything, that anyone has bought for money.
+    for completely disabling deletion of anything, that anyone has purchased for money.
     """
     objects = ClassesManager()
 

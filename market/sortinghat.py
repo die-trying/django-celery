@@ -32,7 +32,7 @@ class SortingHat():
                 }
             })
         else:
-            hat.c.save()    # actualy schedule a user-bought class, found by the hat.
+            hat.c.save()    # actualy schedule a user-purchased class, found by the hat.
                             # 'c' here is an instance of :model:`market.Class`
 
     This class is supposed to be a god-object for further class scheduling logic,
@@ -90,7 +90,7 @@ class SortingHat():
 
     def __get_class(self):
         """
-        Find a bought class for defined customer with defined lesson_type, that
+        Find a purchased class for defined customer with defined lesson_type, that
         has not yet been scheduled.
         """
         Class = apps.get_model('market.Class')
@@ -116,7 +116,7 @@ class SortingHat():
 
     def find_a_class(self):
         """
-        Find a bought class. When no appropriate bought class found, it means that
+        Find a purchased class. When no appropriate purchased class found, it means that
         the user can't schedule his choice.
         """
         c = self.__get_class()

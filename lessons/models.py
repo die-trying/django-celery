@@ -94,7 +94,7 @@ class Lesson(models.Model):
         `lessons.yaml` fixture. When defining a new lesson type, fill free to add
         it to the fixture.
 
-        If a lesson can't be bought this way, it should raise a NotImplementedError,
+        If a lesson can't be purchased this way, it should raise a NotImplementedError,
         for example see `MasterClass` lesson.
         """
         return cls.objects.get(pk=500)

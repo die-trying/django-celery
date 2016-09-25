@@ -84,7 +84,7 @@ class TestClassManager(TestCase):
         self.assertEquals(c_found, c2)
 
     def test_available_lesson_types(self):
-        lesson_types = self.customer.classes.bought_lesson_types()
+        lesson_types = self.customer.classes.purchased_lesson_types()
         self.assertEquals(len(lesson_types), 5)  # if you have defined a new lesson, fill free to increase this value, it's ok
 
         self.assertIn(lessons.OrdinaryLesson.get_contenttype(), lesson_types)
@@ -94,7 +94,7 @@ class TestClassManager(TestCase):
         """
         Planning dates should be sorted with the in-class defined sort order
         """
-        lesson_types = self.customer.classes.bought_lesson_types()
+        lesson_types = self.customer.classes.purchased_lesson_types()
 
         sort_order = {}
         for m in ContentType.objects.filter(app_label='lessons'):

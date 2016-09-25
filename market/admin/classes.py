@@ -9,7 +9,7 @@ from market.models import Class
 
 class BuySubscriptionFilter(BooleanFilter):
     title = "Single purchase"
-    parameter_name = "single_bought"
+    parameter_name = "single_purchased"
 
     def t(self, request, queryset):
         return queryset.filter(subscription__isnull=True)

@@ -6,9 +6,9 @@ from market.models import Class, Subscription
 
 
 @receiver(post_save, sender=Class, dispatch_uid='Log_single_class_buy')
-def log_bought_class(sender, **kwargs):
+def log_purchased_class(sender, **kwargs):
     """
-    Log a fresh-bought class. Logs only single-bought classes. Classes bought
+    Log a fresh-purchased class. Logs only single-purchased classes. Classes purchased
     by subscription are logged by another listener.
 
     For this signal reciever to work, you should store a `request` property in
@@ -22,7 +22,7 @@ def log_bought_class(sender, **kwargs):
     if not hasattr(instance, 'request'):  # if we don't know a request, probably it's testing
         return
 
-    if instance.buy_source != 'single':  # log only single-bought classes
+    if instance.buy_source != 'single':  # log only single-purchased classes
         return
 
     ev = PaymentEvent(
@@ -37,9 +37,9 @@ def log_bought_class(sender, **kwargs):
 
 
 @receiver(post_save, sender=Subscription, dispatch_uid='Log_subscription_buy')
-def log_bought_subscription(sender, **kwargs):
+def log_purchased_subscription(sender, **kwargs):
     """
-    Log a fresh-bought subscription.
+    Log a fresh-purchased subscription.
 
     For this signal reciever to work, you should store a `request` property in
     the sender model. For examples, see tests of this app.

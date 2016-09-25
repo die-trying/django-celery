@@ -28,9 +28,9 @@ class ScheduleTestCase(TestCase):
         return c
 
     def test_unschedule_of_non_scheduled_lesson(self):
-        bought_class = self._buy_a_lesson(products.OrdinaryLesson.get_default())
+        purchased_class = self._buy_a_lesson(products.OrdinaryLesson.get_default())
         with self.assertRaises(CannotBeUnscheduled):
-            bought_class.unschedule()
+            purchased_class.unschedule()
 
     def test_schedule_simple(self):
         """
@@ -39,21 +39,21 @@ class ScheduleTestCase(TestCase):
         lesson = products.OrdinaryLesson.get_default()
 
         entry = mixer.blend(TimelineEntry, slots=1, lesson=lesson, start=timezone.make_aware(datetime(2032, 12, 12)))
-        bought_class = self._buy_a_lesson(lesson)
+        purchased_class = self._buy_a_lesson(lesson)
 
-        self.assertFalse(bought_class.is_scheduled)
+        self.assertFalse(purchased_class.is_scheduled)
         self.assertTrue(entry.is_free)
 
-        bought_class.assign_entry(entry)  # schedule a class
-        bought_class.save()
+        purchased_class.assign_entry(entry)  # schedule a class
+        purchased_class.save()
 
-        self.assertTrue(bought_class.is_scheduled)
+        self.assertTrue(purchased_class.is_scheduled)
         self.assertFalse(entry.is_free)
         self.assertEquals(entry.classes.first().customer, self.customer)
 
-        bought_class.unschedule()
-        bought_class.save()
-        self.assertFalse(bought_class.is_scheduled)
+        purchased_class.unschedule()
+        purchased_class.save()
+        self.assertFalse(purchased_class.is_scheduled)
         self.assertTrue(entry.is_free)
 
     def test_schedule_auto_entry(self):
@@ -138,16 +138,16 @@ class ScheduleTestCase(TestCase):
 
         timeline_entry.save()
 
-        bought_class = self._buy_a_lesson(lesson=lesson)
-        bought_class.save()
+        purchased_class = self._buy_a_lesson(lesson=lesson)
+        purchased_class.save()
 
-        bought_class.assign_entry(timeline_entry)
-        bought_class.save()
+        purchased_class.assign_entry(timeline_entry)
+        purchased_class.save()
 
-        self.assertTrue(bought_class.is_scheduled)
+        self.assertTrue(purchased_class.is_scheduled)
         self.assertEqual(timeline_entry.taken_slots, 1)
 
-        bought_class.unschedule()
+        purchased_class.unschedule()
         self.assertEqual(timeline_entry.taken_slots, 0)
 
     def test_schedule_2_people_to_a_paired_lesson(self):
@@ -185,17 +185,17 @@ class ScheduleTestCase(TestCase):
 
     def test_schedule_lesson_of_a_wrong_type(self):
         """
-        Try to schedule bought master class lesson to a paired lesson event
+        Try to schedule purchased master class lesson to a paired lesson event
         """
         paired_lesson = mixer.blend(lessons.PairedLesson, slots=2, host=self.host)
         paired_lesson_entry = mixer.blend(TimelineEntry, lesson=paired_lesson, teacher=self.host, active=1)
 
         paired_lesson_entry.save()
 
-        bought_class = self._buy_a_lesson(mixer.blend(lessons.MasterClass, host=self.host))
-        bought_class.save()
+        purchased_class = self._buy_a_lesson(mixer.blend(lessons.MasterClass, host=self.host))
+        purchased_class.save()
 
         with self.assertRaises(CannotBeScheduled):
-            bought_class.assign_entry(paired_lesson_entry)
+            purchased_class.assign_entry(paired_lesson_entry)
 
-        self.assertFalse(bought_class.is_scheduled)
+        self.assertFalse(purchased_class.is_scheduled)
