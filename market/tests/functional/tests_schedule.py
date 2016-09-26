@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from django.core import mail
-from django.utils import timezone
 from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_customer, create_teacher
@@ -38,7 +37,7 @@ class ScheduleTestCase(TestCase):
         """
         lesson = products.OrdinaryLesson.get_default()
 
-        entry = mixer.blend(TimelineEntry, slots=1, lesson=lesson, start=timezone.make_aware(datetime(2032, 12, 12)))
+        entry = mixer.blend(TimelineEntry, teacher=self.host, slots=1, lesson=lesson, start=self.tzdatetime(2032, 12, 12))
         purchased_class = self._buy_a_lesson(lesson)
 
         self.assertFalse(purchased_class.is_scheduled)
@@ -133,7 +132,7 @@ class ScheduleTestCase(TestCase):
         timeline_entry = mixer.blend(TimelineEntry,
                                      lesson=lesson,
                                      teacher=self.host,
-                                     start=timezone.make_aware(datetime(2032, 12, 1))
+                                     start=self.tzdatetime(2032, 12, 1)
                                      )
 
         timeline_entry.save()
@@ -168,7 +167,7 @@ class ScheduleTestCase(TestCase):
         )
         customer2_class.save()
 
-        timeline_entry = mixer.blend(TimelineEntry, lesson=paired_lesson, teacher=self.host, start=timezone.make_aware(datetime(2032, 12, 1)))
+        timeline_entry = mixer.blend(TimelineEntry, lesson=paired_lesson, teacher=self.host, start=self.tzdatetime(2032, 12, 1))
 
         customer1_class.assign_entry(timeline_entry)
         customer1_class.save()
