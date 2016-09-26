@@ -4,14 +4,11 @@
 {% with next_class=request.user.crm.classes.nearest_scheduled %}
     {% if next_class %}
         <div class="next_class">
-            <p class="next_class_msg">{% trans 'Next lesson is a' %} {{ next_class.lesson.type_verbose_name }}
+            <i class="fa fa-check-circle next_class__sign" aria-hidden="true"></i>
+            <p class="next_class__msg">{% trans "You have " %} {{ next_class.lesson.type_verbose_name }}
                 {% trans 'with' %} {{ next_class.timeline.teacher.user.crm.full_name }},
-                {% if next_class.timeline.start|naturaltime == "now" %}
-                    starting right now.
-                {% else %}
-                    starting in <span class="next_class__date">{{ next_class.timeline.start | naturaltime}}</span>.
-                {% endif %}
-                If something goes wrong, <a class="pseudo class_reschedule" data-class-id="{{ next_class.pk }}" href='mailto:{{ SUPPORT_EMAIL }}?subject=Please reschedule my class'>{% trans 'reschedule'%}</a> {% trans 'or' %} <a class="pseudo class_cancel" data-class-id="{{ next_class.pk }}" data-dismiss-after-cancellation=".next_class" href='#'>{% trans 'cancel' %}</a> it.</p>
+                {% trans 'starting at' %} <strong>{{ next_class.timeline.start | date:"SHORT_DATETIME_FORMAT" }}</strong>.
+                If something goes wrong, <a class="pseudo class_reschedule" data-class-id="{{ next_class.pk }}" href='mailto:{{ SUPPORT_EMAIL }}?subject=Please reschedule my class'>{% trans 'reschedule'%}</a> {% trans 'or' %} <a class="pseudo class_cancel" data-class-id="{{ next_class.pk }}" data-dismiss-after-cancellation=".next_class" href='#'>{% trans 'cancel' %}</a> it.</p>
         </div>
     {% endif %}
 {% endwith %}
