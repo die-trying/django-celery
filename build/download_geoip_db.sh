@@ -1,7 +1,10 @@
 #!/bin/sh
-cd geolite
-wget -N http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz
-wget -N http://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz
+#
+# Downloads maxmind database from http://dev.maxmind.com/geoip/legacy/geolite/
+#
 
-gunzip -kqf GeoLiteCity.dat.gz
-gunzip -kqf GeoLiteCityv6.dat.gz
+cd geolite
+
+wget -N http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz
+
+gunzip -kqf GeoLite2-City.mmdb.gz

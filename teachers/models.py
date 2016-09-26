@@ -1,24 +1,27 @@
 from datetime import datetime, timedelta
 
+import pytz
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.utils.dateparse import parse_date
-from django.utils.timezone import make_aware, now
+from django.template.defaultfilters import time
+from django.utils import timezone
+from django.utils.dateformat import format
 from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
 
-from elk.utils.date import day_range, localize
+from elk.utils.date import day_range
 
 TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
 
 
 class SlotList(list):
     def as_dict(self):
-        return [localize(i).strftime('%H:%M') for i in sorted(self)]
+        return [{'server': time(timezone.localtime(i), 'H:i'), 'user': time(timezone.localtime(i), 'TIME_FORMAT')} for i in sorted(self)]
 
 
 class TeacherManager(models.Manager):
@@ -39,23 +42,34 @@ class TeacherManager(models.Manager):
                 teachers.append(teacher)
         return teachers
 
-    def find_lessons(self, date, **kwargs):
+    def find_lessons(self, date, **kwargs):  # noqa
         """
         Find all lessons, that are planned to a date. Accepts keyword agruments
         for filtering output of :model:`timeline.Entry`.
+
+        TODO: refactor this method
         """
         TimelineEntry = apps.get_model('timeline.entry')
 
-        lessons = [i.lesson for i in TimelineEntry.objects.filter(start__range=day_range(date), **kwargs).distinct('lesson_id')]
+        end = date.replace(hour=23, minute=59)
+
+        lessons = []
+        for i in TimelineEntry.objects.filter(start__range=(timezone.now(), end)).filter(**kwargs).distinct('lesson_id'):
+            lessons.append(i.lesson)
 
         for lesson in lessons:
             lesson.free_slots = SlotList()
-            for entry in TimelineEntry.objects.filter(lesson_id=lesson.pk, start__range=day_range(date)):
+            for entry in TimelineEntry.objects.filter(lesson_id=lesson.pk, start__range=(timezone.now(), end)):
                 if entry.is_free:
                     lesson.free_slots.append(entry.start)
                     lesson.available_slots_count = entry.slots - entry.taken_slots
 
-        return lessons
+        result = []
+        for lesson in lessons:
+            if len(lesson.free_slots):
+                result.append(lesson)
+
+        return result
 
     def can_finish_classes(self):
         """
@@ -86,22 +100,23 @@ class Teacher(models.Model):
     allowed_lessons = models.ManyToManyField(ContentType, related_name='+', blank=True, limit_choices_to={'app_label': 'lessons'})
 
     description = MarkdownField()
-    announce = MarkdownField('Short description')
+    announce = models.TextField(max_length=140)
     active = models.IntegerField(default=1, choices=ENABLED)
+
+    class Meta:
+        verbose_name = 'Teacher profile'
 
     def save(self, *args, **kwargs):
         """
         Add new teachers to the 'teachers' group
         """
-        if self.pk:
-            return
-
-        try:
-            group = Group.objects.get(pk=TEACHER_GROUP_ID)
-            self.user.groups.add(group)
-            self.user.save()
-        except Group.DoesNotExist:
-            pass
+        if not self.pk:
+            try:
+                group = Group.objects.get(pk=TEACHER_GROUP_ID)
+                self.user.groups.add(group)
+                self.user.save()
+            except Group.DoesNotExist:
+                pass
 
         super().save(*args, **kwargs)
 
@@ -130,8 +145,7 @@ class Teacher(models.Model):
         if len(kwargs.keys()):
             return self.__find_timeline_entries(date=date, **kwargs)
 
-        # otherwise — return all available time
-        # based on working hours
+        # otherwise — return all available time based on working hours
         hours = WorkingHours.objects.for_date(teacher=self, date=date)
         if hours is None:
             return None
@@ -142,13 +156,35 @@ class Teacher(models.Model):
         Get list of lessons, that teacher can lead
         """
         for i in self.allowed_lessons.all():
-            if i.pk == lesson_type:
+            if i == lesson_type:
                 Model = i.model_class()
                 if hasattr(Model, 'host'):
                     return Model.objects.filter(host=self)
                 else:
-                    return Model.objects.all()
+                    return [Model.get_default()]  # all non-hosted lessons except the default one are for subscriptions, nobody needs to host or plan them
         return []
+
+    def available_lesson_types(self):
+        """
+        Get contenttypes of lessons, allowed to host
+        """
+        lesson_types = {}
+        for i in self.allowed_lessons.all():
+            Model = i.model_class()
+
+            if not hasattr(Model, 'sort_order'):
+                continue
+
+            if hasattr(Model, 'host') and not self.available_lessons(i):  # hosted lessons should be returned only if they have lessons
+                continue
+
+            lesson_types[Model.sort_order()] = i
+
+        result = []  # sort by sort_order defined in the lessons
+        for i in sorted(list(lesson_types.keys())):
+            result.append(lesson_types[i])
+
+        return result
 
     def timeline_url(self):
         """
@@ -164,7 +200,6 @@ class Teacher(models.Model):
         Returns an iterable of slots as datetime objects.
         """
         TimelineEntry = apps.get_model('timeline.entry')
-
         slots = SlotList()
         for entry in TimelineEntry.objects.filter(teacher=self, start__range=day_range(date), **kwargs):
             slots.append(entry.start)
@@ -180,7 +215,7 @@ class Teacher(models.Model):
         slots = SlotList()
         slot = start
         while slot + period <= end:
-            if not self.__check_overlap(slot, period):
+            if self.__check_availability(slot, period):
                 if slot >= self.__now():
                     slots.append(slot)
 
@@ -188,20 +223,26 @@ class Teacher(models.Model):
 
         return slots
 
-    def __check_overlap(self, start, period):
+    def __check_availability(self, start, period):
         """
-        Check, if a slot does not overlap with other timeline entries
-
-        This implementtion could be less expensive: it creates a timeline entry
-        per every testing slot
+        Create a test timeline entry and check if teacher is available.
         """
         TimelineEntry = apps.get_model('timeline.Entry')
         entry = TimelineEntry(
             teacher=self,
             start=start,
             end=start + period,
+            allow_overlap=False,
+            allow_besides_working_hours=False,
+            allow_when_teacher_is_busy=False,
+            allow_when_teacher_has_external_events=False,
         )
-        return entry.is_overlapping()
+        try:
+            entry.clean()
+        except ValidationError:
+            return False
+
+        return True
 
     def __delete_lesson_types_that_dont_require_a_timeline_entry(self, kwargs):
         """
@@ -221,24 +262,31 @@ class Teacher(models.Model):
             del kwargs['lesson_type']
 
     def __now(self):
-        return now()
+        return timezone.now()
 
 
 class WorkingHoursManager(models.Manager):
     def for_date(self, date, teacher):
         """
-        Returns an iterable of date objects for start of working time and end of
-        working time for the distinct date.
+        Return working hours object for the date.
+
+        All working hours objects are returned in the server timezone, defined
+        in settings.TIME_ZONE
         """
-        date = parse_date(date)
+
+        date = timezone.localtime(date)
+
         try:
             hours = self.get(teacher=teacher, weekday=date.weekday())
         except ObjectDoesNotExist:
             return None
-        else:
-            hours.start = make_aware(datetime.combine(date, hours.start))
-            hours.end = make_aware(datetime.combine(date, hours.end))
-            return hours
+
+        server_tz = pytz.timezone(settings.TIME_ZONE)
+
+        hours.start = timezone.make_aware(datetime.combine(date, hours.start), timezone=server_tz)
+        hours.end = timezone.make_aware(datetime.combine(date, hours.end), timezone=server_tz)
+
+        return hours
 
 
 class WorkingHours(models.Model):
@@ -256,7 +304,7 @@ class WorkingHours(models.Model):
 
     weekday = models.IntegerField('Weekday', choices=WEEKDAYS)
     start = models.TimeField('Start hour (EDT)')
-    end = models.TimeField('End hoour(EDT)')
+    end = models.TimeField('End hour (EDT)')
 
     def as_dict(self):
         return {
@@ -280,3 +328,31 @@ class WorkingHours(models.Model):
     class Meta:
         unique_together = ('teacher', 'weekday')
         verbose_name_plural = "Working hours"
+
+
+class AbsenceManager(models.Manager):
+    def approved(self):
+        return self.get_queryset().filter(is_approved=True)
+
+
+class Absence(models.Model):
+    ABSENCE_TYPES = (
+        ('vacation', _('Vacation')),
+        ('unpaid', _('Unpaid')),
+        ('sick', _('Sick leave')),
+        ('bonus', _('Bonus vacation')),
+        ('srv', _('System-intiated vacation'))
+    )
+
+    objects = AbsenceManager()
+
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='absences')
+    type = models.CharField(max_length=32, choices=ABSENCE_TYPES, default='srv')
+    start = models.DateTimeField('Start')
+    end = models.DateTimeField('End')
+    add_date = models.DateTimeField(auto_now_add=True)
+    is_approved = models.BooleanField(default=True)
+
+    def __str__(self):
+        return '%s of %s from %s to %s' % \
+            (self.type, str(self.teacher), format(self.start, 'Y-m-d H:i'), format(self.end, 'Y-m-d H:i'))

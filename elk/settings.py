@@ -1,6 +1,6 @@
-import environ
+from datetime import timedelta
 
-from market.cron import *  # noqa
+import environ
 
 root = environ.Path(__file__) - 3        # three folder back (/a/b/c/ - 3 = /)
 env = environ.Env(DEBUG=(bool, False),)  # set default values and casting
@@ -23,10 +23,12 @@ DEBUG = env('DEBUG')    # False if not in os.environ
 ALLOWED_HOSTS = [
     'a.elk.today',
     'a-staging.elk.today',
+    '127.0.0.1',
 ]
 
 SUPPORT_EMAIL = 'help@elk.today'
 SERVER_EMAIL = 'django@elk.today'
+EMAIL_NOTIFICATIONS_FROM = env('EMAIL_NOTIFICATIONS_FROM')
 
 ADMINS = [
     ('Fedor Borshev', 'f@f213.in'),
@@ -47,7 +49,9 @@ INSTALLED_APPS = [
     'acc',
     'history',
     'mailer',
+    'extevents',
     'manual_class_logging',
+    'accounting',
 
     'djmoney',
     'anymail',
@@ -56,11 +60,12 @@ INSTALLED_APPS = [
     'django_markdown',
     'django_user_agents',
     'social.apps.django_app.default',
-    'easy_timezones',
+    'timezone_field',
     'django_nose',
     'django.contrib.admindocs',
     'suit',
     'date_range_filter',
+    'raven.contrib.django.raven_compat',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -75,6 +80,7 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'raven.contrib.django.raven_compat.middleware.SentryResponseErrorIdMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -84,7 +90,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.admindocs.middleware.XViewMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    #'easy_timezones.middleware.EasyTimezoneMiddleware',
+    'elk.middleware.GuessCountryMiddleWare',
     'elk.middleware.TimezoneMiddleware',
     'elk.middleware.SaveRefMiddleWare',
 ]
@@ -108,6 +114,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
+                'django.template.context_processors.tz',
 
                 'elk.context_processors.support_email',
                 'elk.context_processors.revision',
@@ -126,7 +133,8 @@ SUIT_CONFIG = {
         {'app': 'crm', 'icon': 'icon-globe', 'models': ('crm.Customer', 'crm.Company')},
         {'app': 'market', 'icon': 'icon-shopping-cart', 'models': ('market.Subscription', 'market.Class')},
         {'app': 'teachers', 'icon': 'icon-briefcase', },
-        {'app': 'lessons', 'icon': 'icon-hand-up', 'label': 'Teaching', 'models': ('lessons.Language', 'lessons.PairedLesson', 'lessons.MasterClass', 'lessons.HappyHour')},
+        {'app': 'accounting', 'icon': 'icon-gift', },
+        {'app': 'lessons', 'icon': 'icon-headphones', 'label': 'Teaching', 'models': ('lessons.Language', 'lessons.PairedLesson', 'lessons.MasterClass', 'lessons.HappyHour')},
         {'app': 'manual_class_logging', 'icon': 'icon-circle-arrow-right'},
         {'app': 'auth', 'label': 'Authorization', 'icon': 'icon-lock', 'models': ('auth.User', 'auth.Group')},
     ),
@@ -149,6 +157,8 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.load_extra_data',
     'social.pipeline.user.user_details',
     'acc.pipelines.save_profile_picture',
+    'acc.pipelines.save_country',
+    'acc.pipelines.save_timezone',
     'acc.pipelines.save_referral',
     'acc.pipelines.notify_staff',
 )
@@ -183,6 +193,27 @@ INTERNAL_IPS = [
     '91.197.113.166',
 ]
 
+if not DEBUG:
+    RAVEN_CONFIG = {
+        'dsn': env('SENTRY_DSN'),
+    }
+
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'sentry': {
+                'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+            },
+        },
+        'loggers': {
+            'app': {
+                'level': 'DEBUG',
+                'handlers': ['sentry'],
+            },
+        },
+    }
+
 SOCIAL_AUTH_URL_NAMESPACE = 'acc:social'
 
 SOCIAL_AUTH_FACEBOOK_KEY = env('SOCIAL_AUTH_FACEBOOK_KEY')
@@ -214,7 +245,6 @@ ANYMAIL = {
 }
 EMAIL_BACKEND = env('EMAIL_BACKEND')
 EMAIL_ASYNC = env.bool('EMAIL_ASYNC')
-EMAIL_NOTIFICATIONS_FROM = env('EMAIL_NOTIFICATIONS_FROM')
 
 CACHES = {
     'default': env.cache(),
@@ -223,10 +253,25 @@ CACHES = {
 BROKER_URL = env('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
 
+CELERYBEAT_SCHEDULE = {
+    'check_classes_that_will_start_soon': {
+        'task': 'timeline.tasks.notify_15min_to_class',
+        'schedule': timedelta(minutes=1),
+    },
+    'update_google_calendars': {
+        'task': 'extevents.tasks.update_google_calendars',
+        'schedule': timedelta(minutes=5),
+    },
+    'bill_timeline_entries': {
+        'task': 'accounting.tasks.bill_timeline_entries',
+        'schedule': timedelta(minutes=1),
+    },
+}
+
+
 CELERY_TIMEZONE = env('TIME_ZONE')
 
-GEOIP_DATABASE = './geolite/GeoLiteCity.dat'
-GEOIPV6_DATABASE = './geolite/GeoLiteCityv6.dat'
+GEOIP_PATH = './geolite/'
 
 
 # Uncomment this lines to catch all runtime warnings as errors

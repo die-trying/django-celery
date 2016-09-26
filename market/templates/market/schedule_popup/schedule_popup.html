@@ -5,24 +5,26 @@
 {% load market.schedule_popup %}
 {% load pretty_loader %}
 
-<div class="modal-dialog schedule-popup">
+<div class="modal-dialog modal-lg schedule-popup">
     <div class="modal-content">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-            <h3 class="modal-title">Schedule a {% schedule_popup_title user.crm.classes.bought_lesson_types %}</h3>
+            <h3 class="modal-title">Schedule a {% schedule_popup_title user.crm.classes.purchased_lesson_types %}</h3>
         </div>
         <div class="modal-body">
             <div class="row schedule-popup__filters">
-                <div class="col-md-12">
+                <div class="col-md-3">
                     <div class="form-group schedule-popup__date-selector">
-                        <select name="date" class="selectpicker">
+                        <select name="date" class="selectpicker form-control">
                             {% for d in user.crm.classes.dates_for_planning %}
                             <option value="{{ d|date:'Y-m-d' }}">{{ d|naturalday:'SHORT_DATE_FORMAT'|capfirst }}</option>
                             {% endfor %}
                         </select>
                     </div>
+                </div>
+                <div class="col-md-9">
                     <div class="btn-group lesson_type" data-toggle="buttons">
-                        {% lesson_type_filter user.crm.classes.bought_lesson_types %}
+                        {% lesson_type_filter user.crm.classes.purchased_lesson_types %}
                     </div>
                 </div>
             </div>
@@ -40,7 +42,7 @@
                     <div class="col-md-6 slots">
                         <div class="btn-group" data-toggle="buttons">
                             <label rv-each-slot="record.slots" class="btn btn-default schedule-popup__time-label">
-                                <input class="schedule-popup__time-selector" type="radio" rv-name="slot.id" rv-data-teacher="slot.teacher" rv-data-time="slot.time" rv-data-lesson="model.lesson_type" rv-data-date="model.date" rv-after="slot.time"></input>
+                                <input class="schedule-popup__time-selector" type="radio" rv-name="slot.id" rv-data-teacher="slot.teacher" rv-data-time="slot.server_time" rv-data-lesson="model.lesson_type" rv-data-date="model.date" rv-after="slot.user_time"></input>
                             </label>
                         </div>
                     </div>

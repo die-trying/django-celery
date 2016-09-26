@@ -38,11 +38,12 @@ class Model extends MicroEvent
             description = event.announce
           )
           for time in event.slots
-            time_for_id = time.replace ':', '_'
+            time_for_id = time['server'].replace ':', '_'
             slot = {
               id: "teacher_#{ event.id }_time_#{ time_for_id }"
               teacher: if event.host? then event.host.id else event.id
-              time: time
+              server_time: time['server']
+              user_time: time['user']
             }
             record.slots.push slot
 

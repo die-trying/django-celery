@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.utils.translation import ugettext as _
 
 from crm.models import Customer, CustomerNote
-from elk.admin import BooleanFilter, ModelAdmin, StackedInline
+from elk.admin import ModelAdmin, StackedInline
+from elk.admin.filters import BooleanFilter
 from market.admin.components import ClassesLeftInline, ClassesPassedInline, SubscriptionsInline
 from market.models import Subscription
 
@@ -76,6 +77,7 @@ class ExistingCustomerAdmin(ModelAdmin):
     )
     actions = None
     readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions', 'corporate')
+    search_fields = ('user__first_name', 'user__last_name')
     inlines = (CustomerNotesInline, SubscriptionsInline, ClassesLeftInline, ClassesPassedInline)
     fieldsets = (
         (None, {
@@ -85,7 +87,7 @@ class ExistingCustomerAdmin(ModelAdmin):
             'fields': ('curator', 'company', 'languages'),
         }),
         ('Profile', {
-            'fields': ('birthday', 'country', 'native_language', 'profile_photo', 'starting_level', 'current_level')
+            'fields': ('country', 'timezone', 'birthday', 'native_language', 'profile_photo', 'starting_level', 'current_level')
         }),
         ('Social', {
             'fields': ('skype', 'facebook', 'instagram', 'twitter', 'linkedin')

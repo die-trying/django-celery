@@ -1,13 +1,15 @@
 from abc import abstractproperty
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from djmoney.models.fields import MoneyField
 
 from crm.models import Customer
+from elk.logging import logger
 from market.exceptions import CannotBeScheduled, CannotBeUnscheduled
 from market.signals import class_scheduled, class_unscheduled
 from timeline.models import Entry as TimelineEntry
@@ -77,7 +79,7 @@ class SubscriptionManager(BuyableProductManager):
 
 class Subscription(BuyableProduct):
     """
-    Represents a single bought subscription.
+    Represents a single purchased subscription.
 
     When buying a subscription, one should store request in the `request`
     property of this instance. This is neeed for the log entry to contain
@@ -124,7 +126,7 @@ class Subscription(BuyableProduct):
                     subscription=self,
                     customer=self.customer,
                     buy_price=self.buy_price,
-                    buy_source='subscription',  # store a sign, that class is bought by subscription
+                    buy_source='subscription',  # store a sign, that class is purchased by subscription
                 )
                 if hasattr(self, 'request'):
                     c.request = self.request  # bypass request object for later analysis
@@ -208,7 +210,7 @@ class ClassesManager(BuyableProductManager):
             .filter(is_scheduled=True, timeline__start__range=(self.__now(), self.__now() + delta)) \
             .filter(**kwargs)
 
-    def bought_lesson_types(self):
+    def purchased_lesson_types(self):
         """
         Get ContentTypes of lessons, available to user
         """
@@ -228,14 +230,6 @@ class ClassesManager(BuyableProductManager):
 
         return [sort_order[i] for i in sorted(sort_order.keys())]
 
-    def to_be_marked_as_used(self):
-        """
-        List of classes, that should be marked as used by now
-        """
-        return self.get_queryset().filter(is_scheduled=True) \
-            .filter(is_fully_used=False) \
-            .filter(timeline__end__lt=self.__now() - MARK_CLASSES_AS_USED_AFTER)
-
     def find_student_classes(self, lesson_type):
         """
         Find students, that can schedule a lesson_type
@@ -251,10 +245,8 @@ class ClassesManager(BuyableProductManager):
 
         Currently retures 7 future days for everyone.
         """
-        current = datetime.now()
-        end = current + timedelta(days=7)
-
-        while current < end:
+        current = timezone.now()
+        for i in range(0, 7):
             yield current
             current += timedelta(days=1)
 
@@ -273,7 +265,7 @@ class ClassesManager(BuyableProductManager):
 
 class Class(BuyableProduct):
     """
-    Represents a single bought lesson.
+    Represents a single purchased lesson.
 
     Purpose
     =======
@@ -296,7 +288,7 @@ class Class(BuyableProduct):
     scheduled, and if it is, delete() just un-schedules it.
 
     For backup purposes, the delete method is redefined in :model:`market.BuyableProduct`
-    for completely disabling deletion of anything, that anyone has bought for money.
+    for completely disabling deletion of anything, that anyone has purchased for money.
     """
     objects = ClassesManager()
 
@@ -484,7 +476,7 @@ class Class(BuyableProduct):
             self.customer.save()
 
         entry = self.timeline
-        entry.classes.remove(self, bulk=True)  # expcitly disable runnin of self.save()
+        entry.classes.remove(self, bulk=True)  # expcitly disable running of self.save()
         self.timeline = None
         entry.save()
 
@@ -495,16 +487,16 @@ class Class(BuyableProduct):
         TODO: This method should raise exceptions for each situation,
         when a class cannot be scheduled
         """
-        if self.is_scheduled:
-            return False
-
-        if not entry.is_free:
+        if self.is_scheduled or not entry.is_free:
             return False
 
         if self.lesson_type != entry.lesson_type:
             return False
 
-        if not entry.allow_besides_working_hours and not entry.is_fitting_working_hours():
+        try:
+            entry.clean()
+        except ValidationError:
+            logger.error("Timeline entry can't be scheduled")
             return False
 
         return True

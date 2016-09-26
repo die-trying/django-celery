@@ -1,11 +1,33 @@
-from django.dispatch import Signal
+from django.dispatch import Signal, receiver
+
+from mailer.owl import Owl
 
 
 class_scheduled = Signal(providing_args=['instance'])  # class is just scheduled
 class_unscheduled = Signal(providing_args=['instance'])  # class is just cancelled
 
-class_starting_teacher = Signal(providing_args=['instance'])  # class is about to start (for teachers)
-class_starting_student = Signal(providing_args=['instance'])  # class is about to start (for students)
-#
-# i have made two different signals, because they obviously will require different
-# options, like time, left to the lesson
+
+@receiver(class_scheduled, dispatch_uid='notify_student_class_scheduled')
+def notify_student_class_scheduled(sender, **kwargs):
+    c = kwargs['instance']
+    owl = Owl(
+        template='mail/class/student/scheduled.html',
+        ctx={
+            'c': c,
+        },
+        to=[c.customer.user.email],
+    )
+    owl.send()
+
+
+@receiver(class_scheduled, dispatch_uid='notify_teacher_class_scheduled')
+def notify_teacher_class_scheduled(sender, **kwargs):
+    c = kwargs['instance']
+    owl = Owl(
+        template='mail/class/teacher/scheduled.html',
+        ctx={
+            'c': c,
+        },
+        to=[c.timeline.teacher.user.email],
+    )
+    owl.send()

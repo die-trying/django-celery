@@ -1,11 +1,10 @@
 from datetime import datetime
 from unittest.mock import MagicMock
 
-from django.test import TestCase
 from django.utils import timezone
 from mixer.backend.django import mixer
 
-from elk.utils.testing import create_customer, create_teacher
+from elk.utils.testing import TestCase, create_customer, create_teacher
 from lessons import models as lessons
 from market.exceptions import CannotBeScheduled
 from market.models import Class
@@ -45,7 +44,7 @@ class TestScheduleLowLevel(TestCase):
         c = self._buy_a_lesson()
         c.schedule(
             teacher=self.teacher,
-            date=datetime(2016, 12, 1, 7, 25),  # monday
+            date=self.tzdatetime(2016, 12, 1, 7, 25),  # monday
             allow_besides_working_hours=True,
         )
         self.assertIsNone(c.timeline.pk)
@@ -57,7 +56,7 @@ class TestScheduleLowLevel(TestCase):
         with self.assertRaises(CannotBeScheduled):
             c.schedule(
                 teacher=self.teacher,
-                date=datetime(2016, 12, 1, 7, 27)  # wednesday
+                date=self.tzdatetime(2016, 12, 1, 7, 27)  # wednesday
             )
             c.save()
 

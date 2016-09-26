@@ -1,7 +1,7 @@
 from date_range_filter import DateRangeFilter
 from django.contrib import admin
 
-from elk.admin import BooleanFilter
+from elk.admin.filters import BooleanFilter
 from market.admin.components import BuyableModelAdmin, ClassesLeftInline, ClassesPassedInline
 from market.models import Subscription
 
@@ -14,7 +14,7 @@ class IsFinishedFilter(BooleanFilter):
         return queryset.filter(is_fully_used=True)
 
     def f(self, request, queryset):
-        return queryset.filer(is_fully_used=False)
+        return queryset.filter(is_fully_used=False)
 
 
 @admin.register(Subscription)

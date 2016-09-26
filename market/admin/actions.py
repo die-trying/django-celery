@@ -1,10 +1,16 @@
 from django import forms
+from django.contrib import admin
 from django.contrib.admin.helpers import ActionForm
+from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
 
-from elk.admin import write_log_entry
 from manual_class_logging.signals import class_marked_as_used, class_renewed
 from teachers.models import Teacher
+
+
+"""
+Method to mark purcased classes and subscriptions as used
+"""
 
 
 class MarkAsUsedForm(ActionForm):
@@ -12,6 +18,18 @@ class MarkAsUsedForm(ActionForm):
     Form for actions that is required to make following actions working
     """
     teacher = forms.ChoiceField(initial=-1, choices=Teacher.objects.can_finish_classes)
+
+
+def write_log_entry(request, object, action_flag=admin.models.CHANGE, change_message='Changed'):
+    entry = admin.models.LogEntry(
+        user=request.user,
+        object_id=object.pk,
+        content_type=ContentType.objects.get_for_model(object),  # move it away from this function if you experience problems
+        object_repr=str(object),
+        action_flag=action_flag,
+        change_message=change_message,
+    )
+    entry.save()
 
 
 def mark_as_used(modeladmin, request, queryset):

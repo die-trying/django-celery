@@ -1,7 +1,9 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from django.contrib.contenttypes.models import ContentType
+from django.test import override_settings
 from mixer.backend.django import mixer
 
 from elk.utils.testing import ClientTestCase, create_teacher
@@ -25,8 +27,6 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
         self.second_teacher = create_teacher()
         mixer.blend(WorkingHours, teacher=self.second_teacher, weekday=0, start='13:00', end='15:00')  # monday
         mixer.blend(WorkingHours, teacher=self.second_teacher, weekday=4, start='17:00', end='19:00')  # thursday
-
-        super().setUp()
 
     def _buy_a_lesson(self, lesson):
             c = Class(
@@ -70,8 +70,8 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
         self.assertEquals(len(records), 2)
         self.assertEquals(len(records[0]['slots']), 1)
 
-        self.assertIn(':', records[0]['slots'][0])  # assert that returned slots carry some time (we dont care about timezones here)
-        self.assertIn(':', records[1]['slots'][0])
+        self.assertIsTime(records[0]['slots'][0]['server'])  # assert that returned slots carry some time (we dont care about timezones here)
+        self.assertIsTime(records[1]['slots'][0]['server'])
 
         self.assertEquals(records[0]['name'], first_master_class.name)
         self.assertEquals(records[1]['name'], second_master_class.name)
@@ -79,6 +79,34 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
         self.assertEquals(records[0]['host']['name'], self.first_teacher.user.crm.full_name)
         self.assertEquals(records[1]['host']['name'], self.second_teacher.user.crm.full_name)
 
+    @patch('teachers.models.timezone.now')
+    def test_filter_by_lesson_type_timezone(self, now):
+        """
+        Create 24 master classes and make sure they are accessible in the same timezone
+        """
+        now.return_value = self.tzdatetime(2032, 5, 1)
+        master_class = mixer.blend(lessons.MasterClass, host=self.first_teacher)
+        start = self.tzdatetime('Europe/Moscow', 2032, 5, 3, 0, 0)
+        for i in range(0, 24):
+            mixer.blend(
+                TimelineEntry,
+                lesson=master_class,
+                teacher=self.first_teacher,
+                start=start,
+                end=start + timedelta(hours=1)
+            )
+            start += timedelta(hours=1)
+            print(start)
+
+        self.c.login(username=self.superuser_login, password=self.superuser_password)  # need to login once again due to timezone change
+        response = self.c.get('/market/2032-05-03/type/%d/lessons.json' % lessons.MasterClass.get_contenttype().pk)
+
+        self.assertEquals(response.status_code, 200)
+        records = json.loads(response.content.decode('utf-8'))
+        self.assertEquals(len(records), 1)
+        self.assertEquals(len(records[0]['slots']), 24)
+
+    @override_settings(TIME_ZONE='Europe/Moscow')
     def test_filter_by_date(self):
         response = self.c.get('/market/2032-05-03/type/%d/teachers.json' % lessons.OrdinaryLesson.get_contenttype().pk)
         self.assertEquals(response.status_code, 200)
@@ -89,8 +117,8 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
         self.assertEquals(len(records[0]['slots']), 5)  # this first teacher works till 15:30
         self.assertEquals(len(records[1]['slots']), 4)  # and the second works till 15:00
 
-        self.assertEquals(records[0]['slots'][-1], '15:00')
-        self.assertEquals(records[1]['slots'][-1], '14:30')
+        self.assertIsTime(records[0]['slots'][-1]['server'])
+        self.assertIsTime(records[1]['slots'][-1]['server'])
 
         self.assertEquals(records[0]['name'], self.first_teacher.user.crm.full_name)
         self.assertEquals(records[1]['name'], self.second_teacher.user.crm.full_name)

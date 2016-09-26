@@ -60,10 +60,7 @@ class Controller
       $('#id_start_1').val @_default_time()
 
 
-    # remove django generated unused option
-    $('#id_lesson_type option:first-child').remove()
-
-    # # apply selectpicker
+    # apply selectpicker
     $('#id_lesson_type, #id_lesson_id').selectpicker()
     @model.bind 'lessons_fetched', () ->
       $('#id_lesson_id').selectpicker 'refresh'

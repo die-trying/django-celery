@@ -40,6 +40,6 @@ class TestEvent(TestCase, AssertHTMLMixin):
         response = views.Payments.as_view()(request)  # Я УМЕЮ ФУНКУЦИОНАЛЬНО ПРОГРАММИРОВАТЬ
         response.render()
 
-        with self.assertHTML(response, 'table.payments-history>tbody .payments-history__product-column') as bought_products:
-            self.assertEqual(len(bought_products), 1)
-            self.assertEqual(bought_products[0].text, OrdinaryLesson.get_default().name)
+        with self.assertHTML(response, 'table.payments-history>tbody .payments-history__product-column') as purchased_products:
+            self.assertEqual(len(purchased_products), 1)
+            self.assertEqual(purchased_products[0].text, OrdinaryLesson.get_default().name)

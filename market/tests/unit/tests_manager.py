@@ -84,7 +84,7 @@ class TestClassManager(TestCase):
         self.assertEquals(c_found, c2)
 
     def test_available_lesson_types(self):
-        lesson_types = self.customer.classes.bought_lesson_types()
+        lesson_types = self.customer.classes.purchased_lesson_types()
         self.assertEquals(len(lesson_types), 5)  # if you have defined a new lesson, fill free to increase this value, it's ok
 
         self.assertIn(lessons.OrdinaryLesson.get_contenttype(), lesson_types)
@@ -94,7 +94,7 @@ class TestClassManager(TestCase):
         """
         Planning dates should be sorted with the in-class defined sort order
         """
-        lesson_types = self.customer.classes.bought_lesson_types()
+        lesson_types = self.customer.classes.purchased_lesson_types()
 
         sort_order = {}
         for m in ContentType.objects.filter(app_label='lessons'):
@@ -131,35 +131,6 @@ class TestClassManager(TestCase):
             self.assertIsInstance(i, datetime)
 
         self.assertEquals(dates[0].strftime('%Y-%m-%d'), datetime.now().strftime('%Y-%m-%d'))  # the first day should be today
-
-    def test_to_be_marked_as_used_fail(self):
-        no_classes = Class.objects.to_be_marked_as_used()
-        self.assertEquals(len(no_classes), 0)
-
-    def test_to_be_marked_as_used_fail_on_used(self):
-        c = self._schedule(date=datetime(2016, 12, 1, 15, 0))
-        c.mark_as_fully_used()
-
-        with patch('market.models.ClassesManager._ClassesManager__now') as mocked_date:
-            mocked_date.return_value = timezone.make_aware(datetime(2016, 12, 1, 15, 30))
-            no_classes = Class.objects.to_be_marked_as_used()
-            self.assertEquals(len(no_classes), 0)
-
-    def test_to_be_marked_as_used_fail_on_future(self):
-        self._schedule(date=datetime(2016, 12, 1, 15, 0))
-        with patch('market.models.ClassesManager._ClassesManager__now') as mocked_date:
-            mocked_date.return_value = timezone.make_aware(datetime(2016, 12, 1, 14, 00))  # 1,5 hours before the class finish
-            no_classes = Class.objects.to_be_marked_as_used()
-            self.assertEquals(len(no_classes), 0)
-
-    def test_to_be_marked_as_used_ok(self):
-        c = self._schedule(date=datetime(2016, 12, 1, 15, 0))
-        with patch('market.models.ClassesManager._ClassesManager__now') as mocked_date:
-            mocked_date.return_value = timezone.make_aware(datetime(2016, 12, 1, 16, 31))
-            classes = Class.objects.to_be_marked_as_used()
-            self.assertLessEqual(1, mocked_date.call_count)
-            self.assertEqual(len(classes), 1)
-            self.assertEqual(classes[0], c)
 
     def test_cant_unschedule_in_past(self):
         c = self._schedule(date=timezone.make_aware(datetime(2020, 12, 1, 11, 30)))

@@ -1,0 +1,14 @@
+{% extends "mail_templated/base.tpl" %}
+{% load i18n %}
+
+{% block subject %}
+Dashboard: {{ user.crm.full_name }}, a new student!
+{% endblock %}
+
+{% block body %}
+{% trans 'Hi there!' %}
+
+{% trans "We've got a registered student via" %} {{ user.crm.source }} — {{ user.crm.full_name }}.
+
+{% include 'mailer/_signature.html' %}
+{% endblock %}

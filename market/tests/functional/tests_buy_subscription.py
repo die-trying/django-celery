@@ -1,6 +1,4 @@
-from django.test import TestCase
-
-from elk.utils.testing import create_customer
+from elk.utils.testing import TestCase, create_customer
 from market.models import Class, Subscription
 from products import models as products
 
@@ -43,8 +41,8 @@ class BuySubscriptionTestCase(TestCase):
 
     def test_store_class_source(self):
         """
-        When buying a subcription, every bought class should have a sign
-        about that it's bought buy subscription.
+        When buying a subcription, every purchased class should have a sign
+        about that it's purchased buy subscription.
         """
 
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)

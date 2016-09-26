@@ -20,8 +20,6 @@ class EntryAPITest(ClientTestCase):
         """
         self.teacher = create_teacher()
 
-        super().setUp()
-
     def test_user(self):  # TODO: REFACTOR IT
         duration = timedelta(minutes=71)
 

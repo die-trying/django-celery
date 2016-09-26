@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django_countries.fields import CountryField
+from timezone_field import TimeZoneField
 
 
 class Company(models.Model):
@@ -27,8 +28,8 @@ class Customer(models.Model):
 
     Contents everything, related to CRM via properties:
         * payments: payment history: :model:`history.PaymentEvent`
-        * classes: all bought classes: :model:`market.Class`
-        * subscriptions: all bought subscriptions: :model:`market.Subscription`
+        * classes: all purchased classes: :model:`market.Class`
+        * subscriptions: all purchased subscriptions: :model:`market.Subscription`
 
     The model automatically assigned to a current user, so you can access all CRM properties via `request.user.crm`.
     """
@@ -47,6 +48,8 @@ class Customer(models.Model):
 
     date_arrived = models.DateTimeField(auto_now_add=True)
     birthday = models.DateField(null=True, blank=True)
+
+    timezone = TimeZoneField(default='Europe/Moscow')
 
     ref = models.CharField('Referal code', max_length=140, blank=True)
 
@@ -121,7 +124,7 @@ class Customer(models.Model):
 
     def can_schedule_classes(self):
         """
-        Determine, if user has bought classes
+        Determine, if user has purchased classes
         """
         if self.classes.filter(is_fully_used=False).exclude(is_scheduled=True).count():
             return True

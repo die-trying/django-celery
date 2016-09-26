@@ -32,7 +32,7 @@ class SubscriptionsInline(TabularInline):
         return str(instance.product)
 
     def when(self, instance):
-        return self._datetime(instance.buy_date) + ' ' + self._time(instance.buy_date)
+        return self._datetime(instance.buy_date)
 
     def has_add_permission(self, instance):
         return False
@@ -55,7 +55,7 @@ class ClassesInlineBase(TabularInline):
         return False
 
     def buy_time(self, instance):
-        return self._datetime(instance.buy_date) + ' ' + self._time(instance.buy_date)
+        return self._datetime(instance.buy_date)
 
 
 class ClassesLeftInline(ClassesInlineBase):
@@ -112,4 +112,4 @@ class ClassesPassedInline(ClassesInlineBase):
         return instance.timeline.teacher.user.crm.full_name
 
     def when(self, instance):
-        return self._datetime(instance.timeline.start) + ' ' + self._time(instance.timeline.start)
+        return self._datetime(instance.timeline.start)

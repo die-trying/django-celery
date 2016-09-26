@@ -94,7 +94,7 @@ class Lesson(models.Model):
         `lessons.yaml` fixture. When defining a new lesson type, fill free to add
         it to the fixture.
 
-        If a lesson can't be bought this way, it should raise a NotImplementedError,
+        If a lesson can't be purchased this way, it should raise a NotImplementedError,
         for example see `MasterClass` lesson.
         """
         return cls.objects.get(pk=500)
@@ -180,23 +180,24 @@ class OrdinaryLesson(Lesson):
         return 100
 
     class Meta(Lesson.Meta):
-        verbose_name = _("Curated session")
+        verbose_name = _("Single lesson")
+        verbose_name_plural = _("Single lessons")
 
 
 class LessonWithNative(Lesson):
     @classmethod
     def sort_order(cls):
-        return 200
+        return 300
 
     class Meta(Lesson.Meta):
-        verbose_name = _("Native speaker session")
-        verbose_name_plural = _("Native speakers")
+        verbose_name = _("Native speaker")
+        verbose_name_plural = _("Native speaker sessions")
 
 
 class MasterClass(HostedLesson):
     @classmethod
     def sort_order(cls):
-        return 300
+        return 400
 
     class Meta(HostedLesson.Meta):
         verbose_name = _("Master Class")
@@ -206,7 +207,7 @@ class MasterClass(HostedLesson):
 class HappyHour(HostedLesson):
     @classmethod
     def sort_order(cls):
-        return 400
+        return 500
 
     class Meta(HostedLesson.Meta):
         verbose_name = _("Happy Hour")
@@ -215,7 +216,8 @@ class HappyHour(HostedLesson):
 class PairedLesson(HostedLesson):
     @classmethod
     def sort_order(cls):
-        return 500
+        return 200
 
     class Meta(Lesson.Meta):
-        verbose_name = _("Paired Lesson")
+        verbose_name = _("Paired lesson")
+        verbose_name_plural = ("Paired lessons")

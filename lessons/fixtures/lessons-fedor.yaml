@@ -1,0 +1,5 @@
+- fields: {active: 1, announce: This is Fedor's master class, description: This is
+      Fedor's master class, duration: '00:30:00', host: 1, internal_name: Fedor's
+      master class, name: Fedor's master class, slots: 8}
+  model: lessons.masterclass
+  pk: 501
