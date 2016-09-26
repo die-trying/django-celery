@@ -16,6 +16,7 @@ def notify_student_class_scheduled(sender, **kwargs):
             'c': c,
         },
         to=[c.customer.user.email],
+        timezone=c.customer.timezone,
     )
     owl.send()
 
@@ -29,5 +30,6 @@ def notify_teacher_class_scheduled(sender, **kwargs):
             'c': c,
         },
         to=[c.timeline.teacher.user.email],
+        timezone=c.timeline.teacher.user.crm.timezone,
     )
     owl.send()
