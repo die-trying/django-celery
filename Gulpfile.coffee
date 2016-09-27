@@ -12,6 +12,10 @@ config = {
   js:
     frontend: ['*/assets/**/*.coffee', '!*/assets/admin/**/*']
     admin: '*/assets/admin/**/*.coffee'
+  static:
+    master: '//static.elk.today/'
+    staging: '//static-staging.elk.today/'
+    dev: '/static/'
   vendor_dir: './elk/static/vendor/'
   js_vendor_files: './build/js-vendor-files.json'
   css_vendor_files: './build/css-vendor-files.json'
@@ -25,6 +29,8 @@ css_pre_process = lazypipe()
   .pipe $.stylint.reporter, 'fail', { failOnWarning: true }
   .pipe $.stylus,
     use: nib()
+    rawDefine:
+      static: if process.env.CIRCLE_BRANCH then config.static[process.env.CIRCLE_BRANCH] else config.static.dev
 
 css_post_process = lazypipe()
   .pipe $.uglifycss
@@ -95,5 +101,9 @@ gulp.task 'default', ['css', 'js', 'css:admin', 'js:admin'], () ->
   gulp.watch config.js.admin, ['js:admin']
 
 gulp.task 'production', () ->
+  if process.env.CIRCLE_BRANCH
+    $.util.log 'CI: building production assets with external static path', \
+      $.util.colors.magenta config.static[process.env.CIRCLE_BRANCH]
+
   config.production = true
   run_sequence ['css', 'js', 'css:admin', 'js:admin']
