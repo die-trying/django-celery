@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.core import mail
+from django.test import override_settings
 from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_customer, create_teacher
@@ -95,6 +96,7 @@ class ScheduleTestCase(TestCase):
         c.save()
         self.assertEquals(c.timeline, entry)
 
+    @override_settings(EMAIL_ASYNC=False)
     def test_schedule_email(self):
         lesson = products.OrdinaryLesson.get_default()
         c = self._buy_a_lesson(lesson)
