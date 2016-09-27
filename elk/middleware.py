@@ -16,6 +16,13 @@ class SaveRefMiddleWare():
             request.session['ref'] = request.GET['ref']
 
 
+class MarkTrialMiddleWare():
+    def process_request(self, request):
+        if request.user is None or request.user.id is None:
+            if 'trial' in request.GET.keys():
+                request.session['trial'] = True
+
+
 class GuessCountryMiddleWare():
     def process_request(self, request):
         if request.session.get('country') is None:

@@ -96,6 +96,7 @@ MIDDLEWARE_CLASSES = [
     'elk.middleware.GuessCountryMiddleWare',
     'elk.middleware.TimezoneMiddleware',
     'elk.middleware.SaveRefMiddleWare',
+    'elk.middleware.MarkTrialMiddleWare',
 ]
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
