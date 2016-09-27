@@ -164,6 +164,7 @@ SOCIAL_AUTH_PIPELINE = (
     'acc.pipelines.save_country',
     'acc.pipelines.save_timezone',
     'acc.pipelines.save_referral',
+    'acc.pipelines.add_trial_lesson',
     'acc.pipelines.notify_staff',
 )
 

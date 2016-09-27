@@ -168,3 +168,11 @@ def notify_staff(strategy, backend, user, response, is_new=False, *args, **kwarg
             new_user_registered.send(sender=notify_staff, user=user, whom_to_notify=teacher.email)
 
     new_user_registered.send(sender=notify_staff, user=user)
+
+
+def add_trial_lesson(strategy, backend, user, response, is_new=False, *args, **kwargs):
+    if not is_new:
+        return
+
+    if strategy.session_get('trial') is not None:
+        user.crm.add_trial_lesson()

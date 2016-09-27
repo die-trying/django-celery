@@ -1,9 +1,12 @@
+from django.apps import apps
 from django.contrib.auth.models import User
 from django.db import models
 from django_countries.fields import CountryField
 from image_cropping import ImageRatioField
 from image_cropping.templatetags.cropping import cropped_thumbnail
 from timezone_field import TimeZoneField
+
+from crm.signals import trial_lesson_added
 
 
 class Company(models.Model):
@@ -99,6 +102,13 @@ class Customer(models.Model):
         if self.profile_photo:
             return cropped_thumbnail(context={}, instance=self, ratiofieldname='profile_photo_cropping')
         return ''
+
+    def add_trial_lesson(self):
+        TrialLesson = apps.get_model('lessons.TrialLesson')
+        self.classes.create(
+            lesson=TrialLesson.get_default()
+        )
+        trial_lesson_added.send(sender=self)
 
     def _get_user_property(self, property):
         """

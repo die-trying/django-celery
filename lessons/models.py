@@ -184,6 +184,15 @@ class OrdinaryLesson(Lesson):
         verbose_name_plural = _("Single lessons")
 
 
+class TrialLesson(Lesson):
+    @classmethod
+    def sort_order(cls):
+        return 999
+
+    class Meta(Lesson.Meta):
+        verbose_name = _('First lesson')
+
+
 class LessonWithNative(Lesson):
     @classmethod
     def sort_order(cls):

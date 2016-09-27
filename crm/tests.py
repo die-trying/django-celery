@@ -8,7 +8,7 @@ from market.models import Class
 
 
 class CustomerTestCase(TestCase):
-    fixtures = ('crm.yaml',)
+    fixtures = ('crm', 'lessons')
 
     def test_username(self):
         """
@@ -54,3 +54,10 @@ class CustomerTestCase(TestCase):
         with self.assertRaises(ValidationError):
             c.timezone = 'Noga/Test'
             c.save()
+
+    def test_add_trial_lesson(self):
+        c = create_customer()
+        c.add_trial_lesson()
+        c.refresh_from_db()
+
+        self.assertEqual(c.classes.count(), 1)
