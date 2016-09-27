@@ -62,7 +62,10 @@ class Owl():
             self.template,
             self.ctx,
             self.from_email,
-            self.to
+            self.to,
+            headers={
+                'X-ELK-Timezone': str(self.timezone),
+            }
         )
         self.msg.render()
 
