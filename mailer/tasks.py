@@ -1,9 +1,8 @@
 import pytz
 from django.utils import timezone
 from mail_templated import EmailMessage
-from django.utils import timezone
+
 from elk.celery import app as celery
-import pytz
 
 
 @celery.task
