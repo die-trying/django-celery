@@ -1,4 +1,4 @@
-from os.path import basename
+from os.path import basename, join
 
 import responses
 
@@ -20,17 +20,23 @@ class TestSaveSocialProfile(SaveSocialProfile):
 
 
 class TestSocialPipeline(TestCase):
-    def test_fetch_picture(self):
+
+    def setUp(self):
         responses.add(responses.GET,
                       'http://testing.test/testpic.jpg',
-                      body=b'testbytes',
+                      body=self._read_fixture('me.jpg'),
                       status=200,
                       content_type='image/jpeg'
                       )
 
+    def _read_fixture(self, src):
+        src = join('./acc/fixtures/', src)
+        return open(src, 'rb').read()
+
+    def test_fetch_picture(self):
         profile_saver = TestSaveSocialProfile(user='', response='', backend='')
         profile_saver.fetch_picture()
-        self.assertEqual(profile_saver.profile_picture.read(), b'testbytes')
+        self.assertIsNotNone(profile_saver.profile_picture.read())
 
     def test_save_source(self):
         user = create_user()
@@ -39,6 +45,7 @@ class TestSocialPipeline(TestCase):
             name = 'social-test-source-name'
 
         profile_saver = TestSaveSocialProfile(user=user, response='', backend=TestBackend)
+        profile_saver.fetch_picture()
         profile_saver.save_social_source()
 
         self.assertEqual(user.crm.source, 'social-test-source-name')
@@ -58,7 +65,7 @@ class TestSocialPipeline(TestCase):
         profile_saver.save_picture()
 
         self.assertEqual(basename(user.crm.profile_photo.name), '%s-testsrc.jpgtest' % user.username)
-        self.assertEqual(user.crm.profile_photo.read(), b'testbytes')
+        self.assertIsNotNone(user.crm.profile_photo)
 
 
 class TestLoginPage(ClientTestCase):

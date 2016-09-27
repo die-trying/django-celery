@@ -51,7 +51,8 @@ class SaveSocialProfile(metaclass=ABCMeta):
 
     def save_picture(self):
         filename = '%s-%s.%s' % (self.user.username, self.source_name, self.extension)
-        self.user.crm.profile_photo.save(filename, self.profile_picture)
+        if self.user.crm.profile_photo is not None:
+            self.user.crm.profile_photo.save(filename, self.profile_picture)
 
     def save_social_source(self):
         self.user.crm.source = self.backend.name

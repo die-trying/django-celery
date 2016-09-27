@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 import environ
+from easy_thumbnails.conf import Settings as thumbnail_settings
 
 root = environ.Path(__file__) - 3        # three folder back (/a/b/c/ - 3 = /)
 env = environ.Env(DEBUG=(bool, False),)  # set default values and casting
@@ -53,6 +54,8 @@ INSTALLED_APPS = [
     'manual_class_logging',
     'accounting',
 
+    'easy_thumbnails',
+    'image_cropping',
     'djmoney',
     'anymail',
     'mail_templated',
@@ -224,6 +227,10 @@ SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
 }
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+
+THUMBNAIL_PROCESSORS = (
+    'image_cropping.thumbnail_processors.crop_corners',
+) + thumbnail_settings.THUMBNAIL_PROCESSORS
 
 WSGI_APPLICATION = 'elk.wsgi.application'
 
