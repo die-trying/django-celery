@@ -57,3 +57,15 @@ class TestTemplatedMail(TestCase):
         owl.send()
         m = owl.msg
         self.assertIn('26.09.2016 18:00', m.body)
+
+    def test_timezone_headers_none(self):
+        owl = self._owl()
+        owl.send()
+        m = owl.msg
+        self.assertEqual(m.extra_headers['X-ELK-Timezone'], 'None')
+
+    def test_timezone_headers_set(self):
+        owl = self._owl(timezone=pytz.timezone('Europe/Amsterdam'))
+        owl.send()
+        m = owl.msg
+        self.assertEqual(m.extra_headers['X-ELK-Timezone'], 'Europe/Amsterdam')

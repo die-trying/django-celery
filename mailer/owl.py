@@ -50,6 +50,10 @@ class Owl():
             else:
                 self.timezone = timezone
 
+        self.headers = {
+            'X-ELK-Timezone': str(self.timezone),
+        }
+
         self.EmailMessage()
 
     @user_tz
@@ -62,7 +66,8 @@ class Owl():
             self.template,
             self.ctx,
             self.from_email,
-            self.to
+            self.to,
+            headers=self.headers,
         )
         self.msg.render()
 
@@ -76,8 +81,10 @@ class Owl():
         else:
             self.queue()
 
+    @user_tz
     def queue(self):
-        send_email.delay(self.template, self.ctx, self.from_email, self.to)
+        self.headers['X-ELK-Queued'] = 'True'
+        send_email.delay(self.template, self.ctx, self.from_email, self.to, headers=self.headers)
 
     def _activate_timezone(self):
         if self.timezone is not None:
