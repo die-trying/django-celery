@@ -87,7 +87,7 @@ class ExistingCustomerAdmin(ModelAdmin):
             'fields': ('curator', 'company', 'languages'),
         }),
         ('Profile', {
-            'fields': ('country', 'timezone', 'birthday', 'native_language', 'profile_photo', 'starting_level', 'current_level')
+            'fields': ('profile_photo', 'profile_photo_cropping', 'country', 'timezone', 'birthday', 'native_language', 'starting_level', 'current_level')
         }),
         ('Social', {
             'fields': ('skype', 'facebook', 'instagram', 'twitter', 'linkedin')

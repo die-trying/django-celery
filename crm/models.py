@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django_countries.fields import CountryField
+from image_cropping import ImageRatioField
+from image_cropping.templatetags.cropping import cropped_thumbnail
 from timezone_field import TimeZoneField
 
 
@@ -57,6 +59,7 @@ class Customer(models.Model):
     max_cancellation_count = models.SmallIntegerField('Maximum allowed lessons to cancel', default=7)
 
     profile_photo = models.ImageField(upload_to='profiles/', null=True, blank=True)
+    profile_photo_cropping = ImageRatioField('profile_photo', '80x80')
 
     profession = models.CharField(max_length=140, null=True, blank=True)
 
@@ -94,7 +97,7 @@ class Customer(models.Model):
         Get, if exists, profile photo link
         """
         if self.profile_photo:
-            return self.profile_photo.url
+            return cropped_thumbnail(context={}, instance=self, ratiofieldname='profile_photo_cropping')
         return ''
 
     def _get_user_property(self, property):

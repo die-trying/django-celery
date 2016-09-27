@@ -5,6 +5,7 @@ from django.template.defaultfilters import capfirst, time
 from django.utils.html import format_html
 from django_markdown.models import MarkdownField
 from django_markdown.widgets import AdminMarkdownWidget
+from image_cropping import ImageCroppingMixin
 from suit.widgets import SuitSplitDateTimeWidget
 
 
@@ -21,7 +22,7 @@ class AdminHelpersMixin():
         return time(date, 'TIME_FORMAT')
 
 
-class ModelAdmin(admin.ModelAdmin, AdminHelpersMixin):
+class ModelAdmin(ImageCroppingMixin, admin.ModelAdmin, AdminHelpersMixin):
     """
     Abstract base class for all admin modules. Currently, supports only a minor
     set of helpers
