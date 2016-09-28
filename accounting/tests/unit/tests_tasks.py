@@ -13,6 +13,7 @@ class TestBillTimelineEntries(TestCase):
         self.teacher = create_teacher()
         self.entry = mixer.blend(
             TimelineEntry,
+            taken_slots=1,
             teacher=self.teacher,
             start=self.tzdatetime(2032, 5, 10, 21, 0),
             is_finished=False,
@@ -50,14 +51,22 @@ class TestBillTimelineEntries(TestCase):
 
     @patch('timeline.models.EntryManager._EntryManager__now')
     def test_warn_logging(self, now):
+        """
+        Try to double-bill the same timeline entry
+        """
         now.return_value = self.tzdatetime(2032, 5, 11)
 
-        bill_timeline_entries()
+        with patch('timeline.models.Entry._Entry__self_delete_if_needed') as self_delete:  # disable self-deletion (the entry is in past here!)
+            self_delete.return_value = False
 
-        self.entry.is_finished = False
-        self.entry.save()
-        with patch('accounting.tasks.logger') as logger:
-            logger.warning = MagicMock()
             bill_timeline_entries()
 
-            self.assertEqual(logger.warning.call_count, 1)
+            self.entry._Entry__update_slots = MagicMock()  # disable timeslot updating — the entry needs to have slots for beeing billed
+            self.entry.is_finished = False
+            self.entry.save()
+
+            with patch('accounting.tasks.logger') as logger:
+                logger.warning = MagicMock()
+                bill_timeline_entries()
+
+                self.assertEqual(logger.warning.call_count, 1)
