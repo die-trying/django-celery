@@ -14,7 +14,7 @@ def send_email(*args, **kwargs):
     """
     old_tz = None
     headers = kwargs.get('headers')
-    if headers is not None and headers.get('X-ELK-Timezone') is not None:
+    if headers is not None and headers.get('X-ELK-Timezone') and headers['X-ELK-Timezone'] != 'None':
         old_tz = timezone.get_current_timezone()
         timezone.activate(pytz.timezone(headers['X-ELK-Timezone']))
 
