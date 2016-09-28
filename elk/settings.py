@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 import environ
-import raven
 from easy_thumbnails.conf import Settings as thumbnail_settings
 
 root = environ.Path(__file__) - 3        # three folder back (/a/b/c/ - 3 = /)
@@ -200,7 +199,6 @@ INTERNAL_IPS = [
 if not DEBUG:
     RAVEN_CONFIG = {
         'dsn': env('SENTRY_DSN'),
-        'release': raven.fetch_git_sha(os.path.dirname(__file__)),
     }
 
     LOGGING = {
