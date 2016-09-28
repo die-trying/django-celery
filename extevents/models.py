@@ -162,13 +162,16 @@ class GoogleCalendar(ExternalEventSource):
         yield from self.__simple_events(ical)  # first, parse all non-recurring events
         yield from self.__recurring_events(ical)  # second — generate instances of ExternalEvent for every recurring event
 
-    def __simple_events(self, ical):
+    def __simple_events(self, ical):  # noqa
         """
         Generate non-recurring events from icalendar. Ignore events in the past.
         """
         for ev in ical.walk('VEVENT'):
             if ev.get('rrule') is None:  # rrule is a repeating rule from icalendar RFC
                 event = self.parse_event(ev)
+
+                if event is None:
+                    continue
 
                 if event.start < timezone.now():
                     continue
@@ -220,7 +223,10 @@ class GoogleCalendar(ExternalEventSource):
         Return an :model:`extevents.ExternalEvent` instance built from
         an icalendar event.
         """
-        (start, end) = self.__event_time(event)
+        try:
+            (start, end) = self.__event_time(event)
+        except AttributeError:
+            return
         return ExternalEvent(
             start=start,
             end=end,

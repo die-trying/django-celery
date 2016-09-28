@@ -96,6 +96,11 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
 
         self.assertEqual(len(events), assumed_event_count)
 
+    def test_event_without_endtime(self):
+        events = list(self.src.parse_events(self.read_fixture('no-endtime.ics')))
+
+        self.assertEqual(len(events), 0)  # should not throw anything
+
     def test_event_time_normal(self):
         start = self.tzdatetime('Europe/Moscow', 2016, 9, 10, 16, 0)
         end = self.tzdatetime('Europe/Moscow', 2016, 9, 10, 16, 0)
