@@ -183,7 +183,6 @@ class IcalEventSource(ExternalEventSource):
         for ev in ical.walk('VEVENT'):
             rrule = ev.get('rrule')  # rrule is a repeating rule from icalendar RFC
             if rrule is not None:
-                print(rrule)
                 basic_event = self.parse_event(ev)
 
                 yield basic_event  # return basic event as the first event of the spree
