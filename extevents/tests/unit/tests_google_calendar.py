@@ -51,13 +51,18 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
 
     def test_simple_events_ignores_recurring_events(self):
         ical = Calendar.from_ical(self.read_fixture('recurring.ics'))
-        events = list(self.src._GoogleCalendar__simple_events(ical))
+        events = list(self.src._simple_events(ical))
         self.assertEqual(len(events), 0)  # this test will fail in 2023, see fixtures/recurring.ics:19
 
     def test_recurring_events_count(self):
         ical = Calendar.from_ical(self.read_fixture('recurring.ics'))
-        events = list(self.src._GoogleCalendar__recurring_events(ical))
+        events = list(self.src._recurring_events(ical))
         self.assertEqual(len(events), self.src.EXTERNAL_EVENT_WEEK_COUNT + 1)  # weekly event should repeat as many times as recurring is configured
+
+    def test_recurring_events_withhout_timezone(self):
+        ical = Calendar.from_ical(self.read_fixture('recurring-without-timezone.ics'))
+        events = list(self.src._recurring_events(ical))
+        self.assertIsNotNone(events)  # should not throw anything
 
     def test_recurring_events_are_the_same(self):
         """
@@ -65,7 +70,7 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
         """
         ical = Calendar.from_ical(self.read_fixture('recurring.ics'))
 
-        for ev in self.src._GoogleCalendar__recurring_events(ical):
+        for ev in self.src._recurring_events(ical):
             self.assertIsInstance(ev, models.ExternalEvent)
             self.assertEqual(ev.end - ev.start, datetime.timedelta(hours=1))  # all generated events should have similar length
             self.assertEqual(ev.src, self.src)
@@ -76,7 +81,7 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
         """
         ical = Calendar.from_ical(self.read_fixture('recurring.ics'))
 
-        events = list(self.src._GoogleCalendar__recurring_events(ical))
+        events = list(self.src._recurring_events(ical))
 
         parent_event = events.pop(0)
         for ev in events:
@@ -99,7 +104,7 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
     def test_event_without_endtime(self):
         events = list(self.src.parse_events(self.read_fixture('no-endtime.ics')))
 
-        self.assertEqual(len(events), 0)  # should not throw anything
+        self.assertEqual(len(events), 1)  # should not throw anything and return a one whole-day event
 
     def test_event_time_normal(self):
         start = self.tzdatetime('Europe/Moscow', 2016, 9, 10, 16, 0)
@@ -107,7 +112,7 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
 
         event = self.fake_event(start, end)
 
-        (a, b) = self.src._GoogleCalendar__event_time(event)
+        (a, b) = self.src._event_time(event)
 
         self.assertEqual(a, start)
         self.assertEqual(b, end)
@@ -122,7 +127,7 @@ class TestGoogleCalendar(GoogleCalendarTestCase):
         start = datetime.date(2016, 12, 5)
         event = self.fake_event(start, start)
 
-        (a, b) = self.src._GoogleCalendar__event_time(event)
+        (a, b) = self.src._event_time(event)
 
         self.assertEqual(a, self.tzdatetime('UTC', 2016, 12, 5, 0, 0))
         self.assertEqual(b, self.tzdatetime('UTC', 2016, 12, 5, 23, 59, 59, 999999))

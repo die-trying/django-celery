@@ -131,10 +131,8 @@ class ExternalEventSource(models.Model):
         abstract = True
 
 
-class GoogleCalendar(ExternalEventSource):
+class IcalEventSource(ExternalEventSource):
     EXTERNAL_EVENT_WEEK_COUNT = 8  # last all recurring events in 8 weeks to the future
-
-    teacher = models.ForeignKey('teachers.Teacher', on_delete=models.CASCADE, related_name='google_calendars')
 
     def poll(self):
         """
@@ -159,19 +157,16 @@ class GoogleCalendar(ExternalEventSource):
             logger.warning('Could not parse ical string')
             raise StopIteration
 
-        yield from self.__simple_events(ical)  # first, parse all non-recurring events
-        yield from self.__recurring_events(ical)  # second — generate instances of ExternalEvent for every recurring event
+        yield from self._simple_events(ical)  # first, parse all non-recurring events
+        yield from self._recurring_events(ical)  # second — generate instances of ExternalEvent for every recurring event
 
-    def __simple_events(self, ical):  # noqa
+    def _simple_events(self, ical):
         """
         Generate non-recurring events from icalendar. Ignore events in the past.
         """
         for ev in ical.walk('VEVENT'):
             if ev.get('rrule') is None:  # rrule is a repeating rule from icalendar RFC
                 event = self.parse_event(ev)
-
-                if event is None:
-                    continue
 
                 if event.start < timezone.now():
                     continue
@@ -181,25 +176,26 @@ class GoogleCalendar(ExternalEventSource):
 
                 yield event
 
-    def __recurring_events(self, ical):
+    def _recurring_events(self, ical):
         """
         Generate recurring events from icalendar. Ignore events from the past except the first one.
         """
         for ev in ical.walk('VEVENT'):
             rrule = ev.get('rrule')  # rrule is a repeating rule from icalendar RFC
             if rrule is not None:
+                print(rrule)
                 basic_event = self.parse_event(ev)
 
                 yield basic_event  # return basic event as the first event of the spree
-                yield from self.__recurring_event_generator(rrule, basic_event)
+                yield from self._recurring_event_generator(rrule, basic_event)
 
-    def __recurring_event_generator(self, rrule, basic_event):
+    def _recurring_event_generator(self, rrule, basic_event):
         """
         The main generator of recuring events.
         Input — generation rule (http://icalendar.readthedocs.io/en/latest/api.html#icalendar.prop.vRecur) and the source event(:model:`extevents.ExternalEvent`).
         Output — bunch of events, starting from the next future event, ending in timedelta(weeks=self.EXTERNAL_EVENT_WEEK_COUNT)
         """
-        generating_rule = "RRULE:" + rrule.to_ical().decode()  # build a string, parsable by dateutil.rrulestr, see https://dateutil.readthedocs.io/en/stable/rrule.html
+        generating_rule = self._build_generating_rule(rrule)
 
         length = basic_event.end - basic_event.start  # basic length of event, apllited to all generated events
 
@@ -218,15 +214,34 @@ class GoogleCalendar(ExternalEventSource):
 
             yield event
 
+    def _build_generating_rule(self, rrule):
+        """
+        Return a string, parsable by dateutil.rrulestr, see https://dateutil.readthedocs.io/en/stable/rrule.html
+
+        Turns recurring parameters (values of vRecur which is OrderedDict) to be
+        timezone-aware.
+        """
+        def make_timezone_aware(date):
+            if isinstance(date, datetime.date) and not isinstance(date, datetime.datetime):
+                return datetime.datetime.combine(date, datetime.time.min.replace(tzinfo=pytz.timezone('UTC')))  # 00:00 in UTC timezone
+
+            if isinstance(date, datetime.date) and not timezone.is_aware(date):
+                return timezone.make_aware(date, 'UTC')
+
+            return date
+
+        for k in rrule.keys():
+            rrule[k] = list(map(make_timezone_aware, rrule[k]))
+
+        rule = "RRULE:" + rrule.to_ical().decode()
+        return rule
+
     def parse_event(self, event):
         """
         Return an :model:`extevents.ExternalEvent` instance built from
         an icalendar event.
         """
-        try:
-            (start, end) = self.__event_time(event)
-        except AttributeError:
-            return
+        (start, end) = self._event_time(event)
         return ExternalEvent(
             start=start,
             end=end,
@@ -235,14 +250,21 @@ class GoogleCalendar(ExternalEventSource):
             src=self,
         )
 
-    def __event_time(self, event):
+    def _event_time(self, event):
         """
         Get a tuple with start and end time of event.
 
         All timestamps are returned in UTC.
         """
         start = event.get('dtstart').dt
-        end = event.get('dtend').dt
+
+        if event.get('dtend'):
+            """
+            When the end is not defined, let's hope it is a full-day event
+            """
+            end = event.get('dtend').dt
+        else:
+            end = start
 
         if isinstance(start, datetime.date) and not isinstance(start, datetime.datetime):
             """
@@ -260,3 +282,10 @@ class GoogleCalendar(ExternalEventSource):
         if r.status_code != 200:
             raise FileNotFoundError('Cannot fetch calendar url (%d)', r.status_code)
         return r.text
+
+    class Meta:
+        abstract = True
+
+
+class GoogleCalendar(IcalEventSource):
+    teacher = models.ForeignKey('teachers.Teacher', on_delete=models.CASCADE, related_name='google_calendars')
