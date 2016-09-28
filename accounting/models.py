@@ -30,5 +30,15 @@ class Event(models.Model):
     def __str__(self):
         return '%s: %s' % (self.teacher, self.event_type)
 
+    @property
+    def originator_time(self):
+        if self.event_type == 'class':
+            return self.originator.start
+
+    @property
+    def originator_customers(self):
+        if self.event_type == 'class':
+            return list(i.customer for i in self.originator.classes.all())
+
     class Meta:
         unique_together = ('teacher', 'originator_type', 'originator_id')
