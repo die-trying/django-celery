@@ -26,6 +26,7 @@ ALLOWED_HOSTS = [
     'a-staging.elk.today',
     '127.0.0.1',
 ]
+ABSOLUTE_HOST = 'https://a.elk.today'
 
 SUPPORT_EMAIL = 'help@elk.today'
 SERVER_EMAIL = 'django@elk.today'
