@@ -92,10 +92,10 @@ class ClassesPassedInline(ClassesInlineBase):
         queryset = super().get_queryset(request)
         return queryset.filter(timeline__start__lt=timezone.now())  # TODO: replace it with .is_full_used property
 
-    readonly_fields = ('lesson', 'teacher', 'when',)
+    readonly_fields = ('lesson', 'teacher')
     fieldsets = (
         (None, {
-            'fields': ('lesson', 'teacher', 'when')
+            'fields': ('lesson', 'teacher')
         }),
     )
 
@@ -110,6 +110,3 @@ class ClassesPassedInline(ClassesInlineBase):
 
     def teacher(self, instance):
         return instance.timeline.teacher.user.crm.full_name
-
-    def when(self, instance):
-        return self._datetime(instance.timeline.start)
