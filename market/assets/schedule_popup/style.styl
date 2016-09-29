@@ -80,17 +80,36 @@
 
     @media (max-width: 767px)
         .modal, .modal-body
-            max-height: 75vh
+            max-height: 70vh
             overflow-y: hidden;
 
+        .modal-body
+            padding-top: 0
+
         .modal-header
-            display: none
+            border-bottom: none
+            padding-bottom: 0
+            h3
+                display: none
+
+        &__content
+            padding-top: 170px
 
         &__content-loading, &__not-loaded
             display: none
 
         &__date-selector > .bootstrap-select
             margin-bottom: 20px !important
+
+        &__filters
+            background-color: white
+            width: 100%
+            position: absolute
+            z-index: 500
+
+        &__record-photo
+            margin-top: 15px
+            margin-bottom: 10px
 
         .dropdown-backdrop
             display none
