@@ -191,6 +191,17 @@ class TestScheduler(TestCase):
         res = s._SortingHat__get_class()
         self.assertIsNone(res)  # we already have scheduled the only class we could
 
+    def test_get_only_non_used_classes(self):
+        s = self.get_the_hat()
+        lesson = lessons.OrdinaryLesson.get_default()
+        mixer.blend(TimelineEntry, lesson=lesson, teacher=self.host, active=1)
+        c = self._buy_a_lesson(lesson)
+
+        c.is_fully_used = True
+        c.save()
+        res = s._SortingHat__get_class()
+        self.assertIsNone(res)  # the only available class is marked as fully used
+
     def test_get_the_subscription_class_first(self):
         """
         hat.__get_class() should return subscription lessons first.
