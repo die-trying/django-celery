@@ -1,11 +1,6 @@
 @import 'nib'
 
 .schedule-popup
-    width: 800px
-
-    .modal-body
-        min-height: 480px
-        max-height: 480px
 
     &__content
         max-height: 400px
@@ -44,11 +39,6 @@
         &-photo
             max-width: 40px
 
-    .record
-        padding-left: 0
-    .slots
-        margin-left: -20px
-
     &__date-selector
         display: inline
         margin-right: 50px
@@ -75,6 +65,35 @@
     &__submit
         transition: opacity .05s ease
 
-    @media(max-width:767px)
+    @media (min-width: 767px)
+        width: 800px
+
+        .modal-body
+            min-height: 480px
+            max-height: 480px
+
+        .record
+            padding-left: 0
+
+        .slots
+            margin-left: -20px
+
+    @media (max-width: 767px)
+        .modal, .modal-body
+            max-height: 75vh
+            overflow-y: hidden;
+
+        .modal-header
+            display: none
+
+        &__content-loading, &__not-loaded
+            display: none
+
+        &__date-selector > .bootstrap-select
+            margin-bottom: 20px !important
+
         .dropdown-backdrop
             display none
+
+        .slots .btn-group
+            margin-left: 2px
