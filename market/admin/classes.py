@@ -1,4 +1,3 @@
-from date_range_filter import DateRangeFilter
 from django.contrib import admin
 
 from elk.admin.filters import BooleanFilter
