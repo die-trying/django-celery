@@ -202,7 +202,9 @@ class Entry(models.Model):
         for c in self.classes.all():
             c.unschedule()
             c.save()
-        super().delete()
+
+        if self.pk is not None:  # if the entry did not delete itself during unscheduling
+            super().delete()
 
     def is_overlapping(self):
         """

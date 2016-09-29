@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from mixer.backend.django import mixer
 
@@ -113,3 +114,26 @@ class TestCancellation(TestCase):
 
         for c in entry.classes.all():
             self.assertTrue(c.is_fully_used)
+
+    def test_cancellation_of_a_non_hosted_lesson(self):
+        """
+        Special test case for cancelling the timeline entries for lessons, that don't
+        require a timeline entry. The entry should delete itself and not throw any errors
+        """
+        self.lesson = mixer.blend(lessons.OrdinaryLesson)
+        c = self._buy_a_lesson(lesson=self.lesson)
+        entry = self._create_entry()
+        c.assign_entry(entry)
+        c.save()
+
+        self.assertTrue(c.is_scheduled)
+
+        entry = TimelineEntry.objects.get(pk=entry.id)
+
+        entry.delete()  # should not thow anything
+
+        c.refresh_from_db()
+        self.assertFalse(c.is_scheduled)
+
+        with self.assertRaises(ObjectDoesNotExist):
+            entry.refresh_from_db()
