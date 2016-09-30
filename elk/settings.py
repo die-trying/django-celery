@@ -2,6 +2,7 @@ from datetime import timedelta
 
 import environ
 from easy_thumbnails.conf import Settings as thumbnail_settings
+from elk.context_processors import revision
 
 root = environ.Path(__file__) - 3        # three folder back (/a/b/c/ - 3 = /)
 env = environ.Env(DEBUG=(bool, False),)  # set default values and casting
@@ -210,6 +211,7 @@ if not DEBUG:
         'handlers': {
             'sentry': {
                 'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+                'release': revision(None),
             },
         },
         'loggers': {

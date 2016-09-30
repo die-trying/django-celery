@@ -28,12 +28,12 @@ dependencies:
 test:
   pre:
     - gulp production
+    - ./build/store-build-information.sh
     - cp elk/.env.circle elk/.env
     - flake8 --config=.flake8 --exclude=static,migrations
 
   post:
     - bash <(curl -s https://codecov.io/bash) -t 8ce25f6b-eaf8-442a-aab4-fb6218384b6e
-    - ./build/store-build-information.sh
     - ./build/strip-for-production.sh
     - rm elk/.env
     - chmod +x .deploy/*.sh
