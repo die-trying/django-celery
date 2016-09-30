@@ -8,7 +8,7 @@ from market.models import Class
 
 
 class CustomerTestCase(TestCase):
-    fixtures = ('crm.yaml',)
+    fixtures = ('crm',)
 
     def test_username(self):
         """

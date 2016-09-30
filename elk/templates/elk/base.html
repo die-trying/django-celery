@@ -15,7 +15,7 @@
 
         <base href = "/">
     </head>
-    <body>
+    <body class="{% block body-class %}{% endblock %}">
         {% block navbar %}
         {% include 'elk/header/navbar.html' %}
         {% endblock %}

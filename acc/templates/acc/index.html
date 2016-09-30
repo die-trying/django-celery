@@ -7,31 +7,25 @@
         <h1>Hi, {{ request.user.first_name | capfirst }}!</h1>
     </div>
 </div>
-<div class="row">
-    <div class="col-md-8">
-        <p class="lead">Welcome to the alpha-version of the dashboard!</p>
-        <p>
-         Dashbaord is a place, where you can see interseting staff that is happening right now in the ELK world{% if request.user.crm.can_schedule_classes %}
-            or <a href="#" class="pseudo load_schedule_popup" data-toggle="modal" data-target=".schedule-popup-container">plan a lesson</a>
-         {% else %}. Please contact <a class="pseudo" href='mailto:{{SUPPORT_EMAIL}}?subject=Reedem my lessons'>Amanda Kinney</a> to redeem you lessons.{% endif %}
-        </p>
-        <p>We want to develop this tool together with you, so we've launched
-            the pre-production version and started keeping track of all your lesosns.
-            Please be patient for some bugs, and feel free to
-            <a class="pseudo" href="mailto:{{ SUPPORT_EMAIL }}">drop us a line</a>.
-        </p>
-    </div>
-    <div class="col-md-4">
-        {% include 'market/_next_lesson.html' %}
-    </div>
-</div>
+
+{% if request.user.crm.is_trial_user %}
+    {% if request.user.crm.trial_lesson_is_scheduled %}
+        {% include 'acc/_greetings/trial-scheduled-greeting.html' %}
+    {% else %}
+        {% include 'acc/_greetings/trial-greeting.html' %}
+    {% endif %}
+{% else %}
+    {# usual greeting #}
+    {% include 'acc/_greetings/alpha-greeting.html' %}
+{% endif %}
+
 
 <div class="row home-page-big-blue-button">
     <div class="col-md-12 text-center">
         {% if request.user.crm.can_schedule_classes %}
         <button class="btn btn-primary btn-lg load_schedule_popup" data-toggle="modal" data-target=".schedule-popup-container">Plan a lesson</button>
         {% else %}
-        <a class="btn btn-primary btn-lg" href='mailto:{{SUPPORT_EMAIL}}?subject=Reedem my lessons'>Contact Amanda to redeem lessons</a>
+        <a class="btn btn-primary btn-lg" href='mailto:{{SUPPORT_EMAIL}}?subject=Reedem my lessons'>Contact Fedor to redeem lessons</a>
         <small>You'll be able to book your lessons right after that</small>
         {% endif %}
     </div>

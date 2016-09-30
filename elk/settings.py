@@ -26,6 +26,7 @@ ALLOWED_HOSTS = [
     'a-staging.elk.today',
     '127.0.0.1',
 ]
+ABSOLUTE_HOST = 'https://a.elk.today'
 
 SUPPORT_EMAIL = 'help@elk.today'
 SERVER_EMAIL = 'django@elk.today'
@@ -96,6 +97,7 @@ MIDDLEWARE_CLASSES = [
     'elk.middleware.GuessCountryMiddleWare',
     'elk.middleware.TimezoneMiddleware',
     'elk.middleware.SaveRefMiddleWare',
+    'elk.middleware.MarkTrialMiddleWare',
 ]
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -163,6 +165,7 @@ SOCIAL_AUTH_PIPELINE = (
     'acc.pipelines.save_country',
     'acc.pipelines.save_timezone',
     'acc.pipelines.save_referral',
+    'acc.pipelines.add_trial_lesson',
     'acc.pipelines.notify_staff',
 )
 

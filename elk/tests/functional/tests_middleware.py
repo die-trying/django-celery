@@ -20,6 +20,26 @@ class TestTimezoneMiddleware(ClientTestCase):
         self.assertEqual(response.context['TIME_ZONE'], 'Africa/Addis_Ababa')
 
 
+class TestMarkTrialMiddleware(ClientTestCase):
+    def setUp(self):
+        self.c.login(username=self.superuser_login, password=self.superuser_password)
+
+    def test_trial_mark_set(self):
+        self.c.logout()
+        self.c.get('/?trial')
+        self.assertTrue(self.c.session['trial'])
+
+    def test_trial_mark_not_set_for_logged_in_user(self):
+        self.c.get('/?trial')
+        self.assertNotIn('trial', self.c.session.keys())
+
+    def test_trial_mark_not_set_without_get_param(self):
+        self.c.logout()
+        response = self.c.get('/')
+        self.assertEqual(response.status_code, 302)
+        self.assertNotIn('trial', self.c.session.keys())
+
+
 class TestGuessCountryMiddleware(ClientTestCase):
     def setUp(self):
         self.c.login(username=self.superuser_login, password=self.superuser_password)
