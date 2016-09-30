@@ -1,6 +1,4 @@
-from django.core import mail
 from django.core.exceptions import ValidationError
-from django.test import override_settings
 from mixer.backend.django import mixer
 
 from crm.models import Customer
@@ -10,7 +8,7 @@ from market.models import Class
 
 
 class CustomerTestCase(TestCase):
-    fixtures = ('crm', 'lessons')
+    fixtures = ('crm',)
 
     def test_username(self):
         """
@@ -56,13 +54,3 @@ class CustomerTestCase(TestCase):
         with self.assertRaises(ValidationError):
             c.timezone = 'Noga/Test'
             c.save()
-
-    @override_settings(EMAIL_ASYNC=False)
-    def test_add_trial_lesson(self):
-        c = create_customer()
-        c.add_trial_lesson()
-        c.refresh_from_db()
-
-        self.assertEqual(c.classes.count(), 1)
-        self.assertEqual(len(mail.outbox), 1)  # should send the greeting email to customer
-        self.assertIn(c.user.email, mail.outbox[0].to)

@@ -104,11 +104,40 @@ class Customer(models.Model):
         return ''
 
     def add_trial_lesson(self):
+        """
+        Add a free trial lesson to the customer
+        """
         TrialLesson = apps.get_model('lessons.TrialLesson')
         self.classes.create(
             lesson=TrialLesson.get_default()
         )
         trial_lesson_added.send(sender=self)
+
+    def is_trial_user(self):
+        """
+        Returns true if the only lesson off this user is trial. And it is not used.
+
+        Will return True when the trial lesson is just finished, because it will be
+        marked as finished after an hour. Let it be so.
+        """
+        if self.classes.count() == 1:
+            TrialLesson = apps.get_model('lessons.TrialLesson')
+            if isinstance(self.classes.first().lesson, TrialLesson):
+                if not self.classes.first().is_fully_used:
+                    return True
+
+        return False
+
+    def trial_lesson_is_scheduled(self):
+        """
+        Check if trial customer has scheduled his lesson
+        """
+        if not self.is_trial_user():
+            return False
+
+        c = self.classes.first()
+
+        return c.is_scheduled
 
     def _get_user_property(self, property):
         """

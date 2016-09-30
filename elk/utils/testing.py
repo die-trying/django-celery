@@ -6,7 +6,7 @@ Every new call returnes a new fixture.
 """
 import random
 from datetime import datetime
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytz
 from django.conf import settings
@@ -17,6 +17,11 @@ from django.test import Client, RequestFactory
 from django.utils import timezone
 from mixer.backend.django import mixer
 from with_asserts.mixin import AssertHTMLMixin
+
+from lessons import models as lessons
+from market.models import Class
+from market.sortinghat import SortingHat
+from timeline.models import Entry as TimelineEntry
 
 
 def __add_all_lessons(teacher):
@@ -154,3 +159,60 @@ class ClientTestCase(TestCase, AssertHTMLMixin):
 
         cls.superuser_login = 'root'
         cls.superuser_password = 'ohGh7jai4Cee'  # store, if children will need it
+
+
+class ClassIntegrationTestCase(ClientTestCase):
+    """
+    TestCase for integration testing of scheduling process.
+
+    Properties:
+        — host: some random teacher
+        - customer: some random customer
+        - lesson: ordinay lesson
+
+    Methods:
+        - _create_entry() — create a timeline entry for the teacher
+        - _buy_a_lesson() — buy a lesson for student
+        - schedule() — schedule a user's lesson to the teachers entry
+    """
+    fixtures = ('lessons',)
+
+    def setUp(self):
+        self.host = create_teacher()
+        self.customer = create_customer()
+        self.lesson = lessons.OrdinaryLesson.get_default()
+
+    def _create_entry(self):
+        entry = TimelineEntry(
+            slots=1,
+            lesson=self.lesson,
+            teacher=self.host,
+            start=self.tzdatetime(2032, 9, 13, 12, 0),
+        )
+        self.assertFalse(entry.is_finished)
+        return entry
+
+    def _buy_a_lesson(self):
+        c = Class(
+            customer=self.customer,
+            lesson=self.lesson,
+        )
+        c.save()
+        self.assertFalse(c.is_fully_used)
+        self.assertFalse(c.is_scheduled)
+        return c
+
+    @patch('timeline.models.Entry.clean')
+    def _schedule(self, c, entry, clean):
+        clean.return_value = True
+        hat = SortingHat(
+            customer=c.customer,
+            lesson_type=self.lesson.get_contenttype().pk,
+            teacher=entry.teacher,
+            date=entry.start.strftime('%Y-%m-%d'),
+            time=entry.start.strftime('%H:%M'),
+        )
+        if not hat.do_the_thing():
+            self.assertFalse(True, "Cant schedule a lesson: %s" % hat.err)
+        self.assertEqual(hat.c, c)
+        hat.c.save()
