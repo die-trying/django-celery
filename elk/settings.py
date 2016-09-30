@@ -2,6 +2,7 @@ from datetime import timedelta
 
 import environ
 from easy_thumbnails.conf import Settings as thumbnail_settings
+
 from elk.context_processors import revision
 
 root = environ.Path(__file__) - 3        # three folder back (/a/b/c/ - 3 = /)
