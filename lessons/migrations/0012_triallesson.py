@@ -7,6 +7,19 @@ import django_markdown.models
 from django.db import migrations, models
 
 
+def create_default_trial_lesson(apps, schema_editor):
+    TrialLesson = apps.get_model('lessons.TrialLesson')
+    t = TrialLesson(
+        pk=500,
+        announce='Your first ELK session',
+        description='Your first ELK session',
+        name='Trial lesson',
+        internal_name='Trial lesson',
+        slots=1,
+    )
+    t.save()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -31,4 +44,5 @@ class Migration(migrations.Migration):
                 'abstract': False,
             },
         ),
+        migrations.RunPython(create_default_trial_lesson),
     ]

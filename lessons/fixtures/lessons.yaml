@@ -9,11 +9,6 @@
       (DEFAULT), name: Single curated lesson, slots: 1}
   model: lessons.ordinarylesson
   pk: 500
-- fields: {active: 1, announce: Your first ELK session, description: You first ELK
-      session, duration: '00:30:00', internal_name: Trial lesson
-      (AUTO), name: Trial lesson, slots: 1}
-  model: lessons.trialLesson
-  pk: 500
 - fields: {active: 1, announce: This is a first curated lesson of your subscription,
     description: This is a first curated lesson of your subscription, duration: '00:30:00',
     internal_name: Curated lesson 1/5, name: First curated lesson, slots: 1}
