@@ -73,6 +73,7 @@ class Customer(models.Model):
     starting_level = models.CharField(max_length=2, choices=LEVELS, blank=True, null=True)
     current_level = models.CharField(max_length=2, choices=LEVELS, blank=True, null=True)
 
+    phone = models.CharField('Phone number', max_length=15, blank=True)
     skype = models.CharField('Skype login', max_length=140, blank=True)
     facebook = models.CharField('Facebook profile id', max_length=140, blank=True)
     twitter = models.CharField('Twitter username', max_length=140, blank=True)
