@@ -61,7 +61,7 @@ class TeacherManager(models.Manager):
                 teachers.append(teacher)
         return teachers
 
-    def find_lessons(self, date, **kwargs):  # noqa
+    def find_lessons(self, date, **kwargs):
         """
         Find all lessons, that are planned to a date. Accepts keyword agruments
         for filtering output of :model:`timeline.Entry`.
