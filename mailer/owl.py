@@ -84,7 +84,7 @@ class Owl():
     @user_tz
     def queue(self):
         self.headers['X-ELK-Queued'] = 'True'
-        send_email.delay(self.template, self.ctx, self.from_email, self.to, headers=self.headers)
+        send_email.delay(owl=self)
 
     def _activate_timezone(self):
         if self.timezone is not None:
