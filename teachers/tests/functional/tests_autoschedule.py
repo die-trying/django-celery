@@ -108,15 +108,15 @@ class TestTeacherManager(TestCase):
         slots = self.teacher.find_free_slots(self.tzdatetime(2012, 2, 6))  # monday, but 12 years ago
         self.assertEquals(len(slots), 0)  # should not return any
 
-    def test_get_free_slots_today(self):
+    @patch('teachers.models.timezone.now')
+    def test_get_free_slots_today(self, now):
         """
         Set the clock to the middle of teacher working interval — available
         slots count should be reduced.
         """
-        with patch('teachers.models.Teacher._Teacher__now') as mocked_date:
-            mocked_date.return_value = self.tzdatetime(2016, 7, 25, 14, 0)  # monday
-            slots = self.teacher.find_free_slots(date=self.tzdatetime(2016, 7, 25))
-            self.assertEquals(len(slots), 2)  # should return 2 slots instead of 4, because current time is 14:00
+        now.return_value = self.tzdatetime(2016, 7, 25, 12, 30)
+        slots = self.teacher.find_free_slots(date=self.tzdatetime(2016, 7, 25))
+        self.assertEquals(len(slots), 1)  # should return 1 slot instead of 4, because current time is 12:30, so search will start from 14:30
 
     def test_free_slots_for_lesson_type(self):
         """

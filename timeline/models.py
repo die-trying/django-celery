@@ -30,6 +30,11 @@ class EntryManager(models.Manager):
             .filter(is_finished=False) \
             .filter(end__lte=self.__now() - MARK_ENTRIES_AUTOMATICALLY_FINISHED_AFTER)
 
+    def by_lesson(self, lesson):
+        return self.get_queryset() \
+            .filter(lesson_id=lesson.id) \
+            .filter(lesson_type=lesson.get_contenttype())
+
     def __now(self):
         return timezone.now()
 
