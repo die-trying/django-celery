@@ -13,7 +13,7 @@ from django.utils.translation import ugettext as _
 from extevents.models import ExternalEvent
 from teachers.models import Absence, Teacher, WorkingHours
 
-MARK_ENTRIES_AUTOMATICALLY_FINISHED_AFTER = timedelta(minutes=60)
+CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)
 
 
 class EntryManager(models.Manager):
@@ -28,7 +28,7 @@ class EntryManager(models.Manager):
         """
         return self.get_queryset() \
             .filter(is_finished=False) \
-            .filter(end__lte=self.__now() - MARK_ENTRIES_AUTOMATICALLY_FINISHED_AFTER)
+            .filter(end__lte=self.__now() - CLASS_IS_FINISHED_AFTER)
 
     def by_lesson(self, lesson):
         return self.get_queryset() \
@@ -266,7 +266,7 @@ class Entry(models.Model):
         """
         Check, if timeline entry is in past
         """
-        if self.start < timezone.now():
+        if self.end < (timezone.now() + CLASS_IS_FINISHED_AFTER):
             return True
         return False
 

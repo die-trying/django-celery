@@ -102,6 +102,7 @@ class TestScheduleLowLevel(TestCase):
             date=timezone.make_aware(datetime(2016, 12, 1, 7, 25)),  # monday
             allow_besides_working_hours=True,
         )
+        c.save()
         self.assertEqual(self.customer.cancellation_streak, 0)
         c.unschedule(src='customer')
         self.customer.refresh_from_db()
@@ -117,6 +118,7 @@ class TestScheduleLowLevel(TestCase):
             date=timezone.make_aware(datetime(2016, 12, 1, 7, 25)),  # monday
             allow_besides_working_hours=True,
         )
+        c.save()
         self.assertEqual(self.customer.cancellation_streak, 0)
         c.unschedule(src='teacher')
         self.customer.refresh_from_db()
