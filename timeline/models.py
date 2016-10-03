@@ -10,6 +10,7 @@ from django.utils.dateformat import format
 from django.utils.timezone import localtime
 from django.utils.translation import ugettext as _
 
+from accounting.models import Event as AccEvent
 from extevents.models import ExternalEvent
 from teachers.models import Absence, Teacher, WorkingHours
 
@@ -198,6 +199,28 @@ class Entry(models.Model):
 
         if not should_be_deleted:
             super().save(*args, **kwargs)
+        else:
+            self.delete()
+
+    def dangerously_save(self):
+        """
+        Save a timeline entry despite cleaning process. In fact it's your SUPERPOWER,
+        so please don't use it in any user-accessable code, only from the shell.
+        """
+        self.__update_slots()
+        super().save()
+
+        if self.__self_delete_if_needed() or self.taken_slots == 0:  # if entry should be deleted
+            self.dangerously_delete()
+
+    def dangerously_delete(self):
+        """
+        Cleanup all created billing events
+        """
+        for event in AccEvent.objects.by_originator(self):
+            event.delete()
+
+        self.delete()
 
     def delete(self):
         """
@@ -316,7 +339,6 @@ class Entry(models.Model):
             return False
 
         if self.lesson and not self.lesson.get_contenttype().model_class().timeline_entry_required():
-            self.delete()
             return True
 
         return False

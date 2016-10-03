@@ -479,8 +479,6 @@ class Class(BuyableProduct):
         """
         Unschedule previously scheduled lesson
         """
-        if not self.timeline:
-            raise CannotBeUnscheduled()
         if self.timeline.is_in_past():
             raise CannotBeUnscheduled('Past classed cannot be unscheduled!')
 
@@ -492,6 +490,19 @@ class Class(BuyableProduct):
         entry.classes.remove(self, bulk=True)  # expcitly disable running of self.save()
         self.timeline = None
         entry.save()
+
+    def dangerously_unschedule(self):
+        """
+        Unschedule a class despite everything. It's a SUPERPOWER, please don't use
+        it in any user-accessable code.
+        """
+        entry = self.timeline
+        entry.classes.remove(self, bulk=True)
+        self.timeline = None
+        entry.dangerously_save()
+        self.renew()
+
+        logger.warning('Dangerous class cancellation')
 
     def can_be_scheduled(self, entry):
         """

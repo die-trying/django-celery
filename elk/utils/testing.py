@@ -204,6 +204,12 @@ class ClassIntegrationTestCase(ClientTestCase):
 
     @patch('timeline.models.Entry.clean')
     def _schedule(self, c, entry, clean):
+        """
+        Schedule a class to given timeline entry.
+
+        ACHTUNG: for class with non-hosted lessons the entry will be the new one,
+        not the one you've supplied.
+        """
         clean.return_value = True
         hat = SortingHat(
             customer=c.customer,
@@ -216,3 +222,5 @@ class ClassIntegrationTestCase(ClientTestCase):
             self.assertFalse(True, "Cant schedule a lesson: %s" % hat.err)
         self.assertEqual(hat.c, c)
         hat.c.save()
+
+        c.refresh_from_db()

@@ -4,13 +4,12 @@ from datetime import timedelta
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from freezegun import freeze_time
 from mixer.backend.django import mixer
 
 from elk.utils.testing import ClientTestCase, create_teacher
 from lessons import models as lessons
 from timeline.models import Entry as TimelineEntry
-
-from freezegun import freeze_time
 
 
 @freeze_time('2016-06-29 12:00')
