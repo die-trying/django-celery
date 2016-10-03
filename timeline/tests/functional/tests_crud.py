@@ -10,7 +10,10 @@ from elk.utils.testing import ClientTestCase, create_teacher
 from lessons import models as lessons
 from timeline.models import Entry as TimelineEntry
 
+from freezegun import freeze_time
 
+
+@freeze_time('2016-06-29 12:00')
 class EntryCRUDTest(ClientTestCase):
     """
     Test hand-crafted form for event editing throught the calendar.
@@ -24,6 +27,22 @@ class EntryCRUDTest(ClientTestCase):
         self._create()
         self._update()
         self._delete()
+
+    def test_cancel_link_presence(self):
+        """
+        Delete link should be present by default and should be hidden for past entries
+        """
+        self._create()
+        entry = TimelineEntry.objects.get(pk=self.added_entry['id'])
+
+        response = self.c.get('/timeline/%s/%d/update/' % (self.teacher.user.username, entry.pk))
+        self.assertNotContains(response, 'p class="timeline-entry-form__delete"')
+
+        entry.start = self.tzdatetime(2016, 6, 28, 12, 0)  # a day before
+        entry.save()
+
+        response = self.c.get('/timeline/%s/%d/update/' % (self.teacher.user.username, entry.pk))
+        self.assertNotContains(response, 'p class="timeline-entry-form__delete"')
 
     def _create(self):
         response = self.c.post('/timeline/%s/create/' % self.teacher.user.username, {
