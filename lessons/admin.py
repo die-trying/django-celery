@@ -9,37 +9,33 @@ class LanguageAdmin(ModelAdmin):
     pass
 
 
-class LessonAdmin(ModelAdmin):
+class HostedLessonAdmin(ModelAdmin):
     """
     Abstract admin for the lessons.
     """
-    list_display = ['__str__', 'duration']
-    list_filter = []
+    list_display = ('host', '__str__', 'duration')
+    list_filter = (
+        ('host', admin.RelatedOnlyFieldListFilter),
+    )
 
-    def __init__(self, *args, **kwargs):
+    def get_queryset(self, request):
         """
-        Add host display for hosted lessons
+        Hide lessons without host from administrators. Lessons without host are used
+        for subscriptions.
         """
-        super().__init__(*args, **kwargs)
-
-        if hasattr(self.model, 'host'):
-            if 'host' not in self.list_display:
-                self.list_display.insert(0, 'host')
-
-            if 'host' not in self.list_filter:
-                self.list_filter.insert(0, 'host')
+        return super().get_queryset(request).filter(host__isnull=False)
 
 
 @admin.register(models.PairedLesson)
-class PairedLessonAdmin(LessonAdmin):
+class PairedLessonAdmin(HostedLessonAdmin):
     pass
 
 
 @admin.register(models.HappyHour)
-class HappyHourAdmin(LessonAdmin):
+class HappyHourAdmin(HostedLessonAdmin):
     pass
 
 
 @admin.register(models.MasterClass)
-class MasterClassAdmin(LessonAdmin):
+class MasterClassAdmin(HostedLessonAdmin):
     pass
