@@ -14,8 +14,8 @@ class TestGeoIp(TestCase):
         self.assertEqual(g.country, 'RU')
         self.assertEqual(g.city, 'Moscow')
         self.assertEqual(g.timezone, 'Europe/Moscow')
-        self.assertEqual(g.lat, 55.7522)
-        self.assertEqual(g.lng, 37.6156)
+        self.assertEqual(g.lat, 55.752)
+        self.assertEqual(g.lng, 37.615)
 
     def test_timezone_tzwhere(self):
         """
