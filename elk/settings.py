@@ -142,6 +142,7 @@ SUIT_CONFIG = {
         {'app': 'teachers', 'icon': 'icon-briefcase', },
         {'app': 'accounting', 'icon': 'icon-gift', },
         {'app': 'lessons', 'icon': 'icon-headphones', 'label': 'Teaching', 'models': ('lessons.Language', 'lessons.PairedLesson', 'lessons.MasterClass', 'lessons.HappyHour')},
+        {'app': 'products', 'icon': 'icon-list', 'label': 'Products'},
         {'app': 'manual_class_logging', 'icon': 'icon-circle-arrow-right'},
         {'app': 'auth', 'label': 'Authorization', 'icon': 'icon-lock', 'models': ('auth.User', 'auth.Group')},
     ),
