@@ -7,6 +7,7 @@ from mixer.backend.django import mixer
 from elk.utils.testing import TestCase, create_teacher
 from extevents.models import ExternalEvent
 from lessons import models as lessons
+from teachers import models
 from teachers.models import Absence, Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry
 
@@ -22,6 +23,7 @@ class TestTeacherManager(TestCase):
 
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=1, start='17:00', end='19:00')  # thursday
+        models.PLANNING_DELTA = timedelta(hours=2)
 
     def test_get_free_slots(self):
         """

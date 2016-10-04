@@ -12,6 +12,7 @@ from crm.models import Customer
 from elk.logging import logger
 from market.exceptions import CannotBeScheduled
 from market.signals import class_scheduled
+from teachers.models import PLANNING_DELTA
 from timeline.models import Entry as TimelineEntry
 
 MARK_CLASSES_AS_USED_AFTER = timedelta(hours=1)
@@ -242,9 +243,13 @@ class ClassesManager(BuyableProductManager):
         """
         A generator of dates, available for planning for particular user
 
-        Currently retures 7 future days for everyone.
+        If current time + planning delta is more then 00:00 then the first day is tomorrow
         """
         current = timezone.now()
+
+        if timezone.localtime(current + PLANNING_DELTA).day != timezone.localtime(current).day:
+            current += timedelta(days=1)
+
         for i in range(0, 7):
             yield current
             current += timedelta(days=1)

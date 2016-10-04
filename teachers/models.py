@@ -17,16 +17,16 @@ from django_markdown.models import MarkdownField
 from elk.utils.date import day_range
 
 TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
+PLANNING_DELTA = datetime.timedelta(hours=12)
 
 
 def _planning_ofsset(start):
     """
     Returns a minimal start time, that is available for planning
     """
-    DELTA = datetime.timedelta(hours=2)
 
-    if start < (timezone.now() + DELTA):
-        start = timezone.now() + DELTA
+    if start < (timezone.now() + PLANNING_DELTA):
+        start = timezone.now() + PLANNING_DELTA
 
     if start.minute > 0 and start.minute < 30:
         start = start.replace(minute=30)

@@ -1,13 +1,20 @@
+from datetime import timedelta
+
 from django.contrib.contenttypes.models import ContentType
 from freezegun import freeze_time
 from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_teacher
 from lessons import models as lessons
-from teachers.models import _planning_ofsset
+from teachers import models
+
+_planning_ofsset = models._planning_ofsset
 
 
 class TestTeacherUnit(TestCase):
+    def setUp(self):
+        models.PLANNING_DELTA = timedelta(hours=2)
+
     def test_timeline_url(self):
         teacher = create_teacher()
         self.assertEqual(teacher.timeline_url(), '/timeline/%s/' % teacher.user.username)
