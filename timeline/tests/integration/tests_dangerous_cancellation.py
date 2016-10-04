@@ -34,9 +34,13 @@ class TestDangerousUnschedule(ClassIntegrationTestCase):
             ev = AccEvent.objects.by_originator(entry).first()
             self.assertIsNotNone(ev)
 
-            c.dangerously_unschedule()
+            entry.delete()
             with self.assertRaises(ObjectDoesNotExist):
                 ev.refresh_from_db()  # the accounting event should be dropped while unscheduling the last class
+
+            c.refresh_from_db()
+            self.assertFalse(c.is_scheduled)
+            self.assertFalse(c.is_fully_used)
 
     def test_multiple_classes(self):
         """
@@ -62,9 +66,42 @@ class TestDangerousUnschedule(ClassIntegrationTestCase):
             ev = AccEvent.objects.by_originator(entry).first()
             self.assertIsNotNone(ev)
 
-            c.dangerously_unschedule()
-            ev.refresh_from_db()   # billing entry should exist after first cancellation
-            c1.dangerously_unschedule()
+            entry.delete()
 
             with self.assertRaises(ObjectDoesNotExist):
                 ev.refresh_from_db()  # the accounting event should be dropped while unscheduling the last class
+
+            c.refresh_from_db()
+            c1.refresh_from_db()
+
+            self.assertFalse(c.is_scheduled)
+            self.assertFalse(c.is_fully_used)
+            self.assertFalse(c1.is_scheduled)
+            self.assertFalse(c1.is_fully_used)
+
+    def test_one_of_multiple_classes(self):
+        """
+        1. Buy two classes
+        2. Schedule both of them for single timeline entry with 5 slots.
+        3. Move to the future
+        4. Assure it is not cancellable in the normal way
+        5. Dangerously_unschedule() on of them
+        6. Check if timeline entry has only one remaining slot
+        """
+        self.lesson = mixer.blend(lessons.MasterClass, host=self.host, slots=5)
+        entry = self._create_entry()
+
+        entry.slots = 5
+        entry.save()
+
+        c = self._buy_a_lesson()
+        self._schedule(c, entry)
+
+        self.customer = create_customer()  # create another customer
+        c1 = self._buy_a_lesson()
+        self._schedule(c1, entry)
+
+        with freeze_time('2032-09-15 15:00'):  # now entry is in past
+            c.unschedule()
+            entry.refresh_from_db()
+            self.assertEqual(entry.taken_slots, 1)

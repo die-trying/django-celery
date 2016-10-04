@@ -191,7 +191,7 @@ class Entry(models.Model):
 
     def save(self, *args, **kwargs):
         self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
-        self.clean()  # check for overlapping, teacher working hours, etc
+        # self.clean()  # check for overlapping, teacher working hours, etc
         self.__update_slots()  # update free slot count, check if no classes were added without spare slots for it
 
         self.__notify_class_that_it_has_been_finished(*args, **kwargs)  # notify a parent class, that it is used and finished
@@ -213,15 +213,6 @@ class Entry(models.Model):
         if self.__self_delete_if_needed() or self.taken_slots == 0:  # if entry should be deleted
             self.dangerously_delete()
 
-    def dangerously_delete(self):
-        """
-        Cleanup all created billing events
-        """
-        for event in AccEvent.objects.by_originator(self):
-            event.delete()
-
-        self.delete()
-
     def delete(self):
         """
         Unschedule all attached classes before deletion. Unscheduling a class
@@ -231,7 +222,10 @@ class Entry(models.Model):
             c.unschedule()
             c.save()
 
-        if self.pk is not None:  # if the entry did not delete itself during unscheduling
+        for event in AccEvent.objects.by_originator(self):
+            event.delete()
+
+        if self.pk:  # if the entry has not autodeleted
             super().delete()
 
     def is_overlapping(self):

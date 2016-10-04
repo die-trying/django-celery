@@ -10,8 +10,8 @@ from djmoney.models.fields import MoneyField
 
 from crm.models import Customer
 from elk.logging import logger
-from market.exceptions import CannotBeScheduled, CannotBeUnscheduled
-from market.signals import class_scheduled, class_unscheduled
+from market.exceptions import CannotBeScheduled
+from market.signals import class_scheduled
 from timeline.models import Entry as TimelineEntry
 
 MARK_CLASSES_AS_USED_AFTER = timedelta(hours=1)
@@ -59,7 +59,6 @@ class BuyableProduct(models.Model):
         Make a brand-new class, like it was never used before
         """
         self.is_fully_used = False
-        self.is_scheduled = False
         self.timeline = None
         self.save()
 
@@ -355,6 +354,7 @@ class Class(BuyableProduct):
         self.is_scheduled = True
 
         if not self.timeline.pk:  # this happens when the entry is created in current iteration
+            self.timeline.clean()
             self.timeline.save()
             """
             We do not use self.assign_entry() method here, because we assume, that
@@ -375,6 +375,7 @@ class Class(BuyableProduct):
         iteration with a timeline entry, i.e. when scheduling through the
         sorting hat.
         """
+        self.timeline.clean()
         self.timeline.save()
 
         """ If the class was scheduled for the first time — send a signal """
@@ -396,7 +397,6 @@ class Class(BuyableProduct):
         Handle a case when save() is invoked when a timeline entry is deleted
         from a class. We need this for ability to edit a class from django-admin.
         """
-        was_scheduled = self.is_scheduled
         self.is_scheduled = False
         if kwargs.get('update_fields') and 'timeline_entry' in kwargs['update_fields']:
             old_entry = Class.objects.get(pk=self.pk).timeline
@@ -404,9 +404,6 @@ class Class(BuyableProduct):
             old_entry.save()
 
         super().save(*args, **kwargs)
-
-        if was_scheduled:
-            class_unscheduled.send(sender=self.__class__, instance=self)  # send a signal, that class is unscheduled for the first time
 
     def __set_default_lesson_id_if_required(self):
         """
@@ -479,8 +476,6 @@ class Class(BuyableProduct):
         """
         Unschedule previously scheduled lesson
         """
-        if self.timeline.is_in_past():
-            raise CannotBeUnscheduled('Past classed cannot be unscheduled!')
 
         if src == 'customer':
             self.customer.cancellation_streak += 1
@@ -488,21 +483,8 @@ class Class(BuyableProduct):
 
         entry = self.timeline
         entry.classes.remove(self, bulk=True)  # expcitly disable running of self.save()
-        self.timeline = None
-        entry.save()
-
-    def dangerously_unschedule(self):
-        """
-        Unschedule a class despite everything. It's a SUPERPOWER, please don't use
-        it in any user-accessable code.
-        """
-        entry = self.timeline
-        entry.classes.remove(self, bulk=True)
-        self.timeline = None
-        entry.dangerously_save()
         self.renew()
-
-        logger.warning('Dangerous class cancellation')
+        entry.save()
 
     def can_be_scheduled(self, entry):
         """
@@ -521,6 +503,12 @@ class Class(BuyableProduct):
             entry.clean()
         except ValidationError:
             logger.error("Timeline entry can't be scheduled")
+            return False
+
+        return True
+
+    def can_be_unscheduled(self):
+        if self.timeline.is_in_past():
             return False
 
         return True

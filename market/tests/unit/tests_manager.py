@@ -6,7 +6,6 @@ from django.utils import timezone
 
 from elk.utils.testing import TestCase, create_customer, create_teacher
 from lessons import models as lessons
-from market.exceptions import CannotBeUnscheduled
 from market.models import Class, Subscription
 from products import models as products
 
@@ -135,8 +134,7 @@ class TestClassManager(TestCase):
     def test_cant_unschedule_in_past(self):
         c = self._schedule(date=timezone.make_aware(datetime(2020, 12, 1, 11, 30)))
         c.timeline.is_in_past = MagicMock(return_value=True)
-        with self.assertRaises(CannotBeUnscheduled):
-            c.unschedule()
+        self.assertFalse(c.can_be_unscheduled())
 
     def test_mark_as_fully_used(self):
         c = self._schedule()

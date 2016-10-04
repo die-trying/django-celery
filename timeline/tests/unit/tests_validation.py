@@ -78,7 +78,7 @@ class TestOverlapValidation(EntryValidationTestCase):
                                           allow_overlap=False,  # excplicitly say, that entry can't overlap other ones
                                           )
         with self.assertRaises(ValidationError):
-            overlapping_entry.save()
+            overlapping_entry.clean()
 
     def test_double_save_an_entry_that_does_not_allow_overlapping(self):
         """
@@ -91,9 +91,11 @@ class TestOverlapValidation(EntryValidationTestCase):
             end=parse_datetime('2016-01-10 04:30'),
             allow_overlap=False
         )
+        entry.clean()
         entry.save()
 
         entry.start = parse_datetime('2016-01-10 04:01')  # change random parameter
+        entry.clean()
         entry.save()
 
         self.assertIsNotNone(entry)  # should not throw anything
@@ -164,7 +166,7 @@ class TestWorkingHoursValiation(EntryValidationTestCase):
             allow_besides_working_hours=False
         )
         with self.assertRaises(ValidationError):
-            entry.save()
+            entry.clean()
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
         entry.save()
         self.assertIsNotNone(entry.pk)  # should be saved now
@@ -240,7 +242,7 @@ class TestTeacherPresenceValidation(EntryValidationTestCase):
         )
         vacation.save()
         with self.assertRaises(ValidationError):
-            entry.save()
+            entry.clean()
 
 
 class TestExternalEventValidation(EntryValidationTestCase):
@@ -307,4 +309,4 @@ class TestExternalEventValidation(EntryValidationTestCase):
             end=parse_datetime('2016-05-05 23:59'),
         )
         with self.assertRaises(ValidationError):
-            entry.save()
+            entry.clean()

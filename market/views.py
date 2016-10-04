@@ -94,6 +94,9 @@ def cancel(request, class_id):
     if not request.user.crm.can_cancel_classes():
         return JsonResponse({'result': False}, safe=False)
 
+    if not c.can_be_unscheduled():
+        return JsonResponse({'result': False}, safe=False)
+
     c.unschedule(src='customer')
     c.save()
     return JsonResponse({'result': True}, safe=False)
