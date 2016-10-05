@@ -17,6 +17,12 @@ USE_TZ = True
 TIME_ZONE = env('TIME_ZONE')
 
 # LANGUAGE_CODE = "ru"
+
+# default formats, used when localization is fully off, i.e. in outgoing emails
+SHORT_DATE_FORMAT = 'D, M d'
+SHORT_DATETIME_FORMAT = 'M d, h:i A'
+TIME_FORMAT = 'h:i a'
+
 FORMAT_MODULE_PATH = [
     'elk.formats'
 ]
