@@ -1,6 +1,6 @@
 import pytz
 from django.conf import settings
-from django.utils import timezone
+from django.utils import timezone, translation
 from mail_templated import EmailMessage
 
 from mailer.tasks import send_email
@@ -21,6 +21,14 @@ def user_tz(fn):
             timezone.activate(old_tz)
 
         return res
+    return wrapper
+
+
+def disable_i18n(fn):
+    def wrapper(*args, **kwargs):
+        with translation.override(None):
+            return fn(*args, **kwargs)
+
     return wrapper
 
 
@@ -57,6 +65,7 @@ class Owl():
         self.EmailMessage()
 
     @user_tz
+    @disable_i18n
     def EmailMessage(self):
         """
         This method preventively renders a message to catch possible errors in the
@@ -72,6 +81,7 @@ class Owl():
         self.msg.render()
 
     @user_tz
+    @disable_i18n
     def send(self):
         """
         On the production host — run through celery
@@ -82,16 +92,7 @@ class Owl():
             self.queue()
 
     @user_tz
+    @disable_i18n
     def queue(self):
         self.headers['X-ELK-Queued'] = 'True'
         send_email.delay(owl=self)
-
-    def _activate_timezone(self):
-        if self.timezone is not None:
-            self.old_timezone - timezone.get_current_timezone()
-            timezone.activate(self.timezone)
-
-    def _restore_timezone(self):
-        if self.old_timezone is not None:
-            timezone.restore(self.old_timezone)
-            self.old_timezone = None
