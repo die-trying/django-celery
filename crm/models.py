@@ -27,6 +27,11 @@ class CustomerSource(models.Model):
         return self.name
 
 
+class CustomerManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related('user')
+
+
 class Customer(models.Model):
     """
     A model for a base customer.
@@ -38,6 +43,8 @@ class Customer(models.Model):
 
     The model automatically assigned to a current user, so you can access all CRM properties via `request.user.crm`.
     """
+    objects = CustomerManager()
+
     LEVELS = [(a + str(i), a + str(i)) for i in range(1, 4) for a in ('A', 'B', 'C')]
 
     user = models.OneToOneField(User, on_delete=models.PROTECT, null=True, blank=True, related_name='crm')

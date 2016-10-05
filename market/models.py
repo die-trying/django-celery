@@ -34,8 +34,8 @@ class BuyableProduct(models.Model):
 
     buy_date = models.DateTimeField(auto_now_add=True)
     buy_price = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
-    is_fully_used = models.BooleanField(default=False)
-    active = models.SmallIntegerField(choices=ENABLED, default=1)
+    is_fully_used = models.BooleanField(default=False, db_index=True)
+    active = models.SmallIntegerField(choices=ENABLED, default=1, db_index=True)
 
     @abstractproperty
     def name_for_user(self):
@@ -88,7 +88,7 @@ class Subscription(BuyableProduct):
     The property is accessed later in the history.signals module.
     """
     objects = SubscriptionManager()
-    customer = models.ForeignKey(Customer, related_name='subscriptions')
+    customer = models.ForeignKey(Customer, related_name='subscriptions', db_index=True)
 
     product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'products'})
     product_id = models.PositiveIntegerField(default=1)  # flex scope — always add the first product
@@ -298,7 +298,7 @@ class Class(BuyableProduct):
     """
     objects = ClassesManager()
 
-    customer = models.ForeignKey(Customer, related_name='classes', limit_choices_to={'user__isnull': False})
+    customer = models.ForeignKey(Customer, related_name='classes', db_index=True)
     is_scheduled = models.BooleanField(default=False)
 
     buy_source = models.CharField(max_length=12, default='single')
