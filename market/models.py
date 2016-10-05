@@ -200,7 +200,7 @@ class ClassesManager(BuyableProductManager):
             .order_by('timeline__start') \
             .first()
 
-    def starting_soon(self, delta, **kwargs):
+    def starting_soon(self, delta):
         """
         Return a queryset with classes, that are about to start in `delta` time.
 
@@ -209,8 +209,8 @@ class ClassesManager(BuyableProductManager):
         print(self.__now() + delta)
 
         return self.get_queryset() \
-            .filter(is_scheduled=True, timeline__start__range=(self.__now(), self.__now() + delta)) \
-            .filter(**kwargs)
+            .filter(is_scheduled=True) \
+            .filter(timeline__start__range=(self.__now(), self.__now() + delta))
 
     def purchased_lesson_types(self):
         """
