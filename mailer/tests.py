@@ -1,4 +1,6 @@
 import pytz
+from django.core import mail
+from django.test import override_settings
 from django.utils import timezone
 
 from elk.utils.testing import TestCase
@@ -21,6 +23,19 @@ class TestTemplatedMail(TestCase):
             to=['f@f213.in'],
             **kwargs
         )
+
+    @override_settings(EMAIL_ASYNC=False)
+    def test_send(self):
+        owl = self._owl()
+        owl.send()
+        self.assertEqual(len(mail.outbox), 1)
+
+    @override_settings(EMAIL_ASYNC=True)
+    @override_settings(CELERY_ALWAYS_EAGER=True)
+    def test_send_async(self):
+        owl = self._owl()
+        owl.send()
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_subject(self):
         owl = self._owl()
@@ -57,6 +72,19 @@ class TestTemplatedMail(TestCase):
         owl.send()
         m = owl.msg
         self.assertIn('26.09.2016 18:00', m.body)
+
+    @override_settings(EMAIL_ASYNC=True)
+    @override_settings(CELERY_ALWAYS_EAGER=True)
+    def test_timezone_async(self):
+        """
+        Check timezone traversal through Celery
+        """
+        timezone.activate('US/Eastern')
+        owl = self._owl(timezone=pytz.timezone('Europe/Amsterdam'))
+        owl.send()
+        m = owl.msg
+        self.assertIn('26.09.2016 18:00', m.body)
+        self.assertEqual(m.extra_headers['X-ELK-Queued'], 'True')
 
     def test_timezone_headers_none(self):
         owl = self._owl()

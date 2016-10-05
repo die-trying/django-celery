@@ -6,7 +6,7 @@ from timeline.models import Entry as TimelineEntry
 
 @celery.task
 def bill_timeline_entries():
-    for entry in TimelineEntry.objects.to_be_marked_as_finished():
+    for entry in TimelineEntry.objects.to_be_marked_as_finished().filter(taken_slots__gte=1):
         entry.is_finished = True
         entry.save()
 

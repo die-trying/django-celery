@@ -10,10 +10,11 @@ from django.utils.dateformat import format
 from django.utils.timezone import localtime
 from django.utils.translation import ugettext as _
 
+from accounting.models import Event as AccEvent
 from extevents.models import ExternalEvent
 from teachers.models import Absence, Teacher, WorkingHours
 
-MARK_ENTRIES_AUTOMATICALLY_FINISHED_AFTER = timedelta(minutes=60)
+CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)
 
 
 class EntryManager(models.Manager):
@@ -28,7 +29,12 @@ class EntryManager(models.Manager):
         """
         return self.get_queryset() \
             .filter(is_finished=False) \
-            .filter(end__lte=self.__now() - MARK_ENTRIES_AUTOMATICALLY_FINISHED_AFTER)
+            .filter(end__lte=self.__now() - CLASS_IS_FINISHED_AFTER)
+
+    def by_lesson(self, lesson):
+        return self.get_queryset() \
+            .filter(lesson_id=lesson.id) \
+            .filter(lesson_type=lesson.get_contenttype())
 
     def __now(self):
         return timezone.now()
@@ -185,7 +191,7 @@ class Entry(models.Model):
 
     def save(self, *args, **kwargs):
         self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
-        self.clean()  # check for overlapping, teacher working hours, etc
+        # self.clean()  # check for overlapping, teacher working hours, etc
         self.__update_slots()  # update free slot count, check if no classes were added without spare slots for it
 
         self.__notify_class_that_it_has_been_finished(*args, **kwargs)  # notify a parent class, that it is used and finished
@@ -193,6 +199,19 @@ class Entry(models.Model):
 
         if not should_be_deleted:
             super().save(*args, **kwargs)
+        else:
+            self.delete()
+
+    def dangerously_save(self):
+        """
+        Save a timeline entry despite cleaning process. In fact it's your SUPERPOWER,
+        so please don't use it in any user-accessable code, only from the shell.
+        """
+        self.__update_slots()
+        super().save()
+
+        if self.__self_delete_if_needed() or self.taken_slots == 0:  # if entry should be deleted
+            self.dangerously_delete()
 
     def delete(self):
         """
@@ -202,7 +221,12 @@ class Entry(models.Model):
         for c in self.classes.all():
             c.unschedule()
             c.save()
-        super().delete()
+
+        for event in AccEvent.objects.by_originator(self):
+            event.delete()
+
+        if self.pk:  # if the entry has not autodeleted
+            super().delete()
 
     def is_overlapping(self):
         """
@@ -259,7 +283,7 @@ class Entry(models.Model):
         """
         Check, if timeline entry is in past
         """
-        if self.start < timezone.now():
+        if self.end < (timezone.now() + CLASS_IS_FINISHED_AFTER):
             return True
         return False
 
@@ -309,7 +333,6 @@ class Entry(models.Model):
             return False
 
         if self.lesson and not self.lesson.get_contenttype().model_class().timeline_entry_required():
-            self.delete()
             return True
 
         return False

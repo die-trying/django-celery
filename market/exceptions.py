@@ -4,10 +4,3 @@ class CannotBeScheduled(Exception):
     to a timeline entry
     """
     pass
-
-
-class CannotBeUnscheduled(Exception):
-    """
-    Indicates a situation when we can not un-schedule a lesson
-    """
-    pass

@@ -49,7 +49,9 @@
             {% if not object.taken_slots %}
                 <p class="timeline-entry-form__add-a-student"><a href="{{ object.admin_url }}">add a student</a>,</p>
             {% endif %}
-            <p class="timeline-entry-form__delete">or <a class="text-danger" href="{% url 'timeline:timeline_delete' username=teacher.user.username pk=object.pk %}">delete</a> it.</p>
+            {% if not object.is_in_past %}
+                <p class="timeline-entry-form__delete">or <a class="text-danger" href="{% url 'timeline:timeline_delete' username=teacher.user.username pk=object.pk %}">delete</a> it.</p>
+            {% endif %}
         </form>
 
 {% endblock %}

@@ -89,8 +89,8 @@ class ExistingCustomerAdmin(ModelAdmin):
         ('Profile', {
             'fields': ('profile_photo', 'profile_photo_cropping', 'country', 'timezone', 'birthday', 'native_language', 'starting_level', 'current_level')
         }),
-        ('Social', {
-            'fields': ('skype', 'facebook', 'instagram', 'twitter', 'linkedin')
+        ('Contacts', {
+            'fields': ('phone', 'skype', 'facebook', 'instagram', 'twitter', 'linkedin')
         }),
     )
 

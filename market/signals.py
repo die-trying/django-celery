@@ -4,7 +4,6 @@ from mailer.owl import Owl
 
 
 class_scheduled = Signal(providing_args=['instance'])  # class is just scheduled
-class_unscheduled = Signal(providing_args=['instance'])  # class is just cancelled
 
 
 @receiver(class_scheduled, dispatch_uid='notify_student_class_scheduled')

@@ -3,6 +3,8 @@ from datetime import timedelta
 import environ
 from easy_thumbnails.conf import Settings as thumbnail_settings
 
+from elk.context_processors import revision
+
 root = environ.Path(__file__) - 3        # three folder back (/a/b/c/ - 3 = /)
 env = environ.Env(DEBUG=(bool, False),)  # set default values and casting
 environ.Env.read_env()                   # reading .env file
@@ -140,6 +142,7 @@ SUIT_CONFIG = {
         {'app': 'teachers', 'icon': 'icon-briefcase', },
         {'app': 'accounting', 'icon': 'icon-gift', },
         {'app': 'lessons', 'icon': 'icon-headphones', 'label': 'Teaching', 'models': ('lessons.Language', 'lessons.PairedLesson', 'lessons.MasterClass', 'lessons.HappyHour')},
+        {'app': 'products', 'icon': 'icon-list', 'label': 'Products'},
         {'app': 'manual_class_logging', 'icon': 'icon-circle-arrow-right'},
         {'app': 'auth', 'label': 'Authorization', 'icon': 'icon-lock', 'models': ('auth.User', 'auth.Group')},
     ),
@@ -210,6 +213,7 @@ if not DEBUG:
         'handlers': {
             'sentry': {
                 'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+                'release': revision(None),
             },
         },
         'loggers': {

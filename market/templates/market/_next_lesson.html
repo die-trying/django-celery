@@ -8,7 +8,7 @@
             <p class="next_class__msg">{% trans "You have " %} {{ next_class.lesson.type_verbose_name }}
                 {% trans 'with' %} {{ next_class.timeline.teacher.user.crm.full_name }},
                 {% trans 'starting at' %} <strong>{{ next_class.timeline.start | date:"SHORT_DATETIME_FORMAT" }}</strong>.
-                If something goes wrong, <a class="pseudo class_reschedule" data-class-id="{{ next_class.pk }}" href='mailto:{{ SUPPORT_EMAIL }}?subject=Please reschedule my class'>{% trans 'reschedule'%}</a> {% trans 'or' %} <a class="pseudo class_cancel" data-class-id="{{ next_class.pk }}" data-dismiss-after-cancellation=".next_class" href='#'>{% trans 'cancel' %}</a> it.</p>
+                If something goes wrong, <a class="pseudo class_reschedule" data-class-id="{{ next_class.pk }}" href='mailto:{{ SUPPORT_EMAIL }}?subject=Please reschedule my class'>{% trans 'contact us'%}</a> {% trans 'or' %} <a class="pseudo class_cancel" data-class-id="{{ next_class.pk }}" data-dismiss-after-cancellation=".next_class" href='#'>{% trans 'cancel' %}</a> it.</p>
         </div>
     {% endif %}
 {% endwith %}

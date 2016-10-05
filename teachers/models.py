@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+import datetime
 
 import pytz
 from django.apps import apps
@@ -17,6 +17,25 @@ from django_markdown.models import MarkdownField
 from elk.utils.date import day_range
 
 TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
+PLANNING_DELTA = datetime.timedelta(hours=12)
+
+
+def _planning_ofsset(start):
+    """
+    Returns a minimal start time, that is available for planning
+    """
+
+    if start < (timezone.now() + PLANNING_DELTA):
+        start = timezone.now() + PLANNING_DELTA
+
+    if start.minute > 0 and start.minute < 30:
+        start = start.replace(minute=30)
+
+    if start.minute > 30:
+        start = start + datetime.timedelta(hours=1)
+        start = start.replace(minute=0)
+
+    return start
 
 
 class SlotList(list):
@@ -42,34 +61,42 @@ class TeacherManager(models.Manager):
                 teachers.append(teacher)
         return teachers
 
-    def find_lessons(self, date, **kwargs):  # noqa
+    def find_lessons(self, date, **kwargs):
         """
         Find all lessons, that are planned to a date. Accepts keyword agruments
         for filtering output of :model:`timeline.Entry`.
 
         TODO: refactor this method
         """
-        TimelineEntry = apps.get_model('timeline.entry')
-
-        end = date.replace(hour=23, minute=59)
+        start = _planning_ofsset(date)
+        end = start.replace(hour=23, minute=59)
 
         lessons = []
-        for i in TimelineEntry.objects.filter(start__range=(timezone.now(), end)).filter(**kwargs).distinct('lesson_id'):
-            lessons.append(i.lesson)
-
-        for lesson in lessons:
-            lesson.free_slots = SlotList()
-            for entry in TimelineEntry.objects.filter(lesson_id=lesson.pk, start__range=(timezone.now(), end)):
-                if entry.is_free:
-                    lesson.free_slots.append(entry.start)
-                    lesson.available_slots_count = entry.slots - entry.taken_slots
-
-        result = []
-        for lesson in lessons:
+        for lesson in self.__lessons_for_date(start, end, **kwargs):
+            lesson.free_slots = SlotList(self.__timeslots(lesson, start, end))
             if len(lesson.free_slots):
-                result.append(lesson)
+                lessons.append(lesson)
 
-        return result
+        return lessons
+
+    def __lessons_for_date(self, start, end, **kwargs):
+        """
+        Get all lessons, that have timeline entries for the requested period.
+
+        Ignores timeslot availability
+        """
+        TimelineEntry = apps.get_model('timeline.entry')
+        for timeline_entry in TimelineEntry.objects.filter(start__range=(start, end)).filter(**kwargs).distinct('lesson_id'):
+            yield timeline_entry.lesson
+
+    def __timeslots(self, lesson, start, end):
+        """
+        Generate timeslots for lesson
+        """
+        TimelineEntry = apps.get_model('timeline.entry')
+        for entry in TimelineEntry.objects.by_lesson(lesson).filter(start__range=(start, end)):
+            if entry.is_free:
+                yield entry.start
 
     def can_finish_classes(self):
         """
@@ -132,7 +159,7 @@ class Teacher(models.Model):
     def __str__(self):
         return '%s (%s)' % (self.user.crm.full_name, self.user.username)
 
-    def find_free_slots(self, date, period=timedelta(minutes=30), **kwargs):
+    def find_free_slots(self, date, period=datetime.timedelta(minutes=30), **kwargs):
         """
         Get datetime.datetime objects for free slots for a date. Accepts keyword
         arguments for filtering output of :model:`timeline.Entry`.
@@ -213,11 +240,10 @@ class Teacher(models.Model):
         Returns an iterable of slots as datetime objects.
         """
         slots = SlotList()
-        slot = start
+        slot = _planning_ofsset(start)
         while slot + period <= end:
             if self.__check_availability(slot, period):
-                if slot >= self.__now():
-                    slots.append(slot)
+                slots.append(slot)
 
             slot += period
 
@@ -261,9 +287,6 @@ class Teacher(models.Model):
         if not Lesson_model.timeline_entry_required():
             del kwargs['lesson_type']
 
-    def __now(self):
-        return timezone.now()
-
 
 class WorkingHoursManager(models.Manager):
     def for_date(self, date, teacher):
@@ -283,8 +306,8 @@ class WorkingHoursManager(models.Manager):
 
         server_tz = pytz.timezone(settings.TIME_ZONE)
 
-        hours.start = timezone.make_aware(datetime.combine(date, hours.start), timezone=server_tz)
-        hours.end = timezone.make_aware(datetime.combine(date, hours.end), timezone=server_tz)
+        hours.start = timezone.make_aware(datetime.datetime.combine(date, hours.start), timezone=server_tz)
+        hours.end = timezone.make_aware(datetime.datetime.combine(date, hours.end), timezone=server_tz)
 
         return hours
 

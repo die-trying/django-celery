@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from unittest.mock import MagicMock
 
 from django.contrib.contenttypes.models import ContentType
@@ -115,6 +115,7 @@ class EntryTestCase(TestCase):
         self.assertTrue(entry.is_in_past())
 
         entry.start = timezone.make_aware(datetime(2032, 12, 1))  # will fail in 16 years, sorry
+        entry.end = entry.start + timedelta(minutes=30)
         self.assertFalse(entry.is_in_past())
 
     def test_to_be_marked_as_finished_queryset(self):

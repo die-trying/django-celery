@@ -17,6 +17,5 @@ def new_user_notify(sender, **kwargs):
             'user': user,
         },
         to=[whom_to_notify],
-        from_email='%s <%s>' % (user.crm.full_name, user.email)
     )
     owl.send()

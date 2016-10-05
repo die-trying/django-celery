@@ -1,11 +1,6 @@
 @import 'nib'
 
 .schedule-popup
-    width: 800px
-
-    .modal-body
-        min-height: 480px
-        max-height: 480px
 
     &__content
         max-height: 400px
@@ -16,7 +11,6 @@
         overflow-x: hidden  // disable horizontal scrollbar in firefox
 
     &__content-loading
-        z-index: 0
         width: 768px
         height: 360px
         position: absolute
@@ -26,6 +20,9 @@
         opacity: 0
         &:not(.shown)
             transition: opacity .3s ease
+            pointer-events: none
+            z-index: 0
+
         &.shown
             z-index: 500
             opacity: 1
@@ -41,11 +38,6 @@
             margin: 0
         &-photo
             max-width: 40px
-
-    .record
-        padding-left: 0
-    .slots
-        margin-left: -20px
 
     &__date-selector
         display: inline
@@ -72,3 +64,52 @@
 
     &__submit
         transition: opacity .05s ease
+
+    @media (min-width: 767px)
+        width: 800px
+
+        .modal-body
+            min-height: 480px
+            max-height: 480px
+
+        .record
+            padding-left: 0
+
+        .slots
+            margin-left: -20px
+
+    @media (max-width: 767px)
+        .modal, .modal-body
+            max-height: 70vh
+            overflow-y: hidden;
+
+        .modal-body
+            padding-top: 0
+
+        .modal-header
+            border-bottom: none
+            padding-bottom: 0
+            h3
+                display: none
+
+        &__content
+            padding-top: 170px
+
+        &__content-loading, &__not-loaded
+            display: none
+
+        &__date-selector > .bootstrap-select
+            margin-bottom: 20px !important
+
+        &__filters
+            background-color: white
+            width: 100%
+            position: absolute
+            z-index: 500
+
+        &__record-photo
+            margin-top: 15px
+            margin-bottom: 10px
+
+        .slots .btn-group
+            margin-left: 2px

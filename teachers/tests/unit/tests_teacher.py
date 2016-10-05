@@ -1,14 +1,49 @@
+from datetime import timedelta
+
 from django.contrib.contenttypes.models import ContentType
+from freezegun import freeze_time
 from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_teacher
 from lessons import models as lessons
+from teachers import models
+
+_planning_ofsset = models._planning_ofsset
 
 
 class TestTeacherUnit(TestCase):
+    def setUp(self):
+        models.PLANNING_DELTA = timedelta(hours=2)
+
     def test_timeline_url(self):
         teacher = create_teacher()
         self.assertEqual(teacher.timeline_url(), '/timeline/%s/' % teacher.user.username)
+
+    @freeze_time('2032-05-03 13:00')
+    def test_planning_offset(self):
+        late_start = self.tzdatetime(2032, 5, 5, 13, 0)
+        self.assertEqual(_planning_ofsset(late_start), late_start)
+
+        early_start = self.tzdatetime(2032, 5, 1, 13, 0)
+        self.assertEqual(_planning_ofsset(early_start), self.tzdatetime('UTC', 2032, 5, 3, 15, 00))  # +2 hours from now
+
+    def test_planning_offset_roundup(self):
+        """
+        Check if planning offset rounds the time up
+        """
+        start = self.tzdatetime(2032, 5, 1, 13, 0)
+
+        with freeze_time('2032-05-03 13:25'):
+            self.assertEqual(_planning_ofsset(start), self.tzdatetime('UTC', 2032, 5, 3, 15, 30))  # shoud round to 15:30
+
+        with freeze_time('2032-05-03 13:45'):
+            self.assertEqual(_planning_ofsset(start), self.tzdatetime('UTC', 2032, 5, 3, 16, 0))  # shoud round to 16:00
+
+        with freeze_time('2032-05-03 21:45'):
+            self.assertEqual(_planning_ofsset(start), self.tzdatetime('UTC', 2032, 5, 4, 0, 0))  # should move to the next day
+
+        with freeze_time('2032-05-03 12:00'):
+            self.assertEqual(_planning_ofsset(start), self.tzdatetime('UTC', 2032, 5, 3, 14, 0))  # no roundup
 
 
 class TestTeacherAvaliableLessons(TestCase):

@@ -98,6 +98,7 @@ class SortingHat():
             .filter(customer=self.customer) \
             .filter(lesson_type=self.lesson_type) \
             .filter(is_scheduled=False) \
+            .filter(is_fully_used=False) \
             .order_by('subscription_id', 'buy_date') \
             .first()
 

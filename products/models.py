@@ -28,7 +28,12 @@ class Product(models.Model):
 
 
 class ProductWithLessons(Product):
+    """
+    Base class for products that contain lessons.
 
+    Please don't use admin for managing lessons of particular product —
+    use the migrations. Example migration you can find ad products/migrations/0002_simplesubscription.py
+    """
     def lesson_types(self):
         """
         Get ContentTypes of lessons, that are included in the product
@@ -50,8 +55,7 @@ class ProductWithLessons(Product):
 
 class Product1(ProductWithLessons):
     """
-    Stores information about subscriptions of the first type. You can admindocs
-    desired lessons in the model administration.
+    Stores information about subscriptions of the first type.
     """
     LESSONS = (
         'ordinary_lessons',
@@ -70,3 +74,21 @@ class Product1(ProductWithLessons):
     class Meta:
         verbose_name = "Subscription type: first subscription"
         verbose_name_plural = "Subscriptions of the first type"
+
+
+class SimpleSubscription(ProductWithLessons):
+    """
+    Simple subscription for beginners
+    """
+    LESSONS = (
+        'ordinary_lessons',
+        'lessons_with_native',
+        'paired_lessons',
+    )
+    ordinary_lessons = models.ManyToManyField(OrdinaryLesson, limit_choices_to={'active': 1})
+    paired_lessons = models.ManyToManyField(PairedLesson, limit_choices_to={'active': 1})
+    lessons_with_native = models.ManyToManyField(LessonWithNative, limit_choices_to={'active': 1})
+
+    class Meta:
+        verbose_name = "Subscription type: beginners subscription"
+        verbose_name_plural = "Beginner subscriptions"

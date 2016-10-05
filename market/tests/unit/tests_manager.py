@@ -1,13 +1,14 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest.mock import MagicMock, patch
 
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
+from freezegun import freeze_time
 
 from elk.utils.testing import TestCase, create_customer, create_teacher
 from lessons import models as lessons
-from market.exceptions import CannotBeUnscheduled
-from market.models import Class, Subscription
+# from market.models import Class, Subscription
+from market import models
 from products import models as products
 
 
@@ -18,19 +19,20 @@ class TestClassManager(TestCase):
     def setUp(self):
         self.customer = create_customer()
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
-        self.subscription = Subscription(
+        self.subscription = models.Subscription(
             customer=self.customer,
             product=product,
             buy_price=150,
         )
         self.subscription.save()
 
-    def _schedule(self, lesson_type=None, date=datetime(2032, 12, 1, 11, 30)):  # By default it will fail in 16 years, sorry
-        if timezone.is_naive(date):
-            date = timezone.make_aware(date)
+    def _schedule(self, lesson_type=None, date=None):
+        if date is None:
+            date = self.tzdatetime(2032, 12, 1, 11, 30)
 
         if lesson_type is None:
             lesson_type = lessons.OrdinaryLesson.get_contenttype()
+
         c = self.customer.classes.filter(lesson_type=lesson_type, is_scheduled=False).first()
         """
         If this test will fail when you change the SortingHat behaviour, just
@@ -51,8 +53,8 @@ class TestClassManager(TestCase):
         self.assertEqual(c1, c)
 
     def test_nearest_scheduled_ordering(self):
-        c2 = self._schedule(date=datetime(2020, 12, 1, 11, 30))
-        self._schedule(date=datetime(2032, 12, 1, 11, 30))
+        c2 = self._schedule(date=self.tzdatetime(2020, 12, 1, 11, 30))
+        self._schedule(date=self.tzdatetime(2032, 12, 1, 11, 30))
 
         c_found = self.customer.classes.nearest_scheduled()
         self.assertEquals(c_found, c2)
@@ -70,7 +72,7 @@ class TestClassManager(TestCase):
     def test_starting_soon(self):
         self._schedule()
         with patch('market.models.ClassesManager._ClassesManager__now') as mocked_date:
-            mocked_date.return_value = timezone.make_aware(datetime(2032, 12, 1, 10, 0))
+            mocked_date.return_value = self.tzdatetime(2032, 12, 1, 10, 0)
             self.assertEquals(self.customer.classes.starting_soon(timedelta(minutes=89)).count(), 0)
             self.assertEquals(self.customer.classes.starting_soon(timedelta(minutes=91)).count(), 1)
 
@@ -78,9 +80,9 @@ class TestClassManager(TestCase):
         """
         Test if clases.nearest_scheduled() does not return classes in the past
         """
-        self._schedule(date=datetime(2020, 12, 1, 11, 30))
-        c2 = self._schedule(date=datetime(2032, 12, 1, 11, 30))
-        c_found = self.customer.classes.nearest_scheduled(date=datetime(2025, 12, 1, 11, 30))  # 5 years later, then the fist sccheduled class
+        self._schedule(date=self.tzdatetime(2020, 12, 1, 11, 30))
+        c2 = self._schedule(date=self.tzdatetime(2032, 12, 1, 11, 30))
+        c_found = self.customer.classes.nearest_scheduled(date=self.tzdatetime(2025, 12, 1, 11, 30))  # 5 years later, then the fist sccheduled class
         self.assertEquals(c_found, c2)
 
     def test_available_lesson_types(self):
@@ -116,27 +118,35 @@ class TestClassManager(TestCase):
 
     def test_find_student_classes_nothing(self):
         self.subscription.delete()
-        no_students = Class.objects.find_student_classes(lesson_type=lessons.OrdinaryLesson.get_contenttype())
+        no_students = models.Class.objects.find_student_classes(lesson_type=lessons.OrdinaryLesson.get_contenttype())
         self.assertEquals(len(no_students), 0)
 
     def test_find_student_classes(self):
-        single = Class.objects.find_student_classes(lesson_type=lessons.OrdinaryLesson.get_contenttype())
+        single = models.Class.objects.find_student_classes(lesson_type=lessons.OrdinaryLesson.get_contenttype())
         self.assertEqual(single[0].customer, self.customer)
 
-    def test_dates_for_planning(self):
-        dates = [i for i in self.customer.classes.dates_for_planning()]
+    @freeze_time('2032-12-05 01:00')
+    def test_dates_for_planning_today(self):
+        timezone.activate('Europe/Moscow')
+        dates = list(self.customer.classes.dates_for_planning())
         self.assertEquals(len(dates), 7)  # should return seven next days
 
-        for i in dates:
-            self.assertIsInstance(i, datetime)
+        self.assertEquals(dates[0], self.tzdatetime('UTC', 2032, 12, 5, 1, 0))  # the first day should be today
 
-        self.assertEquals(dates[0].strftime('%Y-%m-%d'), datetime.now().strftime('%Y-%m-%d'))  # the first day should be today
+    @freeze_time('2032-12-05 02:00')
+    def test_dates_for_planning_tomorrow(self):
+        timezone.activate('US/Eastern')
+
+        models.PLANNING_DELTA = timedelta(hours=23)
+        dates = list(self.customer.classes.dates_for_planning())
+
+        self.assertEquals(len(dates), 7)
+        self.assertEquals(dates[0], self.tzdatetime('UTC', 2032, 12, 6, 2, 0))  # the first day should be tomorrow, because no lessons can by planned today after 02:00
 
     def test_cant_unschedule_in_past(self):
-        c = self._schedule(date=timezone.make_aware(datetime(2020, 12, 1, 11, 30)))
+        c = self._schedule(date=self.tzdatetime(2020, 12, 1, 11, 30))
         c.timeline.is_in_past = MagicMock(return_value=True)
-        with self.assertRaises(CannotBeUnscheduled):
-            c.unschedule()
+        self.assertFalse(c.can_be_unscheduled())
 
     def test_mark_as_fully_used(self):
         c = self._schedule()

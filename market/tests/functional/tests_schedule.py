@@ -6,7 +6,7 @@ from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_customer, create_teacher
 from lessons import models as lessons
-from market.exceptions import CannotBeScheduled, CannotBeUnscheduled
+from market.exceptions import CannotBeScheduled
 from market.models import Class
 from products import models as products
 from timeline.models import Entry as TimelineEntry
@@ -26,11 +26,6 @@ class ScheduleTestCase(TestCase):
         )
         c.save()
         return c
-
-    def test_unschedule_of_non_scheduled_lesson(self):
-        purchased_class = self._buy_a_lesson(products.OrdinaryLesson.get_default())
-        with self.assertRaises(CannotBeUnscheduled):
-            purchased_class.unschedule()
 
     def test_schedule_simple(self):
         """

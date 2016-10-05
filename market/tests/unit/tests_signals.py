@@ -38,6 +38,7 @@ class TestClassSignals(TestCase):
             allow_besides_working_hours=True,
         )
         c.save()
+        c.refresh_from_db()
         self.assertTrue(c.is_scheduled)
         return c
 
@@ -51,21 +52,5 @@ class TestClassSignals(TestCase):
 
     def test_scheduled_class_signal_called_once(self):
         [c, handler] = self._test_scheduled_class_signal()
-        c.save()  # signal is emited during the save() method, so let's call it one more time
-        self.assertEqual(handler.call_count, 1)
-
-    def _test_unscheduled_class_signal(self):
-        handler = MagicMock()
-        c = self._buy_a_lesson()
-        signals.class_unscheduled.connect(handler)
-        self._schedule(c)
-        c.unschedule()
-        self.assertEqual(handler.call_count, 0)  # assert that signal is not emited during the unschedule, because it can fail
-        c.save()
-        self.assertEqual(handler.call_count, 1)
-        return [c, handler]
-
-    def test_unscheduled_class_signal_called_once(self):
-        [c, handler] = self._test_unscheduled_class_signal()
         c.save()  # signal is emited during the save() method, so let's call it one more time
         self.assertEqual(handler.call_count, 1)
