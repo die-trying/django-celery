@@ -206,6 +206,8 @@ class ClassesManager(BuyableProductManager):
 
         Delta is a python datetime.timedelta.
         """
+        print(self.__now() + delta)
+
         return self.get_queryset() \
             .filter(is_scheduled=True, timeline__start__range=(self.__now(), self.__now() + delta)) \
             .filter(**kwargs)
@@ -359,7 +361,6 @@ class Class(BuyableProduct):
         self.is_scheduled = True
 
         if not self.timeline.pk:  # this happens when the entry is created in current iteration
-            self.timeline.clean()
             self.timeline.save()
             """
             We do not use self.assign_entry() method here, because we assume, that
@@ -380,7 +381,6 @@ class Class(BuyableProduct):
         iteration with a timeline entry, i.e. when scheduling through the
         sorting hat.
         """
-        self.timeline.clean()
         self.timeline.save()
 
         """ If the class was scheduled for the first time — send a signal """
@@ -444,6 +444,7 @@ class Class(BuyableProduct):
         if not self.can_be_scheduled(entry):
             raise CannotBeScheduled('%s %s' % (self, entry))
         self.timeline = entry
+        self.timeline.clean()
 
     def schedule(self, **kwargs):
         """
