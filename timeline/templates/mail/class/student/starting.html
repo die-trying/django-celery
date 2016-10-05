@@ -1,5 +1,4 @@
 {% extends "mail_templated/base.tpl" %}
-{% load i18n %}
 {% load humanize %}
 
 {% block subject %}
@@ -7,7 +6,7 @@
 {% endblock %}
 
 {% block body %}
-{% trans 'Dear' %} {{ c.customer.first_name | capfirst }},
+Dear {{ c.customer.first_name | capfirst }},
 
 It's a reminder about your {{ c.timeline.lesson.type_verbose_name }} with {{ c.timeline.teacher.user.first_name }}, which starts at {{ c.timeline.start | time:'TIME_FORMAT'}}.
 

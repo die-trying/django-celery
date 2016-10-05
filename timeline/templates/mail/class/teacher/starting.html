@@ -1,5 +1,4 @@
 {% extends "mail_templated/base.tpl" %}
-{% load i18n %}
 {% load humanize %}
 
 {% block subject %}
@@ -7,7 +6,7 @@
 {% endblock %}
 
 {% block body %}
-{% trans 'Hi' %}, {{ c.timeline.teacher.user.crm.first_name | capfirst }}!
+Hi, {{ c.timeline.teacher.user.crm.first_name | capfirst }}!
 
 {{ c.customer.full_name | capfirst}} is about to arrive for {{ c.timeline.lesson.type_verbose_name }} at {{ c.timeline.start | time:'TIME_FORMAT'}}.
 
