@@ -5,7 +5,6 @@ from crm.models import Customer, CustomerNote
 from elk.admin import ModelAdmin, StackedInline
 from elk.admin.filters import BooleanFilter
 from market.admin.components import ClassesLeftInline, ClassesPassedInline, SubscriptionsInline
-from market.models import Subscription
 
 
 class HasClassesFilter(BooleanFilter):
@@ -112,12 +111,12 @@ class ExistingCustomerAdmin(ModelAdmin):
         if not instance.classes:
             return '—'
 
-        total = instance.classes.distinct('subscription').values_list('subscription', flat=True)
+        total = instance.subscriptions.all()
 
         if not total:
             return '—'
 
-        finished = Subscription.objects.filter(pk__in=total, is_fully_used=True)
+        finished = instance.subscriptions.filter(pk__in=total, is_fully_used=True)
         return '%d/%d' % (finished.count(), total.count())
 
     def save_formset(self, request, form, formset, change):
