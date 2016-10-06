@@ -16,7 +16,8 @@ class TestStartingSoonEmail(ClassIntegrationTestCase):
         self._schedule(c, entry)
 
         with freeze_time('2032-09-13 15:46'):   # entry will start in 14 minutes
-            notify_15min_to_class()
+            for i in range(0, 10):  # run this 10 times to check for repietive emails — all notifications should be sent one time
+                notify_15min_to_class()
 
         self.assertEqual(len(mail.outbox), 2)  # if this test fails, carefully check the timezone you are in
 
@@ -43,8 +44,8 @@ class TestStartingSoonEmail(ClassIntegrationTestCase):
         c1 = self._buy_a_lesson()
         self._schedule(c1, entry)
         with freeze_time('2032-09-13 15:46'):   # entry will start in 14 minutes
-            print(c.timeline.start)
-            notify_15min_to_class()
+            for i in range(0, 10):  # run this 10 times to check for repietive emails — all notifications should be sent one time
+                notify_15min_to_class()
 
         self.assertEqual(len(mail.outbox), 3)  # if this test fails, carefully check the timezone you are in
 
