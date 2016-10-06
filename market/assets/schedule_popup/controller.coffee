@@ -100,13 +100,5 @@ c = ''
 $('.schedule-popup-container').on 'show.bs.modal', () ->
   c = new Controller
 
-
-
-  $(document).on 'keyup', (e) ->  #close popup on ESC
-    return if e.keyCode isnt 27
-    $(document).off 'keyup'
-    $('.schedule-popup-container').modal 'hide'
-
-
 $('.schedule-popup-container').on 'hidden.bs.modal', () ->
   c.destroy()
