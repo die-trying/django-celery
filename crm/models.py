@@ -1,4 +1,6 @@
+import requests
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django_countries.fields import CountryField
@@ -7,6 +9,7 @@ from image_cropping.templatetags.cropping import cropped_thumbnail
 from timezone_field import TimeZoneField
 
 from crm.signals import trial_lesson_added
+from elk.logging import logger
 
 
 class Company(models.Model):
@@ -193,3 +196,36 @@ class CustomerNote(models.Model):
     class Meta:
         verbose_name = "Note"
         verbose_name_plural = "Customer notes"
+
+
+class Issue(models.Model):
+    customer = models.ForeignKey(Customer, related_name='issues')
+    body = models.TextField()
+
+    def _copy_to_helpdesk(self):
+        """
+        If you wanna check your helpdesk vendor, rewrite this method.
+        """
+        r = requests.post('https://api.groovehq.com/v1/tickets', data={
+            'from': self.customer.user.email,
+            'subject': self.body[:140],
+            'to': self.customer.user.email,
+            'body': self.body,
+        }, headers={
+            'Authorization': 'Bearer %s' % settings.GROOVE_API_TOKEN,
+        })
+        if r.status_code != 201:
+            raise ConnectionError('Cannot post a ticket to groove, status code', r.status_code)
+
+    def save(self, *args, **kwargs):
+        is_new = False
+        if not self.pk:
+            is_new = True
+
+        super().save(*args, **kwargs)
+
+        if is_new:
+            try:
+                self._copy_to_helpdesk()
+            except:
+                logger.error('Could not save issue')
