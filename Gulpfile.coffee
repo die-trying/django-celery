@@ -90,6 +90,7 @@ gulp.task 'js:admin', () ->
 
 gulp.task 'js:vendor', () ->
   gulp.src vendor_files config.js_vendor_files
+  .pipe $.if '!*.min.js', $.uglify()
   .pipe $.concat 'vendor.js'
   .pipe gulp.dest './elk/static/js/'
 
