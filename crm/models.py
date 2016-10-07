@@ -224,7 +224,7 @@ class Issue(models.Model):
 
         super().save(*args, **kwargs)
 
-        if is_new:
+        if is_new and not settings.DEBUG:
             try:
                 self._copy_to_helpdesk()
             except:

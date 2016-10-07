@@ -23,6 +23,7 @@
             {% block content %}
             {% endblock %}
         </div>
+        {% include "crm/issue_form.html" %}
         <script src="{% static 'js/vendor.js' %}"></script>
         {% block js %} {# pages can require custom javascript files defining this block #}
         {% endblock %}
