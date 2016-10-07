@@ -13,7 +13,8 @@
     "install": "^1.0.4",
     "bootstrap-select": "~1.10.0",
     "rivets": "~0.9.0",
-    "microevent.js": "f213/microevent.js"
+    "microevent.js": "f213/microevent.js",
+    "js-cookie": "^2.1.3"
   },
   "private": "true"
 }
