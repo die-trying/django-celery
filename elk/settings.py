@@ -17,6 +17,12 @@ USE_TZ = True
 TIME_ZONE = env('TIME_ZONE')
 
 # LANGUAGE_CODE = "ru"
+
+# default formats, used when localization is fully off, i.e. in outgoing emails
+SHORT_DATE_FORMAT = 'D, M d'
+SHORT_DATETIME_FORMAT = 'M d, h:i A'
+TIME_FORMAT = 'h:i a'
+
 FORMAT_MODULE_PATH = [
     'elk.formats'
 ]
@@ -123,8 +129,10 @@ TEMPLATES = [
                 'django.template.context_processors.media',
                 'django.template.context_processors.tz',
 
-                'elk.context_processors.support_email',
-                'elk.context_processors.revision',
+                'elk.context_processors.support_email',  # support email address configured in .env
+                'elk.context_processors.revision',  # git revision for frontend
+
+                'elk.context_processors.greeting',  # current customer greeting template
 
                 'social.apps.django_app.context_processors.backends',
                 'social.apps.django_app.context_processors.login_redirect',
@@ -234,6 +242,9 @@ SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
 }
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+
+
+GROOVE_API_TOKEN = env('GROOVE_API_TOKEN')
 
 THUMBNAIL_PROCESSORS = (
     'image_cropping.thumbnail_processors.crop_corners',

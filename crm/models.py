@@ -1,4 +1,8 @@
+from collections import OrderedDict
+
+import requests
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django_countries.fields import CountryField
@@ -7,6 +11,7 @@ from image_cropping.templatetags.cropping import cropped_thumbnail
 from timezone_field import TimeZoneField
 
 from crm.signals import trial_lesson_added
+from elk.logging import logger
 
 
 class Company(models.Model):
@@ -27,6 +32,11 @@ class CustomerSource(models.Model):
         return self.name
 
 
+class CustomerManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related('user')
+
+
 class Customer(models.Model):
     """
     A model for a base customer.
@@ -38,7 +48,18 @@ class Customer(models.Model):
 
     The model automatically assigned to a current user, so you can access all CRM properties via `request.user.crm`.
     """
+    objects = CustomerManager()
+
     LEVELS = [(a + str(i), a + str(i)) for i in range(1, 4) for a in ('A', 'B', 'C')]
+    GREETINGS = (
+        ('empty', 'A user without a single class, even the trial one'),
+        ('trial', "User has a single trial class and didn't schedule it yet"),
+        ('trial-scheduled', 'User has scheduled hist trial class'),
+        ('out-of-classes', 'User has no classes (completed his trial, or purchased some other lessons without a subscription'),
+        ('no-subscription', "User has come classes, but hasn't purchase a subscription"),
+        ('subscription-active', "User is in process of active subscription"),
+        ('subscription-finished', "user's subscription has finished, but he has some non-subscription-lessons"),
+    )
 
     user = models.OneToOneField(User, on_delete=models.PROTECT, null=True, blank=True, related_name='crm')
 
@@ -95,6 +116,41 @@ class Customer(models.Model):
     @property
     def last_name(self):
         return self._get_user_property('last_name')
+
+    @classmethod
+    def _greeting(cls, status):
+        """
+        Check if greeting status is allowed, raise ValueError otherwise
+        """
+        allowed_greetings = OrderedDict(cls.GREETINGS)
+        if allowed_greetings.get(status) is not None:
+            return status
+        else:
+            raise ValueError('Trying to set unexistant greeting')
+
+    def get_greeting_type(self):  # NOQA:C901
+        """
+        Get greeting type. For available greeting types see GREETINGS defined in this clas
+        """
+        classes = self.classes.all()
+        if not classes.count():
+            return self._greeting('empty')
+
+        if self.is_trial_user():
+                if self.trial_lesson_is_scheduled():
+                    return self._greeting('trial-scheduled')
+                return self._greeting('trial')
+
+        if self.can_schedule_classes():
+            if self.subscriptions.count():
+                if self.subscriptions.filter(is_fully_used=False):
+                    return self._greeting('subscription-active')
+                else:
+                    return self._greeting('subscription-finished')
+            else:
+                return self._greeting('no-subscription')
+
+        return self._greeting('out-of-classes')
 
     def get_profile_photo(self):
         """
@@ -186,3 +242,36 @@ class CustomerNote(models.Model):
     class Meta:
         verbose_name = "Note"
         verbose_name_plural = "Customer notes"
+
+
+class Issue(models.Model):
+    customer = models.ForeignKey(Customer, related_name='issues')
+    body = models.TextField()
+
+    def _copy_to_helpdesk(self):
+        """
+        If you wanna check your helpdesk vendor, rewrite this method.
+        """
+        r = requests.post('https://api.groovehq.com/v1/tickets', data={
+            'from': self.customer.user.email,
+            'subject': self.body[:140],
+            'to': self.customer.user.email,
+            'body': self.body,
+        }, headers={
+            'Authorization': 'Bearer %s' % settings.GROOVE_API_TOKEN,
+        })
+        if r.status_code != 201:
+            raise ConnectionError('Cannot post a ticket to groove, status code', r.status_code)
+
+    def save(self, *args, **kwargs):
+        is_new = False
+        if not self.pk:
+            is_new = True
+
+        super().save(*args, **kwargs)
+
+        if is_new and not settings.DEBUG:
+            try:
+                self._copy_to_helpdesk()
+            except:
+                logger.error('Could not save issue')

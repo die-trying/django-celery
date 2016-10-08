@@ -55,14 +55,12 @@ class TestTrial(TestCase):
         self.customer.add_trial_lesson()
         self.assertFalse(self.customer.trial_lesson_is_scheduled())
 
-        trial_class = self.customer.classes.first()
-        trial_class.is_scheduled = True
-        trial_class.save()
+        self.customer.classes.update(is_scheduled=True)  # call UPDATE to avoid complicated save() for a class
 
-        self.assertFalse(self.customer.trial_lesson_is_scheduled())
+        self.assertTrue(self.customer.trial_lesson_is_scheduled())
 
     def test_trial_lesson_is_scheduled_on_non_trial_user(self):
         """
-        Test misuse of the method, i.e. on a fresh-created customer
+        Test for method abuse, i.e. on a fresh-created customer
         """
         self.assertFalse(self.customer.trial_lesson_is_scheduled())

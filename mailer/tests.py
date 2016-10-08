@@ -2,6 +2,7 @@ import pytz
 from django.core import mail
 from django.test import override_settings
 from django.utils import timezone
+from freezegun import freeze_time
 
 from elk.utils.testing import TestCase
 from mailer.owl import Owl
@@ -30,8 +31,7 @@ class TestTemplatedMail(TestCase):
         owl.send()
         self.assertEqual(len(mail.outbox), 1)
 
-    @override_settings(EMAIL_ASYNC=True)
-    @override_settings(CELERY_ALWAYS_EAGER=True)
+    @override_settings(EMAIL_ASYNC=True, CELERY_ALWAYS_EAGER=True)
     def test_send_async(self):
         owl = self._owl()
         owl.send()
@@ -73,8 +73,7 @@ class TestTemplatedMail(TestCase):
         m = owl.msg
         self.assertIn('26.09.2016 18:00', m.body)
 
-    @override_settings(EMAIL_ASYNC=True)
-    @override_settings(CELERY_ALWAYS_EAGER=True)
+    @override_settings(EMAIL_ASYNC=True, CELERY_ALWAYS_EAGER=True)
     def test_timezone_async(self):
         """
         Check timezone traversal through Celery
@@ -97,3 +96,9 @@ class TestTemplatedMail(TestCase):
         owl.send()
         m = owl.msg
         self.assertEqual(m.extra_headers['X-ELK-Timezone'], 'Europe/Amsterdam')
+
+    @freeze_time('2016-09-27 19:00')
+    @override_settings(USE_I18N=True, LANGUAGE_CODE='ru')
+    def test_l18n_is_disabled(self):
+        owl = self._owl()
+        self.assertIn('<dd>yesterday</dd>', owl.msg.body)  # should be 'yesterday', not 'вчера'

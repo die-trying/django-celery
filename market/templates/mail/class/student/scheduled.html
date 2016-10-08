@@ -1,15 +1,14 @@
 {% extends "mail_templated/base.tpl" %}
-{% load i18n %}
 {% load humanize %}
 
 {% block subject %}
-{{ c.customer.first_name | capfirst }}, {% trans 'you class is scheduled on '%} {{ c.timeline.start | naturalday:'SHORT_DATE_FORMAT' | capfirst }} {% trans 'at' %} {{ c.timeline.start | time:'TIME_FORMAT'}}
+{{ c.customer.first_name | capfirst }}, your class is scheduled for {{ c.timeline.start | naturalday:'SHORT_DATE_FORMAT' }}, {{ c.timeline.start | time:'TIME_FORMAT'}}
 {% endblock %}
 
 {% block body %}
-{% trans 'Dear' %} {{ c.customer.first_name | capfirst }},
+Dear {{ c.customer.first_name | capfirst }},
 
-Just for you, we've scheduled a {{ c.timeline.lesson.type_verbose_name }} with {{ c.timeline.teacher.user.first_name }} for {{ c.timeline.start | naturalday:'SHORT_DATE_FORMAT' | capfirst }}, {{ c.timeline.start | time:'TIME_FORMAT'}}
+Just for you, we've scheduled a {{ c.timeline.lesson.type_verbose_name }} with {{ c.timeline.teacher.user.first_name }} for {{ c.timeline.start | naturalday:'SHORT_DATE_FORMAT'}}, {{ c.timeline.start | time:'TIME_FORMAT'}}
 
 {% include 'mailer/_signature.html' %}
 {% endblock %}

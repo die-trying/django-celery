@@ -1,8 +1,0 @@
-{% extends 'acc/_greetings/trial-greeting.html' %}
-{% block trial_message %}
-    {% with next_class=request.user.crm.classes.nearest_scheduled %}
-        You have planned a first lesson with {{ next_class.timeline.teacher.user.crm.full_name }}
-        at <strong>{{ next_class.timeline.start | date:"SHORT_DATETIME_FORMAT" }}</strong>.
-        If something goes wrong, <a class="pseudo class_reschedule" data-class-id="{{ next_class.pk }}" href='mailto:{{ SUPPORT_EMAIL }}?subject=Please reschedule my class'>contact us</a> or <a class="pseudo class_cancel" data-class-id="{{ next_class.pk }}" data-dismiss-after-cancellation=".next_class" href='#'>cancel</a> it.</p
-    {% endwith %}
-{% endblock %}

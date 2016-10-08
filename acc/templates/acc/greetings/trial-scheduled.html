@@ -1,0 +1,33 @@
+{% extends 'acc/greetings/_base.html' %}
+{% load skype_chat from skype %}
+
+{% block title %}
+{% with next_class=request.user.crm.classes.nearest_scheduled %}
+You've scheduled a lesson with {{ next_class.timeline.teacher.user.crm.full_name }}
+{% endwith %}
+{% endblock %}
+
+{% block lead %}
+{% with next_class=request.user.crm.classes.nearest_scheduled %}
+    <p class="lead">
+        The lesson will start at {{ next_class.timeline.start | date:"SHORT_DATETIME_FORMAT" }}.
+    </p>
+{% endwith %}
+{% endblock %}
+
+{% block message %}
+{% with next_class=request.user.crm.classes.nearest_scheduled %}
+    <p>
+    {{ next_class.timeline.teacher.user.crm.first_name }}'s skype is {% skype_chat next_class.timeline.teacher.user.crm %}. Don't forget to eat something delicious before the class!
+    </p>
+{% endwith %}
+{% endblock %}
+
+{% block disclaimer %}
+{% endblock %}
+
+{% block next_lesson %}
+{% endblock %}
+
+{% block call_to_action %}
+{% endblock %}

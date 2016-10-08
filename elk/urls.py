@@ -15,6 +15,7 @@ urlpatterns = [
     url(name='home', regex=r'^$', view=login_required(TemplateView.as_view(template_name='acc/index.html'))),
 
     url(r'^accounts/', include('acc.urls', namespace='acc')),
+    url(r'^crm/', include('crm.urls', namespace='crm')),
     url(r'^market/', include('market.urls', namespace='market')),
     url(r'^history/', include('history.urls', namespace='history')),
     url(r'^timeline/', include('timeline.urls', namespace='timeline')),

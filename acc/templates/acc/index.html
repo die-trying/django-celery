@@ -2,34 +2,8 @@
 
 {% block content %}
 
-<div class="row">
-    <div class="col-md-8">
-        <h1>Hi, {{ request.user.first_name | capfirst }}!</h1>
-    </div>
-</div>
+{% include 'acc/greetings/'|add:GREETING|add:'.html'%}
 
-{% if request.user.crm.is_trial_user %}
-    {% if request.user.crm.trial_lesson_is_scheduled %}
-        {% include 'acc/_greetings/trial-scheduled-greeting.html' %}
-    {% else %}
-        {% include 'acc/_greetings/trial-greeting.html' %}
-    {% endif %}
-{% else %}
-    {# usual greeting #}
-    {% include 'acc/_greetings/alpha-greeting.html' %}
-{% endif %}
-
-
-<div class="row home-page-big-blue-button">
-    <div class="col-md-12 text-center">
-        {% if request.user.crm.can_schedule_classes %}
-        <button class="btn btn-primary btn-lg load_schedule_popup" data-toggle="modal" data-target=".schedule-popup-container">Plan a lesson</button>
-        {% else %}
-        <a class="btn btn-primary btn-lg" href='mailto:{{SUPPORT_EMAIL}}?subject=Reedem my lessons'>Contact Fedor to redeem lessons</a>
-        <small>You'll be able to book your lessons right after that</small>
-        {% endif %}
-    </div>
-</div>
 
 {% include 'market/_subscription_status.html' %}
 

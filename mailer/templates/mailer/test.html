@@ -1,4 +1,5 @@
 {% extends "mail_templated/base.tpl" %}
+{% load humanize %}
 
 {% block subject %}
 Проверка сабжекта для {{username}}
@@ -12,6 +13,7 @@
         <dt>username</dt><dd>{{ username }}</dd>
         <dt>join date</dt><dd>{{ register_date }}</dd>
         <dt>Current time</td><dd> {{ time|date:"d.m.Y H:i" }}</dd>
+        <dt>Current time in russian (should be in english)</td><dd>{{ time|naturalday }}</dd>
       </dl>
   </p>
 

@@ -34,8 +34,8 @@ class BuyableProduct(models.Model):
 
     buy_date = models.DateTimeField(auto_now_add=True)
     buy_price = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
-    is_fully_used = models.BooleanField(default=False)
-    active = models.SmallIntegerField(choices=ENABLED, default=1)
+    is_fully_used = models.BooleanField(default=False, db_index=True)
+    active = models.SmallIntegerField(choices=ENABLED, default=1, db_index=True)
 
     @abstractproperty
     def name_for_user(self):
@@ -88,7 +88,7 @@ class Subscription(BuyableProduct):
     The property is accessed later in the history.signals module.
     """
     objects = SubscriptionManager()
-    customer = models.ForeignKey(Customer, related_name='subscriptions')
+    customer = models.ForeignKey(Customer, related_name='subscriptions', db_index=True)
 
     product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'products'})
     product_id = models.PositiveIntegerField(default=1)  # flex scope — always add the first product
@@ -200,15 +200,17 @@ class ClassesManager(BuyableProductManager):
             .order_by('timeline__start') \
             .first()
 
-    def starting_soon(self, delta, **kwargs):
+    def starting_soon(self, delta):
         """
         Return a queryset with classes, that are about to start in `delta` time.
 
         Delta is a python datetime.timedelta.
         """
+        print(self.__now() + delta)
+
         return self.get_queryset() \
-            .filter(is_scheduled=True, timeline__start__range=(self.__now(), self.__now() + delta)) \
-            .filter(**kwargs)
+            .filter(is_scheduled=True) \
+            .filter(timeline__start__range=(self.__now(), self.__now() + delta))
 
     def purchased_lesson_types(self):
         """
@@ -296,7 +298,7 @@ class Class(BuyableProduct):
     """
     objects = ClassesManager()
 
-    customer = models.ForeignKey(Customer, related_name='classes', limit_choices_to={'user__isnull': False})
+    customer = models.ForeignKey(Customer, related_name='classes', db_index=True)
     is_scheduled = models.BooleanField(default=False)
 
     buy_source = models.CharField(max_length=12, default='single')
@@ -359,7 +361,6 @@ class Class(BuyableProduct):
         self.is_scheduled = True
 
         if not self.timeline.pk:  # this happens when the entry is created in current iteration
-            self.timeline.clean()
             self.timeline.save()
             """
             We do not use self.assign_entry() method here, because we assume, that
@@ -380,7 +381,6 @@ class Class(BuyableProduct):
         iteration with a timeline entry, i.e. when scheduling through the
         sorting hat.
         """
-        self.timeline.clean()
         self.timeline.save()
 
         """ If the class was scheduled for the first time — send a signal """
@@ -444,6 +444,7 @@ class Class(BuyableProduct):
         if not self.can_be_scheduled(entry):
             raise CannotBeScheduled('%s %s' % (self, entry))
         self.timeline = entry
+        self.timeline.clean()
 
     def schedule(self, **kwargs):
         """

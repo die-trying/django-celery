@@ -1,0 +1,31 @@
+{% load i18n %}
+
+<form method="POST" class="form issue-form" action="{% url 'crm:issue_create' %}">
+    {% csrf_token %}
+    <div class="modal fade" role="dialog" id="issue-popup">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h3>{% trans 'Contact us' %}</h3>
+                </div>
+                <div class="modal-body">
+                    {% for field, errors in form.errors.items %} {% for error in errors %} {}{ field }} — {{ error }} {% endfor %} {% endfor %}
+                    <div class="form-group">
+                        <textarea class="form-control" required="required" rows="5" id="id_body" name="body" placeholder="{% trans 'Your message' %}"></textarea>
+                        <div class="thanks hidden">
+                            {% blocktrans %}
+                            <h3>Thank you!</h3>
+                            <p class="lead">We will reply as soon as possible.</p>
+                            {% endblocktrans %}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button disabled data-loading-text="{% trans 'Sending' %}"type="submit" class="btn btn-primary">{% trans 'Send!' %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
