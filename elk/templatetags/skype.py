@@ -5,7 +5,7 @@ register = template.Library()
 
 @register.simple_tag
 def skype_chat(crm):
-    if not len(crm.skype):
+    if not crm or not len(crm.skype):
         return ''
 
     return _skype_link(crm.skype, 'chat')
@@ -13,7 +13,7 @@ def skype_chat(crm):
 
 @register.simple_tag
 def skype_call(crm):
-    if not len(crm.skype):
+    if not crm or not len(crm.skype):
         return ''
 
     return _skype_link(crm.skype, 'call')
