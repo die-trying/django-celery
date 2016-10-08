@@ -24,7 +24,7 @@
             {% endblock %}
         </div>
         {% include "crm/issue_form.html" %}
-        <script src="{% static 'js/vendor.js' %}"></script>
+        <script src="{% static 'js/vendor.js' %}?rev={{ REVISION }}"></script>
         {% block js %} {# pages can require custom javascript files defining this block #}
         {% endblock %}
         <script type="text/javascript">
