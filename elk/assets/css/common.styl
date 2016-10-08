@@ -31,6 +31,13 @@ a.pseudo
 .text-muted>a.pseudo, .text-success>a.pseudo, .text-info>a.pseudo, .text-warning>a.pseudo, .text-danger>a.pseudo
     color inherit
 
+
+a.external
+    &:after
+        content: "\a0\f08e"
+        font: normal normal normal 12px/1 FontAwesome
+        -webkit-font-smoothing: antialiased
+
 dl.inline
     dd
         display: inline
