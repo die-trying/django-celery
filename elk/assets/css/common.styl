@@ -2,6 +2,8 @@
 //
 // Please, try your best to use Bootstrap styles first
 
+@import 'nib'
+
 body
     min-height: 640px
 
@@ -37,6 +39,17 @@ a.external
         content: "\a0\f08e"
         font: normal normal normal 12px/1 FontAwesome
         -webkit-font-smoothing: antialiased
+
+a.skype
+    &:before
+        relative: top 3px
+        display: inline-block
+        content: '\a0'
+        width: 14px
+        height: 14px
+        background-image: url(static + 'i/skype.svg')
+        background-repeat: no-repeat
+        background-size: contain
 
 dl.inline
     dd
