@@ -76,13 +76,13 @@ class TestSchedulingPopupHTML(SchedulingPopupTestCaseBase):
 
     def test_date_selector(self):
         """
-        Test date filter — it should exist and have 7 days to select
+        Test date filter — it should exist and have 14 days to select
         """
         self._buy_a_lesson(lessons.OrdinaryLesson.get_default())
         response = self._get_step1()
         with self.assertHTML(response, '.schedule-popup__date-selector select') as (date_selector,):
             options = [i for i in date_selector.findall('option')]
-            self.assertEquals(len(options), 7)  # popup has 7 days forward to select
+            self.assertEquals(len(options), 14)  # popup has 7 days forward to select
 
 
 class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
