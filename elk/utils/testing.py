@@ -142,6 +142,9 @@ class ClientTestCase(TestCase, AssertHTMLMixin):
 
     For examples lurk the working tests.
     """
+
+    fixtures = ('lessons', 'products')
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -175,7 +178,6 @@ class ClassIntegrationTestCase(ClientTestCase):
         - _buy_a_lesson() — buy a lesson for student
         - schedule() — schedule a user's lesson to the teachers entry
     """
-    fixtures = ('lessons',)
 
     def setUp(self):
         self.host = create_teacher()

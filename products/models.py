@@ -34,20 +34,27 @@ class ProductWithLessons(Product):
     Please don't use admin for managing lessons of particular product —
     use the migrations. Example migration you can find ad products/migrations/0002_simplesubscription.py
     """
+    def lessons(self):
+        """
+        Get all lesson attributes of a subscription
+        """
+        for i in self.LESSONS:
+            yield getattr(self, i)
+
     def lesson_types(self):
         """
         Get ContentTypes of lessons, that are included in the product
         """
-        return [getattr(self, i).model.get_contenttype() for i in self.LESSONS]
+        for bundled_lesson in self.lessons():
+            yield bundled_lesson.model.get_contenttype()
 
     def classes_by_lesson_type(self, lesson_type):
         """
         Get all lessons in subscription by contenttype
         """
-        for i in self.LESSONS:
-            child_lessons = getattr(self, i)
-            if child_lessons.model.get_contenttype() == lesson_type:
-                return child_lessons.all()
+        for bundled_lesson in self.lessons():
+            if bundled_lesson.model.get_contenttype() == lesson_type:
+                return bundled_lesson.all()
 
     class Meta:
         abstract = True
