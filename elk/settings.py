@@ -129,8 +129,10 @@ TEMPLATES = [
                 'django.template.context_processors.media',
                 'django.template.context_processors.tz',
 
-                'elk.context_processors.support_email',
-                'elk.context_processors.revision',
+                'elk.context_processors.support_email',  # support email address configured in .env
+                'elk.context_processors.revision',  # git revision for frontend
+
+                'elk.context_processors.greeting',  # current customer greeting template
 
                 'social.apps.django_app.context_processors.backends',
                 'social.apps.django_app.context_processors.login_redirect',
