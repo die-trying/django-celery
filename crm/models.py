@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import requests
 from django.apps import apps
 from django.conf import settings
@@ -49,6 +51,15 @@ class Customer(models.Model):
     objects = CustomerManager()
 
     LEVELS = [(a + str(i), a + str(i)) for i in range(1, 4) for a in ('A', 'B', 'C')]
+    GREETINGS = (
+        ('empty', 'A user without a single class, even the trial one'),
+        ('trial', "User has a single trial class and didn't schedule it yet"),
+        ('trial-scheduled', 'User has scheduled hist trial class'),
+        ('out-of-classes', 'User has no classes (completed his trial, or purchased some other lessons without a subscription'),
+        ('no-subscription', "User has come classes, but hasn't purchase a subscription"),
+        ('subscription-active', "User is in process of active subscription"),
+        ('subscription-finished', "user's subscription has finished, but he has some non-subscription-lessons"),
+    )
 
     user = models.OneToOneField(User, on_delete=models.PROTECT, null=True, blank=True, related_name='crm')
 
@@ -105,6 +116,41 @@ class Customer(models.Model):
     @property
     def last_name(self):
         return self._get_user_property('last_name')
+
+    @classmethod
+    def _greeting(cls, status):
+        """
+        Check if greeting status is allowed, raise ValueError otherwise
+        """
+        allowed_greetings = OrderedDict(cls.GREETINGS)
+        if allowed_greetings.get(status) is not None:
+            return status
+        else:
+            raise ValueError('Trying to set unexistant greeting')
+
+    def get_greeting_type(self):  # NOQA:C901
+        """
+        Get greeting type. For available greeting types see GREETINGS defined in this clas
+        """
+        classes = self.classes.all()
+        if not classes.count():
+            return self._greeting('empty')
+
+        if self.is_trial_user():
+                if self.trial_lesson_is_scheduled():
+                    return self._greeting('trial-scheduled')
+                return self._greeting('trial')
+
+        if self.can_schedule_classes():
+            if self.subscriptions.count():
+                if self.subscriptions.filter(is_fully_used=False):
+                    return self._greeting('subscription-active')
+                else:
+                    return self._greeting('subscription-finished')
+            else:
+                return self._greeting('no-subscription')
+
+        return self._greeting('out-of-classes')
 
     def get_profile_photo(self):
         """
