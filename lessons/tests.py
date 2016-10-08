@@ -26,6 +26,28 @@ class TestLessonsUnit(TestCase):
         l = mixer.blend(lessons.OrdinaryLesson)
         self.assertIn('single', str(l.type_verbose_name))
 
+    def test_long_name(self):
+        l = mixer.blend(lessons.OrdinaryLesson)
+        self.assertIn('Curated', str(l.long_name))
+
+    def test_long_name_from_verbose_name(self):
+        """
+        Trial lessons don't defined custom long name but still have one from verbose_name
+        """
+        l = mixer.blend(lessons.TrialLesson)
+        self.assertIn('First', str(l.long_name))
+
+    def test_long_name_plural(self):
+        l = mixer.blend(lessons.OrdinaryLesson)
+        self.assertIn('Curated lessons', str(l.long_name_plural))
+
+    def test_long_name_plural_from_verbose_name(self):
+        """
+        Trial lessons don't defined custom long name but still have one from verbose_name
+        """
+        l = mixer.blend(lessons.TrialLesson)
+        self.assertIn('First', str(l.long_name_plural))
+
     def test_assure_markdown_is_rendered(self):
         l = mixer.blend(lessons.OrdinaryLesson, description='**bold**')
         result = l.as_dict()

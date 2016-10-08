@@ -1,0 +1,18 @@
+.subscription-brief
+    border-collapse: separate
+    border-spacing: 0 5px
+    &__title
+        margin-left: 25px
+    &__lesson
+        display: table-row
+        margin-bottom: 5px
+        &__count, &__name
+            display: table-cell
+
+        &__count
+            width: 25px
+            span:after
+                content: ' x'
+
+        &__name
+            width: 150px
