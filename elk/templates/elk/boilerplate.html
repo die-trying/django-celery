@@ -1,0 +1,37 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>{% block title %}ELK{% endblock %}</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="{% static 'css/vendor.css' %}?rev={{ REVISION }}">
+        {% block css %}
+        {% endblock %}
+        <link rel="stylesheet" href="{% static 'css/app.css' %}?rev={{ REVISION }}">
+
+        <base href = "/">
+    </head>
+    <body class="{% block body-class %}{% endblock %}">
+        {% block navbar %}
+        {% endblock %}
+        {% block container %}
+        {% endblock %}
+
+        <script src="{% static 'js/vendor.js' %}?rev={{ REVISION }}"></script>
+        {% block js %} {# pages can require custom javascript files defining this block #}
+        {% endblock %}
+        <script type="text/javascript">
+            var Project = {
+                models: {},
+                controllers: {},
+                helpers: {},
+            } // quasi-global namespace
+        </script>
+        <script src="{% static 'js/app.js' %}?rev={{ REVISION }}"></script>
+        {% include 'elk/analytics.html' %}
+    </body>
+</html>

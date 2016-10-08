@@ -1,6 +1,5 @@
 [
     "bootstrap/dist/css/bootstrap.min.css",
-    "bootstrap-social/bootstrap-social.css",
     "font-awesome/css/font-awesome.min.css",
     "bootstrap-datepicker/dist/css/bootstrap-datepicker3.min.css",
     "jquery-timepicker/jquery.timepicker.css",
