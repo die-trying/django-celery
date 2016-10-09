@@ -159,6 +159,7 @@ class Teacher(models.Model):
             'announce': self.announce,
             'description': self.description,
             'profile_photo': self.user.crm.get_profile_photo(),
+            'teacher_photo': self.get_teacher_photo(),
         }
 
     def __str__(self):

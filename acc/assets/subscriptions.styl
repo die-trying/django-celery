@@ -1,8 +1,24 @@
+@import 'nib'
+
+.subscription
+    &__curated-lessons
+        margin-top: 40px
+
+    &__curated-lessons, &__briefs, &__individual-program
+        p, ul
+            font-size: 16px
+
 .subscription-brief
     border-collapse: separate
-    border-spacing: 0 5px
+    border-spacing: 0 10px
+
     &__title
         margin-left: 25px
+        margin-bottom: 0
+
+    &__lessons
+        min-height: 245px
+
     &__lesson
         display: table-row
         margin-bottom: 5px
@@ -15,4 +31,26 @@
                 content: ' x'
 
         &__name
-            width: 150px
+            width: 170px
+
+    &__payment
+        relative: left 5px
+
+.subscription-faces
+    margin-top: 20px
+    margin-bottom: 25px
+
+    &__teacher
+        display: inline-block
+        text-align: center
+        vertical-align: top
+        img
+            display: block
+            margin-bottom: 10px
+
+        &__announce
+            display: block
+            width: 250px
+
+    &__teacher + &__teacher
+        margin-left: 50px

@@ -1,41 +1,15 @@
 {% load i18n %}
-<div class="row">
+<section class="row subcription__greeting">
     <div class="col-md-12">
         <h1>{% trans 'More lessons'%}</h1>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-12">
         <p class="lead">
             {% blocktrans %}
                 ELK Academy subscription includes 10 lessons. Individual lessons are 30 minutes, group lessons are 45 minutes. The price of the subscription is $200.
             {% endblocktrans %}
         </p>
     </div>
-</div>
+</section>
 
-<div class="row">
-    <div class="col-md-3 col-md-offset-3 subscription-brief">
-        <h3 class="subscription-brief__title">Basic</h3>
-        {% for lesson_type in product1.lessons %}
-        <div class="subscription-brief__lesson">
-            <div class="subscription-brief__lesson__count"><span>{{ lesson_type.count }}</span></div>
-            <div class="subscription-brief__lesson__name">
-                {% if lesson_type.count > 1 %} {{ lesson_type.first.long_name_plural }} {% else %} {{ lesson_type.first.long_name }} {% endif %}
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-    <div class="col-md-3 subscription-brief">
-        <h3 class="subscription-brief__title">Beginners</h3>
-        {% for lesson_type in simple_subscription.lessons %}
-        <div class="subscription-brief__lesson">
-            <div class="subscription-brief__lesson__count"><span>{{ lesson_type.count }}</span></div>
-            <div class="subscription-brief__lesson__name">
-                {% if lesson_type.count > 1 %} {{ lesson_type.first.long_name_plural }} {% else %} {{ lesson_type.first.long_name }} {% endif %}
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
+{% include 'acc/greetings/_partial/briefs.html' %}
+
+{% include 'acc/greetings/_partial/curated-lessons.html' %}

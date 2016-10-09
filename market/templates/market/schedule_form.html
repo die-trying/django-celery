@@ -1,0 +1,5 @@
+{% if request.user.crm.can_schedule_classes %}
+    <div class="modal fade schedule-popup-container" role="dialog">
+        {% include 'market/schedule_popup/schedule_popup.html' %}
+    </div>
+{% endif %}
