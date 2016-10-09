@@ -28,7 +28,7 @@ class IssueController
 
 
 $('.issue-form').on 'shown.bs.modal', () ->
-  $form = $ this
+  $form = $ 'form', this
   $body = $ 'textarea[name="body"]', $form
   c = new IssueController(
     form = $form
