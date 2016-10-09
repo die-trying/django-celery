@@ -1,8 +1,7 @@
 from django.contrib import admin
-from django.db import models
 from django.core.urlresolvers import reverse
+from django.db import models
 from django.utils.html import format_html
-
 from suit.widgets import HTML5Input, SuitTimeWidget
 
 from elk.admin import ModelAdmin, StackedInline, TabularInline
