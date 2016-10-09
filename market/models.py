@@ -252,7 +252,7 @@ class ClassesManager(BuyableProductManager):
         if timezone.localtime(current + PLANNING_DELTA).day != timezone.localtime(current).day:
             current += timedelta(days=1)
 
-        for i in range(0, 7):
+        for i in range(0, 14):
             yield current
             current += timedelta(days=1)
 

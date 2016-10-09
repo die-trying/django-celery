@@ -129,7 +129,7 @@ class TestClassManager(TestCase):
     def test_dates_for_planning_today(self):
         timezone.activate('Europe/Moscow')
         dates = list(self.customer.classes.dates_for_planning())
-        self.assertEquals(len(dates), 7)  # should return seven next days
+        self.assertEquals(len(dates), 14)  # should return next two weeks
 
         self.assertEquals(dates[0], self.tzdatetime('UTC', 2032, 12, 5, 1, 0))  # the first day should be today
 
@@ -140,7 +140,7 @@ class TestClassManager(TestCase):
         models.PLANNING_DELTA = timedelta(hours=23)
         dates = list(self.customer.classes.dates_for_planning())
 
-        self.assertEquals(len(dates), 7)
+        self.assertEquals(len(dates), 14)
         self.assertEquals(dates[0], self.tzdatetime('UTC', 2032, 12, 6, 2, 0))  # the first day should be tomorrow, because no lessons can by planned today after 02:00
 
     def test_cant_unschedule_in_past(self):

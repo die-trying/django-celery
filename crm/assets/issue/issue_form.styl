@@ -1,4 +1,5 @@
 .issue-form
+    height: 420px
     .modal-header, .modal-body, .form-group
         padding-bottom: 0
         margin-bottom: 0
@@ -6,12 +7,21 @@
 
     .modal-header, .modal-footer
         border: 0
+        h3
+            margin: 0
 
-    .form-group, .body
-        min-height: 140px
+    .modal-footer
+        padding-top: 0
 
-    .thanks
-        padding-top: 20px
+    &__body, .pretty-loader
+        min-height: 125px
 
-    h3
-        margin-top: 0
+
+    .modal-body
+        min-height: 155px
+
+    &__thanks
+        h3
+            margin-top: 5px
+        p
+            margin-bottom: 0

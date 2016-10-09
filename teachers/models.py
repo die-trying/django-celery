@@ -13,6 +13,8 @@ from django.utils import timezone
 from django.utils.dateformat import format
 from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
+from image_cropping import ImageRatioField
+from image_cropping.templatetags.cropping import cropped_thumbnail
 
 from elk.utils.date import day_range
 
@@ -126,6 +128,9 @@ class Teacher(models.Model):
 
     allowed_lessons = models.ManyToManyField(ContentType, related_name='+', blank=True, limit_choices_to={'app_label': 'lessons'})
 
+    teacher_photo = models.ImageField(upload_to='teachers/', null=True, blank=True)
+    teacher_photo_cropping = ImageRatioField('teacher_photo', '500x500')
+
     description = MarkdownField()
     announce = models.TextField(max_length=140)
     active = models.IntegerField(default=1, choices=ENABLED)
@@ -158,6 +163,13 @@ class Teacher(models.Model):
 
     def __str__(self):
         return '%s (%s)' % (self.user.crm.full_name, self.user.username)
+
+    def get_teacher_photo(self):
+        """
+        Get, if exists, big teachers photo
+        """
+        if self.teacher_photo:
+            return cropped_thumbnail(context={}, instance=self, ratiofieldname='teacher_photo_cropping')
 
     def find_free_slots(self, date, period=datetime.timedelta(minutes=30), **kwargs):
         """
