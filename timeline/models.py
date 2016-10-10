@@ -191,7 +191,6 @@ class Entry(models.Model):
 
     def save(self, *args, **kwargs):
         self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
-        # self.clean()  # check for overlapping, teacher working hours, etc
         self.__update_slots()  # update free slot count, check if no classes were added without spare slots for it
 
         self.__notify_class_that_it_has_been_finished(*args, **kwargs)  # notify a parent class, that it is used and finished
@@ -303,7 +302,7 @@ class Entry(models.Model):
             'slots_available': self.slots,
         }
 
-    def clean(self):
+    def clean(self):  # NOQA
         if not self.allow_overlap and self.is_overlapping():
             raise ValidationError('Entry time overlapes with some other entry of this teacher')
 
@@ -315,6 +314,9 @@ class Entry(models.Model):
 
         if not self.allow_when_teacher_has_external_events and not self.teacher_has_no_events():
             raise ValidationError('Teacher has external events in this period')
+
+        if self.start < timezone.now():
+            raise ValidationError('Could not move timeline entry to the past!')
 
     def __self_delete_if_needed(self):
         """

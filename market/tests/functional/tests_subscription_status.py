@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from elk.utils.testing import TestCase, create_customer, create_teacher
 from lessons import models as lessons
 from market.models import Subscription
@@ -20,7 +18,10 @@ class TestSubscriptionStatus(TestCase):
 
         self.subscription.save()
 
-    def _schedule(self, c, date=datetime(2032, 12, 1, 11, 30)):
+    def _schedule(self, c, date=None):
+        if date is None:
+            date = self.tzdatetime(2032, 12, 1, 11, 30)
+
         c.schedule(
             teacher=self.teacher,
             date=date,

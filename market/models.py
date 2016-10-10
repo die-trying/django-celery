@@ -508,6 +508,10 @@ class Class(BuyableProduct):
         try:
             entry.clean()
         except ValidationError:
+            """
+            If you can see this error, please investigate the way timenetry was crated by.
+            Possibly there is a place in the system, that generates unschedulable timeline entries.
+            """
             logger.error("Timeline entry can't be scheduled")
             return False
 

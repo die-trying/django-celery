@@ -1,7 +1,6 @@
-from datetime import datetime
 from unittest.mock import Mock
 
-from django.utils import timezone
+from freezegun import freeze_time
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
@@ -13,6 +12,7 @@ from products.models import Product1
 from timeline.models import Entry as TimelineEntry
 
 
+@freeze_time('2005-01-30 12:00')
 class TestScheduler(TestCase):
     fixtures = ('lessons', 'products')
     TEST_PRODUCT_ID = 1
@@ -95,7 +95,7 @@ class TestScheduler(TestCase):
         entry = TimelineEntry(
             teacher=self.host,
             lesson=self.master_class,
-            start=datetime(2016, 1, 1, 13, 37)
+            start=self.tzdatetime(2016, 1, 1, 13, 37)
         )
         entry.save()
         res = s._SortingHat__get_entry()
@@ -112,7 +112,7 @@ class TestScheduler(TestCase):
         entry = TimelineEntry(
             teacher=self.host,
             lesson=self.master_class,
-            start=datetime(2016, 1, 1, 13, 37),
+            start=self.tzdatetime(2016, 1, 1, 13, 37),
             taken_slots=5,  # fixtured master class defined only 5 slots
         )
         entry.save()
@@ -176,13 +176,13 @@ class TestScheduler(TestCase):
         s.c.schedule = mocked_schedule
 
         s.schedule_a_class()
-        mocked_schedule.assert_called_with(date=timezone.make_aware(datetime(2016, 1, 1, 13, 37)), teacher=self.host)
+        mocked_schedule.assert_called_with(date=self.tzdatetime(2016, 1, 1, 13, 37), teacher=self.host)
         self.assertEquals(s.err, 'E_CANT_SCHEDULE')
 
     def test_get_only_active_classes(self):
         s = self.get_the_hat()
         lesson = lessons.OrdinaryLesson.get_default()
-        entry = mixer.blend(TimelineEntry, lesson=lesson, teacher=self.host, active=1)
+        entry = mixer.blend(TimelineEntry, lesson=lesson, teacher=self.host, active=1, start=self.tzdatetime(2016, 12, 1, 1, 30))
         c = self._buy_a_lesson(lesson)
 
         c.assign_entry(entry)

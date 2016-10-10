@@ -2,6 +2,7 @@ from datetime import datetime
 from unittest.mock import MagicMock
 
 from django.utils import timezone
+from freezegun import freeze_time
 from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_customer, create_teacher
@@ -12,6 +13,7 @@ from teachers.models import WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
+@freeze_time('2005-01-02 03:30')
 class TestScheduleLowLevel(TestCase):
     fixtures = ('lessons',)
 
@@ -32,7 +34,7 @@ class TestScheduleLowLevel(TestCase):
     def test_assign_entry(self):
         """ Not poluting timeline with existing timeline entries """
         c = self._buy_a_lesson()
-        entry = mixer.blend(TimelineEntry, slots=1, lesson=self.lesson, teacher=self.teacher)
+        entry = mixer.blend(TimelineEntry, slots=1, lesson=self.lesson, teacher=self.teacher, start=self.tzdatetime(2016, 12, 1, 1, 10))
         entry.save = MagicMock(return_value=None)
 
         c.assign_entry(entry)
@@ -66,7 +68,7 @@ class TestScheduleLowLevel(TestCase):
         unscheduling mechanism.
         """
         c = self._buy_a_lesson()
-        entry = mixer.blend(TimelineEntry, slots=1, lesson=self.lesson, teacher=self.teacher)
+        entry = mixer.blend(TimelineEntry, slots=1, lesson=self.lesson, teacher=self.teacher, start=self.tzdatetime(2016, 12, 11, 10, 30))
         c.assign_entry(entry)
         c.save()
 
