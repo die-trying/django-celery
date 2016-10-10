@@ -7,10 +7,12 @@ $.fn.numonly = () ->
       $group.removeClass 'error'
     , 100
 
-  $(this).on 'keydown', (e) ->
+  $(this).on 'keypress', (e) ->
     if $.inArray(e.keyCode, [46, 8, 9, 27, 13, 110]) > 0
       return
 
+    if not e.key?
+      return
     if e.key.match /Shift|Control|Alt|Meta/
       return
 
