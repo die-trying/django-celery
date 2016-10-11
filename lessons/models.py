@@ -61,6 +61,20 @@ class Lesson(models.Model):
     def type_verbose_name(self):
         return _(self.__class__._meta.verbose_name.lower())
 
+    @property
+    def long_name(self):
+        if hasattr(self.__class__, '_long_name'):
+            return self.__class__._long_name
+
+        return _(self.__class__._meta.verbose_name)
+
+    @property
+    def long_name_plural(self):
+        if hasattr(self.__class__, '_long_name_plural'):
+            return self.__class__._long_name_plural
+
+        return _(self.__class__._meta.verbose_name_plural)
+
     @classmethod
     def get_contenttype(cls):
         """
@@ -175,6 +189,9 @@ class HostedLesson(Lesson):
 
 
 class OrdinaryLesson(Lesson):
+    _long_name = _('Curated lesson')
+    _long_name_plural = _('Curated lessons')
+
     @classmethod
     def sort_order(cls):
         return 100
@@ -194,6 +211,9 @@ class TrialLesson(Lesson):
 
 
 class LessonWithNative(Lesson):
+    _long_name = _('Paired lesson with native speaker')
+    _long_name_plural = _('Paired lessons with native speaker')
+
     @classmethod
     def sort_order(cls):
         return 300
@@ -204,6 +224,9 @@ class LessonWithNative(Lesson):
 
 
 class MasterClass(HostedLesson):
+    _long_name = _('ELK Master class')
+    _long_name_plural = _('ELK Master classes')
+
     @classmethod
     def sort_order(cls):
         return 400
@@ -214,6 +237,9 @@ class MasterClass(HostedLesson):
 
 
 class HappyHour(HostedLesson):
+    _long_name = _('Happy hour session (5 students speaking to each other)')
+    _long_name_plural = _('Happy hour sessions (5 students speaking to each other)')
+
     @classmethod
     def sort_order(cls):
         return 500
@@ -223,6 +249,9 @@ class HappyHour(HostedLesson):
 
 
 class PairedLesson(HostedLesson):
+    _long_name = _('Paired lesson with native speaker')
+    _long_name_plural = _('Paired lessons with native speaker')
+
     @classmethod
     def sort_order(cls):
         return 200

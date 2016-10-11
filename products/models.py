@@ -1,6 +1,9 @@
 from datetime import timedelta
 
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django_countries.fields import CountryField
 from djmoney.models.fields import MoneyField
 
 from lessons.models import HappyHour, LessonWithNative, MasterClass, OrdinaryLesson, PairedLesson
@@ -23,6 +26,12 @@ class Product(models.Model):
     def __str__(self):
         return self.internal_name
 
+    def get_tier(self, country):
+        """
+        Get pricing tier for distinct country
+        """
+        return Tier.objects.get_for_product(self, country)
+
     class Meta:
         abstract = True
 
@@ -34,20 +43,27 @@ class ProductWithLessons(Product):
     Please don't use admin for managing lessons of particular product —
     use the migrations. Example migration you can find ad products/migrations/0002_simplesubscription.py
     """
+    def lessons(self):
+        """
+        Get all lesson attributes of a subscription
+        """
+        for i in self.LESSONS:
+            yield getattr(self, i)
+
     def lesson_types(self):
         """
         Get ContentTypes of lessons, that are included in the product
         """
-        return [getattr(self, i).model.get_contenttype() for i in self.LESSONS]
+        for bundled_lesson in self.lessons():
+            yield bundled_lesson.model.get_contenttype()
 
     def classes_by_lesson_type(self, lesson_type):
         """
         Get all lessons in subscription by contenttype
         """
-        for i in self.LESSONS:
-            child_lessons = getattr(self, i)
-            if child_lessons.model.get_contenttype() == lesson_type:
-                return child_lessons.all()
+        for bundled_lesson in self.lessons():
+            if bundled_lesson.model.get_contenttype() == lesson_type:
+                return bundled_lesson.all()
 
     class Meta:
         abstract = True
@@ -92,3 +108,59 @@ class SimpleSubscription(ProductWithLessons):
     class Meta:
         verbose_name = "Subscription type: beginners subscription"
         verbose_name_plural = "Beginner subscriptions"
+
+
+class TierManager(models.Manager):
+    def get_for_product(self, product, country):
+        """
+        Get payment tier for product and country. If country is not found, returns a default tier
+        """
+        normal_tier = self.get_queryset().filter(
+            product_id=product.pk,
+            product_type=ContentType.objects.get_for_model(product),
+            country=country,
+        )
+        if normal_tier.count():
+            return normal_tier.first()
+
+        default_tier = self.get_queryset().filter(
+            product_id=product.pk,
+            product_type=ContentType.objects.get_for_model(product),
+            is_default=True,
+        )
+        return default_tier.first()
+
+
+class Tier(models.Model):
+    """
+    Product tier is a product price for single country.
+
+    Currently single tier for multiple countries is not supported because
+    django country field does not support m2m.
+
+    You should create a default tier for every product, which objects.get_for_product()
+    will return when it can't find a country.
+    """
+    objects = TierManager()
+
+    country = CountryField(null=True)
+    is_default = models.BooleanField(default=False)
+    name = models.CharField('Tier name', max_length=140)
+
+    product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'products'})
+    product_id = models.PositiveIntegerField(default=1)
+    product = GenericForeignKey('product_type', 'product_id')
+
+    cost = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
+
+    paypal_button_id = models.CharField(max_length=128)
+
+    def __str__(self):
+        product_type = str(self.product_type).replace('Subscription type: ', '')
+        if self.is_default:
+            return 'Default tier for %s' % product_type
+        else:
+            return 'Tier for %s in %s' % (product_type, self.country.name)
+
+    class Meta:
+        unique_together = ('country', 'product_id', 'product_type', 'is_default')

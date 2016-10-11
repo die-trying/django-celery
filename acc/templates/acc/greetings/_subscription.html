@@ -1,1 +1,15 @@
-{% extends 'acc/greetings/_base.html'%}
+{% load i18n %}
+<section class="row subcription__greeting">
+    <div class="col-md-12">
+        <h1>{% trans 'More lessons'%}</h1>
+        <p class="lead">
+            ELK Academy subscription includes 10 lessons.
+            Individual lessons are 30 minutes, group lessons are 45 minutes.
+            Subscription price is {{ product1_tier.name }}.
+        </p>
+    </div>
+</section>
+
+{% include 'acc/greetings/_partial/briefs.html' %}
+
+{% include 'acc/greetings/_partial/curated-lessons.html' %}

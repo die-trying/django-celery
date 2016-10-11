@@ -3,7 +3,8 @@ from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
-from django.views.generic import TemplateView
+
+from acc.views import Homepage
 
 """
 URL of every app should be namespaced with the prefix of the app name,
@@ -11,9 +12,9 @@ in example namespace for buy_single url in the market app is market:buy_single,
 and for starting social auth — app:social:begin.
 """
 
-urlpatterns = [
-    url(name='home', regex=r'^$', view=login_required(TemplateView.as_view(template_name='acc/index.html'))),
 
+urlpatterns = [
+    url(name='home', regex=r'^$', view=login_required(Homepage.as_view())),
     url(r'^accounts/', include('acc.urls', namespace='acc')),
     url(r'^crm/', include('crm.urls', namespace='crm')),
     url(r'^market/', include('market.urls', namespace='market')),
