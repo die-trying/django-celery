@@ -49,7 +49,6 @@ def create_customer(user=None, **kwargs):
         user = create_user(**kwargs)
     else:
         kwargs['timezone'] = kwargs.get('timezone', 'Europe/Moscow')  # the timezone value here deffers from default one in settings.py for early timezone error detection
-        kwargs['country'] = kwargs.get('country', 'RU')
         mixer.blend('crm.customer', user=user, **kwargs)
 
     return user.crm
