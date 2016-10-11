@@ -8,6 +8,13 @@
         p, ul
             font-size: 16px
 
+    &__footnote
+        text-align: center
+        margin-top: 10px
+        >p
+            relative: left -40px
+            font-size: 12px
+
 .subscription-brief
     border-collapse: separate
     border-spacing: 0 10px
@@ -36,6 +43,7 @@
     &__payment
         relative: left 5px
 
+
 .subscription-faces
     margin-top: 20px
     margin-bottom: 25px
@@ -54,3 +62,22 @@
 
     &__teacher + &__teacher
         margin-left: 50px
+
+@media (max-width: 767px)
+    .subscription
+        &__footnote
+            display: none
+
+    .subscription-brief
+        padding-left: 15%
+        &__lessons
+            min-height: unset
+
+        & + &
+            margin-top: 80px
+
+    .subscription-faces
+        text-align: center
+        &__teacher + &__teacher
+            margin-left: unset
+            margin-top: 40px
