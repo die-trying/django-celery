@@ -1,6 +1,9 @@
 from datetime import timedelta
 
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django_countries.fields import CountryField
 from djmoney.models.fields import MoneyField
 
 from lessons.models import HappyHour, LessonWithNative, MasterClass, OrdinaryLesson, PairedLesson
@@ -99,3 +102,58 @@ class SimpleSubscription(ProductWithLessons):
     class Meta:
         verbose_name = "Subscription type: beginners subscription"
         verbose_name_plural = "Beginner subscriptions"
+
+
+class TierManager(models.Manager):
+    def get_for_product(self, product, country):
+        """
+        Get payment tier for product and country. If country is not found, returns a default tier
+        """
+        normal_tier = self.get_queryset().filter(
+            product_id=product.pk,
+            product_type=ContentType.objects.get_for_model(product),
+            country=country,
+        )
+        if normal_tier.count():
+            return normal_tier.first()
+
+        default_tier = self.get_queryset().filter(
+            product_id=product.pk,
+            product_type=ContentType.objects.get_for_model(product),
+            is_default=True,
+        )
+        return default_tier.first()
+
+
+class Tier(models.Model):
+    """
+    Product tier is a product price for single country.
+
+    Currently single tier for multiple countries is not supported because
+    django country field does not support m2m.
+
+    You should create a default tier for every product, which objects.get_for_product()
+    will return when it can't find a country.
+    """
+    objects = TierManager()
+
+    country = CountryField(null=True)
+    is_default = models.BooleanField(default=False)
+
+    product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'products'})
+    product_id = models.PositiveIntegerField(default=1)
+    product = GenericForeignKey('product_type', 'product_id')
+
+    cost = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
+
+    paypal_button_id = models.CharField(max_length=128)
+
+    def __str__(self):
+        product_type = str(self.product_type).replace('Subscription type: ', '')
+        if self.is_default:
+            return 'Default tier for %s' % product_type
+        else:
+            return 'Tier for %s in %s' % (product_type, self.country.name)
+
+    class Meta:
+        unique_together = ('country', 'product_id', 'product_type', 'is_default')
