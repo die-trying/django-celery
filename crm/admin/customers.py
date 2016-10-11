@@ -1,9 +1,11 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from django.utils.translation import ugettext as _
 
 from crm.models import Customer, CustomerNote
 from elk.admin import ModelAdmin, StackedInline
 from elk.admin.filters import BooleanFilter
+from elk.templatetags.skype import skype_chat
 from market.admin.components import ClassesLeftInline, ClassesPassedInline, SubscriptionsInline
 
 
@@ -65,7 +67,7 @@ class ExistingCustomerAdmin(ModelAdmin):
     """
     The admin module for manager current customers without managing users
     """
-    list_display = ('full_name', 'country', 'Languages', 'curator', 'classes', 'subscriptions', 'date_arrived')
+    list_display = ('full_name', 'country', 'Languages', 'curator', 'classes', 'subscriptions', '_skype', 'date_arrived')
     list_filter = (
         CountryFilter,
         ('curator', admin.RelatedOnlyFieldListFilter),
@@ -92,6 +94,17 @@ class ExistingCustomerAdmin(ModelAdmin):
             'fields': ('phone', 'skype', 'facebook', 'instagram', 'twitter', 'linkedin')
         }),
     )
+
+    def get_queryset(self, request):
+        """
+        Hide teacher profiles from the grid, show only when teacher card requested
+        """
+        queryset = super().get_queryset(request)
+
+        if request.resolver_match is not None and request.resolver_match.url_name == 'crm_customer_change':
+            return queryset
+
+        return queryset.filter(user__teacher_data__isnull=True)
 
     def Languages(self, instance):
         if not instance.languages.count():
@@ -137,6 +150,14 @@ class ExistingCustomerAdmin(ModelAdmin):
 
     def email(self, instance):
         return self._email(instance.email)
+
+    def _skype(self, instance):
+        if instance.skype:
+            return format_html(skype_chat(instance))
+        else:
+            return '—'
+
+    _skype.admin_order_field = 'skype'
 
     def arrived(self, instance):
         return self._datetime(instance.date_arrived) + ', ' + instance.source
