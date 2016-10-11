@@ -11,7 +11,10 @@ class Homepage(TemplateView):
         product1 = Product1.objects.get(pk=1)
         simple_subscription = SimpleSubscription.objects.get(pk=1)
 
-        print(product1.get_tier(country=self.request.user.crm.country).name)
+        country = self.request.user.crm.country
+        if country is None:
+            country = 'UG'  # for users without contry return Uganda, for seeing default Tiers
+
         return {
             'product1': product1,
             'product1_tier': product1.get_tier(country=self.request.user.crm.country),
