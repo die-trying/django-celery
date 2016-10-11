@@ -52,7 +52,6 @@ def create_customer(user=None, **kwargs):
         kwargs['country'] = kwargs.get('country', 'RU')
         mixer.blend('crm.customer', user=user, **kwargs)
 
-    print(user.crm.country)
     return user.crm
 
 

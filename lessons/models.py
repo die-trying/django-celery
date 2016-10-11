@@ -211,8 +211,8 @@ class TrialLesson(Lesson):
 
 
 class LessonWithNative(Lesson):
-    _long_name = _('Paired lesson with native speaker')
-    _long_name_plural = _('Paired lessons with native speaker')
+    _long_name = _('Face-to-face lesson with native speaker')
+    _long_name_plural = _('Face-to-face lessons with native speaker')
 
     @classmethod
     def sort_order(cls):
@@ -249,8 +249,8 @@ class HappyHour(HostedLesson):
 
 
 class PairedLesson(HostedLesson):
-    _long_name = _('Paired lesson with native speaker')
-    _long_name_plural = _('Paired lessons with native speaker')
+    _long_name = _('Paired lesson with native speaker')
+    _long_name_plural = _('Paired lessons with native speaker')
 
     @classmethod
     def sort_order(cls):
