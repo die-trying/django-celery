@@ -110,6 +110,7 @@ class EntryTestCase(TestCase):
             entry = mixer.blend(TimelineEntry, teacher=self.teacher2, lesson=lesson)
             entry.save()
 
+    @freeze_time('2005-05-03 12:41')
     def test_entry_in_past(self):
         lesson = mixer.blend(lessons.MasterClass, host=self.teacher1)
         entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson)
