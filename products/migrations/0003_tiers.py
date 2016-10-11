@@ -27,6 +27,7 @@ class Migration(migrations.Migration):
                 ('paypal_button_id', models.CharField(max_length=128)),
                 ('cost', djmoney.models.fields.MoneyField(max_digits=10, default_currency='USD', decimal_places=2, default=Decimal('0.0'))),
                 ('product_type', models.ForeignKey(to='contenttypes.ContentType')),
+                ('name', models.CharField(default='', max_length=140, verbose_name='Tier name')),
             ],
         ),
         migrations.AlterUniqueTogether(

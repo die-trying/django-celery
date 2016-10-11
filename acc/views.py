@@ -8,14 +8,18 @@ class Homepage(TemplateView):
     template_name = 'acc/index.html'
 
     def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
+        product1 = Product1.objects.get(pk=1)
+        simple_subscription = SimpleSubscription.objects.get(pk=1)
 
-        ctx['product1'] = Product1.objects.get(pk=1)
-        ctx['simple_subscription'] = SimpleSubscription.objects.get(pk=1)
+        print(product1.get_tier(country=self.request.user.crm.country).name)
+        return {
+            'product1': product1,
+            'product1_tier': product1.get_tier(country=self.request.user.crm.country),
+            'simple_subscription': simple_subscription,
+            'simple_subscription_tier': simple_subscription.get_tier(country=self.request.user.crm.country),
 
-        ctx['faces'] = self._teacher_faces('Fedor', 'Amanda', 'Andrew')
-
-        return ctx
+            'faces': self._teacher_faces('Fedor', 'Amanda', 'Andrew'),
+        }
 
     def _teacher_faces(self, *faces):
         """

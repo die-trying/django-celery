@@ -43,3 +43,10 @@ class TestTier(TestCase):
         found = Tier.objects.get_for_product(self.product1, country='RU')
 
         self.assertIsNone(found)
+
+    def test_get_tier_by_product(self):
+        tier = mixer.blend(Tier, product=self.product1, country='RU', cost=221)
+
+        found = self.product1.get_tier('RU')
+
+        self.assertEqual(found, tier)

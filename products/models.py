@@ -26,6 +26,12 @@ class Product(models.Model):
     def __str__(self):
         return self.internal_name
 
+    def get_tier(self, country):
+        """
+        Get pricing tier for distinct country
+        """
+        return Tier.objects.get_for_product(self, country)
+
     class Meta:
         abstract = True
 
@@ -139,6 +145,7 @@ class Tier(models.Model):
 
     country = CountryField(null=True)
     is_default = models.BooleanField(default=False)
+    name = models.CharField('Tier name', max_length=140)
 
     product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'products'})
     product_id = models.PositiveIntegerField(default=1)
