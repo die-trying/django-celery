@@ -19,6 +19,9 @@ class AccountingEventAdmin(ModelAdmin):
     def has_add_permission(self, *args):
         return False
 
+    def has_delete_permission(self, *args):
+        return False
+
     def time(self, instance):
         return self._datetime(instance.originator_time)
 
