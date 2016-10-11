@@ -113,7 +113,7 @@ class EntryTestCase(TestCase):
     def test_entry_in_past(self):
         lesson = mixer.blend(lessons.MasterClass, host=self.teacher1)
         entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson)
-        entry.start = self.tzdatetime(2016, 1, 2, 3, 0)
+        entry.start = self.tzdatetime(2002, 1, 2, 3, 0)
         self.assertTrue(entry.is_in_past())
 
         entry.start = self.tzdatetime(2032, 12, 1)
