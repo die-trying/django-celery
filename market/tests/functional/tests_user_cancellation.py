@@ -1,4 +1,3 @@
-from datetime import datetime
 from unittest.mock import MagicMock
 
 from django.http import Http404
@@ -24,7 +23,9 @@ class UserCancellationTestCase(ClientTestCase):
         c.save()
         return c
 
-    def _schedule(self, c, date=datetime(2032, 12, 1, 11, 30)):  # By default it will fail in 16 years, sorry
+    def _schedule(self, c, date=None):
+        if date is None:
+            date = self.tzdatetime(2032, 12, 1, 11, 30)
         c.schedule(
             teacher=self.teacher,
             date=date,

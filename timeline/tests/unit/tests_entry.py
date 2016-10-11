@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from freezegun import freeze_time
 from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_customer, create_teacher
@@ -12,6 +13,7 @@ from market.models import Class
 from timeline.models import Entry as TimelineEntry
 
 
+@freeze_time('2005-05-03 12:41')
 class EntryTestCase(TestCase):
     fixtures = ('crm',)
 
@@ -28,7 +30,7 @@ class EntryTestCase(TestCase):
 
     def test_entry_naming_with_student(self):
         lesson = mixer.blend(lessons.OrdinaryLesson, name='Test_Lesson_Name')
-        entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson)
+        entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson, start=self.tzdatetime(2016, 2, 5, 3, 0))
         customer = create_customer()
         c = Class(
             customer=customer,
@@ -111,10 +113,10 @@ class EntryTestCase(TestCase):
     def test_entry_in_past(self):
         lesson = mixer.blend(lessons.MasterClass, host=self.teacher1)
         entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson)
-        entry.start = timezone.make_aware(datetime(1995, 12, 1))
+        entry.start = self.tzdatetime(2016, 1, 2, 3, 0)
         self.assertTrue(entry.is_in_past())
 
-        entry.start = timezone.make_aware(datetime(2032, 12, 1))  # will fail in 16 years, sorry
+        entry.start = self.tzdatetime(2032, 12, 1)
         entry.end = entry.start + timedelta(minutes=30)
         self.assertFalse(entry.is_in_past())
 

@@ -1,16 +1,25 @@
 $.fn.numonly = () ->
-  $(this).on 'keydown', (e) ->
-    if $.inArray(e.keyCode, [46, 8, 9, 27, 13, 110, 190]) > 0
+
+  blink = ($el) ->  # blink with error
+    $group = $el.parents('.control-group.form-row')
+    $group.addClass 'error'
+    window.setTimeout () ->
+      $group.removeClass 'error'
+    , 100
+
+  $(this).on 'keypress', (e) ->
+    if $.inArray(e.keyCode, [46, 8, 9, 27, 13, 110]) > 0
       return
 
-    if e.keyCode is 65 and (e.ctrlKey or e.metaKey)
+    if not e.key?
+      return
+    if e.key.match /Shift|Control|Alt|Meta/
       return
 
-    if e.keyCode >= 48 and e.keyCode <= 57
+    if e.key.match /^\d|\:$/
       return
 
-    if e.keyCode is 186  # allow ':'
-      return
+    blink $ this
 
     e.preventDefault()
 

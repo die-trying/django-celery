@@ -13,6 +13,7 @@ $.fn.applyTimepicker = () ->
 $.fn.applyDatePicker = () ->
   $(this).datepicker
     autoclose: true,
+    startDate: Date(),
     todayBtn: 'linked',
     todayHighlight: true
 

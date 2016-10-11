@@ -1,7 +1,6 @@
-from datetime import datetime
-
 from django.core import mail
 from django.test import override_settings
+from freezegun import freeze_time
 from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_customer, create_teacher
@@ -12,6 +11,7 @@ from products import models as products
 from timeline.models import Entry as TimelineEntry
 
 
+@freeze_time('2005-12-01 01:30')
 class ScheduleTestCase(TestCase):
     fixtures = ('crm', 'lessons')
 
@@ -59,15 +59,15 @@ class ScheduleTestCase(TestCase):
         c = self._buy_a_lesson(lesson)
         c.schedule(
             teacher=self.host,
-            date=datetime(2016, 8, 17, 10, 1),
+            date=self.tzdatetime(2016, 8, 17, 10, 1),
             allow_besides_working_hours=True,
         )
         c.save()
 
         self.assertIsInstance(c.timeline, TimelineEntry)
         self.assertEquals(c.timeline.classes.first().customer, self.customer)  # should save a customer
-        self.assertEquals(c.timeline.start, datetime(2016, 8, 17, 10, 1))  # datetime for entry start should be from parameters
-        self.assertEquals(c.timeline.end, datetime(2016, 8, 17, 10, 1) + lesson.duration)  # duration should be taken from lesson
+        self.assertEquals(c.timeline.start, self.tzdatetime(2016, 8, 17, 10, 1))  # datetime for entry start should be from parameters
+        self.assertEquals(c.timeline.end, self.tzdatetime(2016, 8, 17, 10, 1) + lesson.duration)  # duration should be taken from lesson
 
     def test_schedule_existsing_entry(self):
         """
@@ -76,7 +76,7 @@ class ScheduleTestCase(TestCase):
         """
         lesson = products.OrdinaryLesson.get_default()
         c = self._buy_a_lesson(lesson)
-        date = datetime(2016, 8, 17, 10, 1)
+        date = self.tzdatetime(2016, 8, 17, 10, 1)
         entry = TimelineEntry(
             teacher=self.host,
             start=date,
@@ -85,7 +85,7 @@ class ScheduleTestCase(TestCase):
         entry.save()
         c.schedule(
             teacher=self.host,
-            date=datetime(2016, 8, 17, 10, 1),
+            date=self.tzdatetime(2016, 8, 17, 10, 1),
             allow_besides_working_hours=True,
         )
         c.save()
@@ -97,7 +97,7 @@ class ScheduleTestCase(TestCase):
         c = self._buy_a_lesson(lesson)
         c.schedule(
             teacher=self.host,
-            date=datetime(2016, 8, 17, 10, 1),
+            date=self.tzdatetime(2016, 8, 17, 10, 1),
             allow_besides_working_hours=True,
         )
         c.save()
@@ -117,7 +117,7 @@ class ScheduleTestCase(TestCase):
         with self.assertRaisesRegexp(CannotBeScheduled, 'timeline entry$'):
             c.schedule(
                 teacher=self.host,
-                date=datetime(2016, 8, 17, 10, 1)
+                date=self.tzdatetime(2016, 8, 17, 10, 1)
             )
 
     def test_schedule_master_class(self):
