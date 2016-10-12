@@ -97,6 +97,6 @@ def cancel(request, class_id):
     if not c.can_be_unscheduled():
         return JsonResponse({'result': False}, safe=False)
 
-    c.unschedule(src='customer')
+    c.cancel(src='customer')
     c.save()
     return JsonResponse({'result': True}, safe=False)

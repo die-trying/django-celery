@@ -426,7 +426,7 @@ class Class(BuyableProduct):
         throught django-admin. For more details see model description and :model:`market.BuyableProduct`
         """
         if self.is_scheduled:
-            self.unschedule()
+            self.cancel()
             self.save()
         else:
             super().delete()
@@ -478,7 +478,7 @@ class Class(BuyableProduct):
                 allow_overlap=allow_overlap,
             )
 
-    def unschedule(self, src='teacher', request=None):
+    def cancel(self, src='teacher', request=None):
         """
         Unschedule previously scheduled lesson
         """

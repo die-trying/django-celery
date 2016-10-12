@@ -218,7 +218,7 @@ class Entry(models.Model):
         sets it free — user can plan a new lesson on it.
         """
         for c in self.classes.all():
-            c.unschedule()
+            c.cancel()
             c.save()
 
         for event in AccEvent.objects.by_originator(self):

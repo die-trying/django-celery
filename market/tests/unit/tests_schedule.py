@@ -72,12 +72,12 @@ class TestScheduleLowLevel(TestCase):
         c.assign_entry(entry)
         c.save()
 
-        unschedule = MagicMock(return_value=True)
-        c.unschedule = unschedule
+        fake_cancel_method = MagicMock(return_value=True)
+        c.cancel = fake_cancel_method
         c.delete()
 
         c.refresh_from_db()
-        unschedule.assert_any_call()
+        self.assertEqual(fake_cancel_method.call_count, 1)
 
     def test_deletion_of_an_unscheduled_class(self):
         """
@@ -106,7 +106,7 @@ class TestScheduleLowLevel(TestCase):
         )
         c.save()
         self.assertEqual(self.customer.cancellation_streak, 0)
-        c.unschedule(src='customer')
+        c.cancel(src='customer')
         self.customer.refresh_from_db()
         self.assertEqual(self.customer.cancellation_streak, 1)
 
@@ -122,6 +122,6 @@ class TestScheduleLowLevel(TestCase):
         )
         c.save()
         self.assertEqual(self.customer.cancellation_streak, 0)
-        c.unschedule(src='teacher')
+        c.cancel(src='teacher')
         self.customer.refresh_from_db()
         self.assertEqual(self.customer.cancellation_streak, 0)

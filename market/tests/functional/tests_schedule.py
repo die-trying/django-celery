@@ -46,7 +46,7 @@ class ScheduleTestCase(TestCase):
         self.assertFalse(entry.is_free)
         self.assertEquals(entry.classes.first().customer, self.customer)
 
-        purchased_class.unschedule()
+        purchased_class.cancel()
         purchased_class.save()
         self.assertFalse(purchased_class.is_scheduled)
         self.assertTrue(entry.is_free)
@@ -143,7 +143,7 @@ class ScheduleTestCase(TestCase):
         self.assertTrue(purchased_class.is_scheduled)
         self.assertEqual(timeline_entry.taken_slots, 1)
 
-        purchased_class.unschedule()
+        purchased_class.cancel()
         self.assertEqual(timeline_entry.taken_slots, 0)
 
     def test_schedule_2_people_to_a_paired_lesson(self):
@@ -176,7 +176,7 @@ class ScheduleTestCase(TestCase):
         self.assertTrue(customer2_class.is_scheduled)
         self.assertEqual(timeline_entry.taken_slots, 2)
 
-        customer2_class.unschedule()
+        customer2_class.cancel()
         self.assertEqual(timeline_entry.taken_slots, 1)
 
     def test_schedule_lesson_of_a_wrong_type(self):

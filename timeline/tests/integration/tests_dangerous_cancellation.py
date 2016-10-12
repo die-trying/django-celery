@@ -102,6 +102,6 @@ class TestDangerousUnschedule(ClassIntegrationTestCase):
         self._schedule(c1, entry)
 
         with freeze_time('2032-09-15 15:00'):  # now entry is in past
-            c.unschedule()
+            c.cancel()
             entry.refresh_from_db()
             self.assertEqual(entry.taken_slots, 1)
