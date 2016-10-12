@@ -60,3 +60,11 @@ class TestClassSignals(TestCase):
             c.save()
 
         self.assertEqual(handler.call_count, 1)  # signal should be saved only once
+
+    def test_cancellation_signal(self):
+        c = self._buy_a_lesson()
+        self._schedule(c)
+        handler = MagicMock()
+        signals.class_cancelled.connect(handler)
+        c.cancel()
+        self.assertEqual(handler.call_count, 1)

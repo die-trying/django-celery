@@ -11,7 +11,7 @@ from djmoney.models.fields import MoneyField
 from crm.models import Customer
 from elk.logging import logger
 from market.exceptions import CannotBeScheduled
-from market.signals import class_scheduled
+from market.signals import class_cancelled, class_scheduled
 from teachers.models import PLANNING_DELTA
 from timeline.models import Entry as TimelineEntry
 
@@ -486,6 +486,8 @@ class Class(BuyableProduct):
         if src == 'customer':
             self.customer.cancellation_streak += 1
             self.customer.save()
+
+        class_cancelled.send(sender=self.__class__, instance=self, src=src)
 
         entry = self.timeline
         entry.classes.remove(self, bulk=True)  # expcitly disable running of self.save()

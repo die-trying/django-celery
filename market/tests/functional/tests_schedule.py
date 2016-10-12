@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 from django.core import mail
 from django.test import override_settings
 from freezegun import freeze_time
@@ -100,12 +102,36 @@ class ScheduleTestCase(TestCase):
             date=self.tzdatetime(2016, 8, 17, 10, 1),
             allow_besides_working_hours=True,
         )
+
         c.save()
 
         self.assertEqual(len(mail.outbox), 2)  # 1 email for the teacher and 1 email for the student
-        self.assertEqual(mail.outbox[0].to[0], self.customer.user.email)
-        self.assertIn(self.customer.user.email, mail.outbox[0].to)
-        self.assertIn(self.host.user.email, mail.outbox[1].to)
+        out_emails = [outbox.to[0] for outbox in mail.outbox]
+
+        self.assertIn(self.host.user.email, out_emails)
+        self.assertIn(self.customer.user.email, out_emails)
+
+    @override_settings(EMAIL_ASYNC=False)
+    def test_cancellation_email(self):
+        lesson = products.OrdinaryLesson.get_default()
+        c = self._buy_a_lesson(lesson)
+        with patch('market.models.class_scheduled') as scheduled_signal:
+            scheduled_signal.send = MagicMock()
+            c.schedule(
+                teacher=self.host,
+                date=self.tzdatetime(2016, 8, 17, 10, 1),
+                allow_besides_working_hours=True,
+            )
+            c.save()
+        self.assertEqual(len(mail.outbox), 0)
+
+        c.cancel()
+
+        self.assertEqual(len(mail.outbox), 2)  # 1 message for the teacher and 1 message for the student
+        out_emails = [outbox.to[0] for outbox in mail.outbox]
+
+        self.assertIn(self.host.user.email, out_emails)
+        self.assertIn(self.customer.user.email, out_emails)
 
     def test_cant_automatically_schedule_lesson_that_requires_a_timeline_entry(self):
         """
