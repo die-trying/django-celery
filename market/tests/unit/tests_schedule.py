@@ -1,6 +1,7 @@
 from datetime import datetime
 from unittest.mock import MagicMock
 
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from freezegun import freeze_time
 from mixer.backend.django import mixer
@@ -125,3 +126,43 @@ class TestScheduleLowLevel(TestCase):
         c.cancel(src='teacher')
         self.customer.refresh_from_db()
         self.assertEqual(self.customer.cancellation_streak, 0)
+
+    def test_cant_cancel_past_classes(self):
+        c = self._buy_a_lesson()
+        c.schedule(
+            teacher=self.teacher,
+            date=self.tzdatetime('UTC', 2016, 8, 17, 10, 1),
+            allow_besides_working_hours=True,
+        )
+        c.save()
+
+        with freeze_time('2016-08-17 15:00'):
+            with self.assertRaises(ValidationError):
+                c.cancel()
+
+    def test_customers_cant_cancel_classes_right_after_they_started(self):
+        c = self._buy_a_lesson()
+        c.schedule(
+            teacher=self.teacher,
+            date=self.tzdatetime('UTC', 2016, 8, 17, 10, 1),
+            allow_besides_working_hours=True,
+        )
+        c.save()
+
+        with freeze_time('2016-08-17 10:02'):
+            with self.assertRaises(ValidationError):
+                c.cancel(src='customer')
+
+    def test_dangrours_cancellation_does_not_throw_exception(self):
+        c = self._buy_a_lesson()
+        c.schedule(
+            teacher=self.teacher,
+            date=self.tzdatetime('UTC', 2016, 8, 17, 10, 1),
+            allow_besides_working_hours=True,
+        )
+        c.save()
+
+        with freeze_time('2016-08-17 10:02'):
+            c.cancel(src='dangerous-cancellation')
+            c.refresh_from_db()
+            self.assertFalse(c.is_scheduled)  # class should be cancelled now

@@ -34,7 +34,7 @@ class TestDangerousUnschedule(ClassIntegrationTestCase):
             ev = AccEvent.objects.by_originator(entry).first()
             self.assertIsNotNone(ev)
 
-            entry.delete()
+            entry.delete(src='dangerous-cancellation')
             with self.assertRaises(ObjectDoesNotExist):
                 ev.refresh_from_db()  # the accounting event should be dropped while unscheduling the last class
 
@@ -66,7 +66,7 @@ class TestDangerousUnschedule(ClassIntegrationTestCase):
             ev = AccEvent.objects.by_originator(entry).first()
             self.assertIsNotNone(ev)
 
-            entry.delete()
+            entry.delete(src='dangerous-cancellation')
 
             with self.assertRaises(ObjectDoesNotExist):
                 ev.refresh_from_db()  # the accounting event should be dropped while unscheduling the last class
@@ -102,6 +102,6 @@ class TestDangerousUnschedule(ClassIntegrationTestCase):
         self._schedule(c1, entry)
 
         with freeze_time('2032-09-15 15:00'):  # now entry is in past
-            c.cancel()
+            c.cancel(src='dangerous-cancellation')
             entry.refresh_from_db()
             self.assertEqual(entry.taken_slots, 1)

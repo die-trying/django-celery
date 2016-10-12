@@ -482,10 +482,14 @@ class Class(BuyableProduct):
         """
         Unschedule previously scheduled lesson
         """
-
         if src == 'customer':
+            if self.timeline.start < timezone.now():
+                raise ValidationError('Past classes cannot be cancelled')
             self.customer.cancellation_streak += 1
             self.customer.save()
+
+        if src != 'dangerous-cancellation' and (self.timeline.start + MARK_CLASSES_AS_USED_AFTER) < timezone.now():  # teachers can cancel classes even after they started
+            raise ValidationError('Past classes cannot be cancelled')
 
         class_cancelled.send(sender=self.__class__, instance=self, src=src)
 
