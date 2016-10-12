@@ -33,9 +33,7 @@ class TestClassIntegration(ClassIntegrationTestCase):
 
         now.return_value = self.tzdatetime(2032, 9, 13, 15, 0)
 
-        with patch('timeline.models.Entry.clean') as clean:
-            clean.return_value = True
-            bill_timeline_entries()
+        bill_timeline_entries()
 
         with self.assertRaises(ObjectDoesNotExist):
             entry.refresh_from_db()

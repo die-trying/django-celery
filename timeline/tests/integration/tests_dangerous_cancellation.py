@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 from django.core.exceptions import ObjectDoesNotExist
 from freezegun import freeze_time
 from mixer.backend.django import mixer
@@ -11,8 +9,7 @@ from lessons import models as lessons
 
 
 class TestDangerousUnschedule(ClassIntegrationTestCase):
-    @patch('timeline.models.Entry.clean')
-    def test_accounting_single_record_removal(self, clean):
+    def test_accounting_single_record_removal(self):
         """
         1. Buy a class
         2. Schedule it
@@ -21,7 +18,6 @@ class TestDangerousUnschedule(ClassIntegrationTestCase):
         5. Dangerously_cancel() it
         6. Check if account record has gone
         """
-        clean.return_value = True
 
         entry = self._create_entry()
         c = self._buy_a_lesson()
