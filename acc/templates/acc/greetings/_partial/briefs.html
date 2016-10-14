@@ -15,7 +15,7 @@
             {% endfor %}
         </div>
         <div class="subscription-brief__payment">
-            {% buy_now product1_tier.paypal_button_id %}
+            {% include 'payments/stripe.html' %}
         </div>
     </div>
     <div class="col-md-3 subscription-brief subscription-brief-beginners">
@@ -31,7 +31,7 @@
             {% endfor %}
         </div>
         <div class="subscription-brief__payment">
-            {% buy_now simple_subscription_tier.paypal_button_id %}
+            {% include 'payments/stripe.html' %}
         </div>
     </div>
 </section>

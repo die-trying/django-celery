@@ -1,0 +1,12 @@
+<form action = "{% url 'payments:process' %}" method = "POST">
+    {% csrf_token %}
+    <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+        data-key="***REMOVED***"
+        data-email="{{request.user.email}}"
+        data-amount="999"
+        data-name="ELK Today LLC"
+        data-description="Widget"
+        data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
+        data-locale="auto">
+    </script>
+</form>

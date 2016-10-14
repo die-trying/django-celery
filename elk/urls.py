@@ -22,6 +22,7 @@ urlpatterns = [
     url(r'^timeline/', include('timeline.urls', namespace='timeline')),
     url(r'^lessons/', include('lessons.urls', namespace='lessons')),
     url(r'^teachers/', include('teachers.urls', namespace='teachers')),
+    url(r'^payments/', include('payments.urls', namespace='payments')),
 
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', include(admin.site.urls)),
