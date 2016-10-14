@@ -29,7 +29,7 @@ class TestGreetingType(TestCase):
 
     def test_greeting_trial_not_scheduled(self):
         self.customer.classes.create(
-            lesson=self.trial_lesson
+            lesson_type=self.trial_lesson.get_contenttype(),
         )
         self.assertEqual(self.customer.get_greeting_type(), 'trial')
 
@@ -38,13 +38,13 @@ class TestGreetingType(TestCase):
         trial_lesson_is_scheduled.return_value = True
 
         self.customer.classes.create(
-            lesson=self.trial_lesson,
+            lesson_type=self.trial_lesson.get_contenttype(),
         )
         self.assertEqual(self.customer.get_greeting_type(), 'trial-scheduled')
 
     def test_greeting_trial_used(self):
         self.customer.classes.create(
-            lesson=self.trial_lesson,
+            lesson_type=self.trial_lesson.get_contenttype(),
         )
         self.customer.classes.update(is_fully_used=True)
 
@@ -65,7 +65,7 @@ class TestGreetingType(TestCase):
 
     def test_no_subscription(self):
         self.customer.classes.create(
-            lesson=self.ordinary_lesson
+            lesson_type=self.ordinary_lesson.get_contenttype(),
         )
         self.assertEqual(self.customer.get_greeting_type(), 'no-subscription')
 
@@ -74,7 +74,7 @@ class TestGreetingType(TestCase):
         Assign a trial lesson and buy a subscription without finising it.
         """
         self.customer.classes.create(
-            lesson=self.trial_lesson,
+            lesson_type=self.trial_lesson.get_contenttype(),
         )
         self.customer.subscriptions.create(
             product=Product1.objects.get(pk=1),

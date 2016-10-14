@@ -25,11 +25,11 @@ class testBuyable(TestCase):
         lesson = products.OrdinaryLesson.get_default()
         c = Class(
             customer=self.customer,
-            lesson=lesson
+            lesson_type=lesson.get_contenttype()
         )
         c.save()
 
-        self.assertEqual(c.name_for_user, lesson.name)
+        self.assertEqual(str(c.name_for_user), str(lesson.type_verbose_name))
 
     def test_no_deletion(self):
         """

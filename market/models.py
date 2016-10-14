@@ -122,7 +122,7 @@ class Subscription(BuyableProduct):
         for lesson_type in self.product.lesson_types():
             for lesson in self.product.classes_by_lesson_type(lesson_type):
                 c = Class(
-                    lesson=lesson,
+                    lesson_type=lesson.get_contenttype(),
                     subscription=self,
                     customer=self.customer,
                     buy_price=self.buy_price,
@@ -304,8 +304,6 @@ class Class(BuyableProduct):
     buy_source = models.CharField(max_length=12, default='single')
 
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
-    lesson_id = models.PositiveIntegerField()
-    lesson = GenericForeignKey('lesson_type', 'lesson_id')
 
     timeline = models.ForeignKey(TimelineEntry, null=True, blank=True, on_delete=models.SET_NULL, related_name='classes')
 
@@ -320,7 +318,7 @@ class Class(BuyableProduct):
 
     @property
     def name_for_user(self):
-        return self.lesson.name
+        return self.lesson_type.model_class()._meta.verbose_name.lower()
 
     @property
     def finish_time(self):
@@ -336,8 +334,6 @@ class Class(BuyableProduct):
         logger.warning('Tried to check finished class without a finished date')
 
     def save(self, *args, **kwargs):
-        self.__set_default_lesson_id_if_required()
-
         if self.timeline is None:
             return self._save_unscheduled(*args, **kwargs)
         return self._save_scheduled(*args, **kwargs)
@@ -410,14 +406,6 @@ class Class(BuyableProduct):
 
         super().save(*args, **kwargs)
 
-    def __set_default_lesson_id_if_required(self):
-        """
-        When saving a class with defined lesson_type and without defined lesson_id
-        we set the default lesson
-        """
-        if self.lesson_type and not self.lesson_id:
-            self.lesson = self.lesson_type.model_class().get_default()
-
     def delete(self):
         """
         This method provides an ability to unschedule a class via deletion.
@@ -432,7 +420,7 @@ class Class(BuyableProduct):
             super().delete()
 
     def __str__(self):
-        s = "{lesson} for {student}".format(lesson=self.lesson.internal_name, student=self.customer)
+        s = "{lesson_type} for {student}".format(lesson_type=self.lesson_type, student=self.customer)
         if self.subscription:
             s += " (%s)" % self.subscription.product
         return s
@@ -451,9 +439,10 @@ class Class(BuyableProduct):
         Method for scheduling a lesson that does not require a timeline entry.
         allow_besides_working_hours should be set to True only when testing.
         """
-        Lesson = type(self.lesson)
+        Lesson = self.lesson_type.model_class()
+
         if Lesson.timeline_entry_required():  # every lesson model should define if it requires a timeline entry or not. For details, see :model:`lessons.Lesson`
-            raise CannotBeScheduled("Lesson '%s' requieres a teachers timeline entry" % self.lesson)
+            raise CannotBeScheduled("Lesson '%s' requieres a teachers timeline entry" % self.lesson_type)
 
         entry = self.__get_entry(**kwargs)
         self.assign_entry(entry)
@@ -466,13 +455,13 @@ class Class(BuyableProduct):
         try:
             return TimelineEntry.objects.get(
                 teacher=teacher,
-                lesson_type=self.lesson.get_contenttype(),
+                lesson_type=self.lesson_type,
                 start=date
             )
         except TimelineEntry.DoesNotExist:
             return TimelineEntry(
                 teacher=teacher,
-                lesson=self.lesson,
+                lesson=self.lesson_type.model_class().get_default(),
                 start=date,
                 allow_besides_working_hours=allow_besides_working_hours,
                 allow_overlap=allow_overlap,

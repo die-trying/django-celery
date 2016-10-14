@@ -1,7 +1,6 @@
 import json
 from datetime import timedelta
 
-from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from freezegun import freeze_time
@@ -20,7 +19,7 @@ class EntryCRUDTest(ClientTestCase):
     def setUp(self):
         self.teacher = create_teacher()
         self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher, duration=timedelta(minutes=33))
-        self.lesson_type = ContentType.objects.get_for_model(lessons.MasterClass).pk
+        self.lesson_type = self.lesson.get_contenttype().pk
 
     def testCRUD(self):
         self._create()

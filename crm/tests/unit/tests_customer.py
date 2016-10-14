@@ -1,5 +1,4 @@
 from django.core.exceptions import ValidationError
-from mixer.backend.django import mixer
 
 from crm.models import Customer
 from elk.utils.testing import TestCase, create_customer
@@ -40,7 +39,7 @@ class CustomerTestCase(TestCase):
 
         self.assertFalse(customer.can_schedule_classes())
         c = Class(
-            lesson=mixer.blend(lessons.OrdinaryLesson, customer=customer),
+            lesson_type=lessons.OrdinaryLesson.get_contenttype(),
             customer=customer
         )
         c.save()

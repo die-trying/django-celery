@@ -61,10 +61,10 @@ class ClassesInlineBase(TabularInline):
 class ClassesLeftInline(ClassesInlineBase):
     verbose_name = 'Purchased lesson'
     verbose_name_plural = 'Purchased lessons left'
-    readonly_fields = ('lesson', 'source', 'buy_time')
+    readonly_fields = ('lesson_type', 'source', 'buy_time')
     fieldsets = (
         (None, {
-            'fields': ('lesson', 'source', 'buy_time')
+            'fields': ('lesson_type', 'source', 'buy_time')
         }),
     )
 

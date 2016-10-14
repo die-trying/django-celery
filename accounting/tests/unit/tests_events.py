@@ -25,7 +25,7 @@ class TestEventOriginatorProperties(TestCase):
             customer = self.customer
         c = Class(
             customer=customer,
-            lesson=self.lesson,
+            lesson_type=self.lesson.get_contenttype(),
         )
         c.save()
         self.assertFalse(c.is_fully_used)
