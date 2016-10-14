@@ -37,6 +37,7 @@ ALLOWED_HOSTS = [
 ABSOLUTE_HOST = 'https://a.elk.today'
 
 SUPPORT_EMAIL = 'help@elk.today'
+REPLY_TO = 'help@elk.today'
 SERVER_EMAIL = 'django@elk.today'
 EMAIL_NOTIFICATIONS_FROM = env('EMAIL_NOTIFICATIONS_FROM')
 

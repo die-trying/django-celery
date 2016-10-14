@@ -11,7 +11,7 @@ from djmoney.models.fields import MoneyField
 from crm.models import Customer
 from elk.logging import logger
 from market.exceptions import CannotBeScheduled
-from market.signals import class_scheduled
+from market.signals import class_cancelled, class_scheduled
 from teachers.models import PLANNING_DELTA
 from timeline.models import Entry as TimelineEntry
 
@@ -426,7 +426,7 @@ class Class(BuyableProduct):
         throught django-admin. For more details see model description and :model:`market.BuyableProduct`
         """
         if self.is_scheduled:
-            self.unschedule()
+            self.cancel()
             self.save()
         else:
             super().delete()
@@ -478,14 +478,20 @@ class Class(BuyableProduct):
                 allow_overlap=allow_overlap,
             )
 
-    def unschedule(self, src='teacher', request=None):
+    def cancel(self, src='teacher', request=None):
         """
         Unschedule previously scheduled lesson
         """
-
         if src == 'customer':
+            if self.timeline.start < timezone.now():
+                raise ValidationError('Past classes cannot be cancelled')
             self.customer.cancellation_streak += 1
             self.customer.save()
+
+        if src != 'dangerous-cancellation' and (self.timeline.start + MARK_CLASSES_AS_USED_AFTER) < timezone.now():  # teachers can cancel classes even after they started
+            raise ValidationError('Past classes cannot be cancelled')
+
+        class_cancelled.send(sender=self.__class__, instance=self, src=src)
 
         entry = self.timeline
         entry.classes.remove(self, bulk=True)  # expcitly disable running of self.save()

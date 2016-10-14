@@ -1,13 +1,14 @@
-from unittest.mock import patch
 
 from django.core.exceptions import ObjectDoesNotExist
+from freezegun import freeze_time
 
 from accounting.models import Event as AccEvent
 from accounting.tasks import bill_timeline_entries
 from elk.utils.testing import ClassIntegrationTestCase
 
 
-class TestClassIntegration(ClassIntegrationTestCase):
+@freeze_time('2032-09-13 20:00')
+class TestAccountingEventIntegration(ClassIntegrationTestCase):
     """
     Big integration test:
         — Buy a lesson
@@ -19,10 +20,8 @@ class TestClassIntegration(ClassIntegrationTestCase):
         — Check if class is marked as used
         — Check if billing event created
     """
-    fixtures = ('lessons',)
 
-    @patch('timeline.models.EntryManager._EntryManager__now')
-    def test_class_marked_as_used(self, now):
+    def test_class_marked_as_used(self):
         c = self._buy_a_lesson()
         entry = self._create_entry()
 
@@ -31,11 +30,7 @@ class TestClassIntegration(ClassIntegrationTestCase):
         c.refresh_from_db()
         self.assertTrue(c.is_scheduled)
 
-        now.return_value = self.tzdatetime(2032, 9, 13, 15, 0)
-
-        with patch('timeline.models.Entry.clean') as clean:
-            clean.return_value = True
-            bill_timeline_entries()
+        bill_timeline_entries()  # run the periodic task by hand
 
         with self.assertRaises(ObjectDoesNotExist):
             entry.refresh_from_db()

@@ -77,6 +77,7 @@ class Owl():
             self.from_email,
             self.to,
             headers=self.headers,
+            reply_to=[settings.REPLY_TO],
         )
         self.msg.render()
 

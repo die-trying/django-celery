@@ -42,15 +42,29 @@ class TestClassSignals(TestCase):
         self.assertTrue(c.is_scheduled)
         return c
 
-    def _test_scheduled_class_signal(self):
+    def test_scheduled_signal(self):
         handler = MagicMock()
         c = self._buy_a_lesson()
         signals.class_scheduled.connect(handler)
         self._schedule(c)
         self.assertEqual(handler.call_count, 1)
-        return [c, handler]
 
     def test_scheduled_class_signal_called_once(self):
-        [c, handler] = self._test_scheduled_class_signal()
-        c.save()  # signal is emited during the save() method, so let's call it one more time
+        handler = MagicMock()
+        c = self._buy_a_lesson()
+        signals.class_scheduled.connect(handler)
+        self._schedule(c)
+        self.assertEqual(handler.call_count, 1)
+
+        for i in range(0, 5):
+            c.save()
+
+        self.assertEqual(handler.call_count, 1)  # signal should be saved only once
+
+    def test_cancellation_signal(self):
+        c = self._buy_a_lesson()
+        self._schedule(c)
+        handler = MagicMock()
+        signals.class_cancelled.connect(handler)
+        c.cancel()
         self.assertEqual(handler.call_count, 1)

@@ -64,7 +64,7 @@ class TestClassManager(TestCase):
         Run without any scheduled class
         """
         c = self._schedule()
-        c.unschedule()
+        c.cancel()
         c.save()
 
         self.assertIsNone(self.customer.classes.nearest_scheduled())  # should not throw anything

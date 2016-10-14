@@ -212,13 +212,13 @@ class Entry(models.Model):
         if self.__self_delete_if_needed() or self.taken_slots == 0:  # if entry should be deleted
             self.dangerously_delete()
 
-    def delete(self):
+    def delete(self, src='teacher'):
         """
         Unschedule all attached classes before deletion. Unscheduling a class
         sets it free — user can plan a new lesson on it.
         """
         for c in self.classes.all():
-            c.unschedule()
+            c.cancel(src)
             c.save()
 
         for event in AccEvent.objects.by_originator(self):

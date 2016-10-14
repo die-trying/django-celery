@@ -1,0 +1,19 @@
+{% extends "mail_templated/base.tpl" %}
+{% load humanize %}
+
+{% block subject %}
+Your {{ c.timeline.lesson.type_verbose_name }} is cancelled :(
+{% endblock %}
+
+{% block body %}
+Dear {{ c.customer.first_name | capfirst }},
+
+{% if src == 'customer' %}You've{% else %}We've{% endif %} cancelled your {{ c.timeline.lesson.type_verbose_name }} with {{ c.timeline.teacher.user.first_name }}
+planned for {{ c.timeline.start | naturalday:'SHORT_DATE_FORMAT'}}, {{ c.timeline.start | time:'TIME_FORMAT'}}.
+
+{% if src != 'customer' %}Sorry for that :({% endif %}
+
+If you have any questions — simply hit reply.
+
+{% include 'mailer/_signature.html' %}
+{% endblock %}

@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 from django.core.exceptions import ObjectDoesNotExist
 from freezegun import freeze_time
 from mixer.backend.django import mixer
@@ -11,8 +9,7 @@ from lessons import models as lessons
 
 
 class TestDangerousUnschedule(ClassIntegrationTestCase):
-    @patch('timeline.models.Entry.clean')
-    def test_accounting_single_record_removal(self, clean):
+    def test_accounting_single_record_removal(self):
         """
         1. Buy a class
         2. Schedule it
@@ -21,7 +18,6 @@ class TestDangerousUnschedule(ClassIntegrationTestCase):
         5. Dangerously_cancel() it
         6. Check if account record has gone
         """
-        clean.return_value = True
 
         entry = self._create_entry()
         c = self._buy_a_lesson()
@@ -34,7 +30,7 @@ class TestDangerousUnschedule(ClassIntegrationTestCase):
             ev = AccEvent.objects.by_originator(entry).first()
             self.assertIsNotNone(ev)
 
-            entry.delete()
+            entry.delete(src='dangerous-cancellation')
             with self.assertRaises(ObjectDoesNotExist):
                 ev.refresh_from_db()  # the accounting event should be dropped while unscheduling the last class
 
@@ -66,7 +62,7 @@ class TestDangerousUnschedule(ClassIntegrationTestCase):
             ev = AccEvent.objects.by_originator(entry).first()
             self.assertIsNotNone(ev)
 
-            entry.delete()
+            entry.delete(src='dangerous-cancellation')
 
             with self.assertRaises(ObjectDoesNotExist):
                 ev.refresh_from_db()  # the accounting event should be dropped while unscheduling the last class
@@ -102,6 +98,6 @@ class TestDangerousUnschedule(ClassIntegrationTestCase):
         self._schedule(c1, entry)
 
         with freeze_time('2032-09-15 15:00'):  # now entry is in past
-            c.unschedule()
+            c.cancel(src='dangerous-cancellation')
             entry.refresh_from_db()
             self.assertEqual(entry.taken_slots, 1)
