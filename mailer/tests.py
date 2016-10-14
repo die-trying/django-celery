@@ -51,6 +51,26 @@ class TestTemplatedMail(TestCase):
         self.assertIn('12.09.1809', m.body)
         self.assertIn('abraham.lincoln', m.body)
 
+    def test_email_from(self):
+        owl = self._owl(from_email='ttt@test.org')
+        owl.send()
+        m = owl.msg
+        self.assertEqual(m.from_email, 'ttt@test.org')
+
+    @override_settings(EMAIL_NOTIFICATIONS_FROM='ttt@test.org')
+    def test_email_from_default(self):
+        owl = self._owl()
+        owl.send()
+        m = owl.msg
+        self.assertEqual(m.from_email, 'ttt@test.org')
+
+    @override_settings(REPLY_TO='reply@to.to')
+    def test_reply_to(self):
+        owl = self._owl()
+        owl.send()
+        m = owl.msg
+        self.assertIn('reply@to.to', m.reply_to)
+
     def test_timezone_str(self):
         """
         Pass a timezone, in which letter should be composed
