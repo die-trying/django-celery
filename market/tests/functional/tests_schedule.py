@@ -24,7 +24,7 @@ class ScheduleTestCase(TestCase):
     def _buy_a_lesson(self, lesson):
         c = Class(
             customer=self.customer,
-            lesson=lesson
+            lesson_type=lesson.get_contenttype(),
         )
         c.save()
         return c
@@ -180,13 +180,13 @@ class ScheduleTestCase(TestCase):
 
         customer1_class = Class(
             customer=customer1,
-            lesson=paired_lesson
+            lesson_type=paired_lesson.get_contenttype(),
         )
         customer1_class.save()
 
         customer2_class = Class(
             customer=customer2,
-            lesson=paired_lesson
+            lesson_type=paired_lesson.get_contenttype(),
         )
         customer2_class.save()
 

@@ -166,7 +166,7 @@ class Customer(models.Model):
         """
         TrialLesson = apps.get_model('lessons.TrialLesson')
         self.classes.create(
-            lesson=TrialLesson.get_default()
+            lesson_type=TrialLesson.get_contenttype()
         )
         trial_lesson_added.send(sender=self)
 
@@ -179,7 +179,7 @@ class Customer(models.Model):
         """
         if self.classes.count() == 1:
             TrialLesson = apps.get_model('lessons.TrialLesson')
-            if isinstance(self.classes.first().lesson, TrialLesson):
+            if self.classes.first().lesson_type == TrialLesson.get_contenttype():
                 if not self.classes.first().is_fully_used:
                     return True
 

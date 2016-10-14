@@ -45,7 +45,7 @@ class ClassAdmin(BuyableModelAdmin):
             'fields': ('customer', 'buy_price', 'lesson_type', 'finish_date', 'teacher')
         }),
     )
-    readonly_fields = ('lesson', 'teacher', 'finish_date')
+    readonly_fields = ('teacher', 'finish_date')
     list_select_related = True
 
     def finish_date(self, instance):

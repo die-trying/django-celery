@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 
-from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 from mixer.backend.django import mixer
@@ -16,7 +15,6 @@ class EntryCardTest(ClientTestCase):
         self.teacher = create_teacher()
         self.customer = create_customer()
         self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher, duration=timedelta(minutes=33), slots=8)
-        self.lesson_type = ContentType.objects.get_for_model(lessons.MasterClass).pk
 
         self.entry = mixer.blend(TimelineEntry,
                                  teacher=self.teacher,
@@ -36,7 +34,7 @@ class EntryCardTest(ClientTestCase):
     def test_template_context(self):
         c = Class(
             customer=self.customer,
-            lesson=self.lesson,
+            lesson_type=self.lesson.get_contenttype(),
         )
         c.assign_entry(self.entry)
         c.save()
@@ -66,13 +64,13 @@ class EntryCardTest(ClientTestCase):
         """
         c1 = Class(
             customer=self.customer,
-            lesson=self.lesson,
+            lesson_type=self.lesson.get_contenttype(),
         )
 
         other_customer = create_customer()
         c2 = Class(
             customer=other_customer,
-            lesson=self.lesson,
+            lesson_type=self.lesson.get_contenttype(),
         )
 
         c1.assign_entry(self.entry)
@@ -102,7 +100,7 @@ class EntryCardTest(ClientTestCase):
     def test_add_student(self):
         c = Class(
             customer=self.customer,
-            lesson=self.lesson,
+            lesson_type=self.lesson.get_contenttype(),
         )
         c.save()
 
@@ -125,7 +123,7 @@ class EntryCardTest(ClientTestCase):
     def test_del_student(self):
         c = Class(
             customer=self.customer,
-            lesson=self.lesson,
+            lesson_type=self.lesson.get_contenttype(),
         )
         c.assign_entry(self.entry)
         c.save()
