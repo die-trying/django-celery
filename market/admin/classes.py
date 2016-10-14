@@ -54,10 +54,10 @@ class ClassAdmin(BuyableModelAdmin):
             return '—'
 
     def teacher(self, instance):
-        timeline = instance.timeline
-        if timeline is not None:
-            return timeline.teacher
-        return 'Unknown (possibly finished by hand)'
+        if not self.available(instance):
+            return instance.timeline.teacher
+        else:
+            return '—'
 
     def get_readonly_fields(self, request, instance=None):
         """
@@ -67,10 +67,11 @@ class ClassAdmin(BuyableModelAdmin):
         """
         readonly_fields = ['finish_date', 'teacher']
 
-        if instance is not None and not self.available(instance):
-            readonly_fields += ['lesson_type']
+        if instance is not None:
+            if not self.available(instance):
+                readonly_fields += ['lesson_type']
 
-        if instance.subscription is not None:
-            readonly_fields += ['customer', 'buy_price']
+            if instance.subscription is not None:
+                readonly_fields += ['customer', 'buy_price']
 
         return readonly_fields
