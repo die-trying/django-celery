@@ -45,7 +45,6 @@ class ClassAdmin(BuyableModelAdmin):
             'fields': ('customer', 'buy_price', 'lesson_type', 'finish_date', 'teacher')
         }),
     )
-    readonly_fields = ('teacher', 'finish_date')
     list_select_related = True
 
     def finish_date(self, instance):
@@ -59,3 +58,19 @@ class ClassAdmin(BuyableModelAdmin):
         if timeline is not None:
             return timeline.teacher
         return 'Unknown (possibly finished by hand)'
+
+    def get_readonly_fields(self, request, instance=None):
+        """
+        Restrict editing:
+            — classes by subscription can't change customer and buy_price
+            — scheduled classes can't change lesson_type
+        """
+        readonly_fields = ['finish_date', 'teacher']
+
+        if instance is not None and not self.available(instance):
+            readonly_fields += ['lesson_type']
+
+        if instance.subscription is not None:
+            readonly_fields += ['customer', 'buy_price']
+
+        return readonly_fields
