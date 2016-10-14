@@ -3,7 +3,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from djmoney.models.fields import MoneyField
 
-from crm.models import Customer
 from market.models import Class
 
 EVENT_SOURCES = (
@@ -88,4 +87,4 @@ class ClassEvent(HistoryEvent):
 
 
 class PaymentEvent(ProductEvent):
-    customer = models.ForeignKey(Customer, related_name='payments')
+    customer = models.ForeignKey('crm.Customer', related_name='payment_events')

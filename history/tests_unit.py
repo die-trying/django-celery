@@ -36,7 +36,7 @@ class TestEvent(TestCase):
         Buy a single lesson and find a respective log entry for it
         """
         customer = create_customer()
-        self.assertEqual(customer.payments.count(), 0)
+        self.assertEqual(customer.payment_events.count(), 0)
 
         c = Class(
             customer=customer,
@@ -47,15 +47,15 @@ class TestEvent(TestCase):
         c.request = mock_request()
         c.save()
 
-        self.assertEqual(customer.payments.count(), 1)
-        self.assertEqual(customer.payments.all()[0].product, c)
+        self.assertEqual(customer.payment_events.count(), 1)
+        self.assertEqual(customer.payment_events.all()[0].product, c)
 
     def test_subscription_log_entry_creation(self):
         """
         Buy a subscription and find a respective log entry for it
         """
         customer = create_customer()
-        self.assertEqual(customer.payments.count(), 0)
+        self.assertEqual(customer.payment_events.count(), 0)
 
         s = Subscription(
             customer=customer,
@@ -65,5 +65,5 @@ class TestEvent(TestCase):
         s.request = mock_request(customer=customer)
         s.save()
 
-        self.assertEqual(customer.payments.count(), 1, 'Check if only one log record appeared: for the subscription, not for classes')
-        self.assertEqual(customer.payments.all()[0].product, s)
+        self.assertEqual(customer.payment_events.count(), 1, 'Check if only one log record appeared: for the subscription, not for classes')
+        self.assertEqual(customer.payment_events.all()[0].product, s)
