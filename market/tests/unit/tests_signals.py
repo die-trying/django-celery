@@ -1,7 +1,5 @@
-from datetime import datetime
 from unittest.mock import MagicMock
 
-from django.utils import timezone
 from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_customer, create_teacher
@@ -17,24 +15,21 @@ class TestClassSignals(TestCase):
     def setUp(self):
         self.customer = create_customer()
         self.teacher = create_teacher()
-        self.lesson = lessons.OrdinaryLesson.get_default()
+        self.lesson = lessons.OrdinaryLesson.get_contenttype()
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
 
     def _buy_a_lesson(self):
         c = Class(
             customer=self.customer,
-            lesson=self.lesson
+            lesson_type=self.lesson
         )
         c.save()
         return c
 
-    def _schedule(self, c, date=datetime(2032, 12, 1, 11, 30)):  # By default it will fail in 16 years, sorry
-        if timezone.is_naive(date):
-            date = timezone.make_aware(date)
-
+    def _schedule(self, c):
         c.schedule(
             teacher=self.teacher,
-            date=date,
+            date=self.tzdatetime(2032, 12, 1, 11, 30),
             allow_besides_working_hours=True,
         )
         c.save()

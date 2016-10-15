@@ -25,7 +25,7 @@ class TestEventOriginatorProperties(TestCase):
             customer = self.customer
         c = Class(
             customer=customer,
-            lesson=self.lesson,
+            lesson_type=self.lesson.get_contenttype(),
         )
         c.save()
         self.assertFalse(c.is_fully_used)
@@ -58,7 +58,7 @@ class TestEventOriginatorProperties(TestCase):
         self.assertTrue(result, "Cant schedule a lesson!")
         hat.c.save()
 
-    def test_originator_timestamp_entries(self):
+    def test_originator_timestamp_entries_class(self):
         ev = AccEvent(
             teacher=self.host,
             originator=self.entry,
@@ -67,6 +67,26 @@ class TestEventOriginatorProperties(TestCase):
         ev.save()
 
         self.assertEqual(ev.originator_time, self.entry.start)
+
+    def test_originator_timestamp_entries_cancellation(self):
+        ev = AccEvent(
+            teacher=self.host,
+            originator=self.c,
+            event_type='customer_inspired_cancellation',
+        )
+        ev.save()
+
+        self.assertEqual(ev.originator_time, ev.timestamp)
+
+    def test_originator_customers_cancellation(self):
+        ev = AccEvent(
+            teacher=self.host,
+            originator=self.c,
+            event_type='customer_inspired_cancellation',
+        )
+        ev.save()
+
+        self.assertEqual(ev.originator_customers, [self.customer])
 
     def test_originator_customers_single(self):
         ev = AccEvent(

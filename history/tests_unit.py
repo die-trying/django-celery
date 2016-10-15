@@ -40,7 +40,7 @@ class TestEvent(TestCase):
 
         c = Class(
             customer=customer,
-            lesson=OrdinaryLesson.get_default(),
+            lesson_type=OrdinaryLesson.get_contenttype(),
             buy_price=10,
             buy_source='single',
         )

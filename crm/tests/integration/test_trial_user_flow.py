@@ -22,7 +22,7 @@ class TestFullTrialUserFlow(ClassIntegrationTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed('acc/_greetings/trial_greeting.html')
 
-        self.lesson = self.customer.classes.first().lesson  # set to schedule a trial lesson
+        self.lesson = self.customer.classes.first().lesson_type.model_class().get_default()  # set to schedule a trial lesson in the parent class
 
         self._schedule(self.customer.classes.first(), self._create_entry())
 

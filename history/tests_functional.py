@@ -28,7 +28,7 @@ class TestEvent(TestCase, AssertHTMLMixin):
     def test_single_lesson(self):
         c = Class(
             customer=self.user.crm,
-            lesson=OrdinaryLesson.get_default(),
+            lesson_type=OrdinaryLesson.get_contenttype(),
             buy_price=150
         )
         c.request = mock_request()
@@ -42,4 +42,4 @@ class TestEvent(TestCase, AssertHTMLMixin):
 
         with self.assertHTML(response, 'table.payments-history>tbody .payments-history__product-column') as purchased_products:
             self.assertEqual(len(purchased_products), 1)
-            self.assertEqual(purchased_products[0].text, OrdinaryLesson.get_default().name)
+            self.assertIn('single', purchased_products[0].text)  # fill free to modify it you changed the OrdinaryLesson name

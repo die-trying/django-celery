@@ -39,7 +39,7 @@ class TestScheduler(TestCase):
     def _buy_a_lesson(self, lesson):
         c = Class(
             customer=self.customer,
-            lesson=lesson
+            lesson_type=lesson.get_contenttype(),
         )
         c.save()
         return c

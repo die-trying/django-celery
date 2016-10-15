@@ -44,6 +44,7 @@ class TestDangerousUnschedule(ClassIntegrationTestCase):
         when entry autodeletion is not invoked.
         """
         self.lesson = mixer.blend(lessons.MasterClass, host=self.host, slots=5)
+
         entry = self._create_entry()
 
         entry.slots = 5
@@ -85,6 +86,7 @@ class TestDangerousUnschedule(ClassIntegrationTestCase):
         6. Check if timeline entry has only one remaining slot
         """
         self.lesson = mixer.blend(lessons.MasterClass, host=self.host, slots=5)
+
         entry = self._create_entry()
 
         entry.slots = 5

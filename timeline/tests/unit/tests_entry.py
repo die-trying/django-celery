@@ -34,7 +34,7 @@ class EntryTestCase(TestCase):
         customer = create_customer()
         c = Class(
             customer=customer,
-            lesson=lesson
+            lesson_type=lesson.get_contenttype(),
         )
         c.assign_entry(entry)
         c.save()

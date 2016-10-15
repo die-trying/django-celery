@@ -197,7 +197,7 @@ class ClassIntegrationTestCase(ClientTestCase):
     def _buy_a_lesson(self):
         c = Class(
             customer=self.customer,
-            lesson=self.lesson,
+            lesson_type=self.lesson.get_contenttype(),
         )
         c.save()
         self.assertFalse(c.is_fully_used)

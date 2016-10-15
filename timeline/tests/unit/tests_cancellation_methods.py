@@ -15,6 +15,8 @@ class TestCancellation(TestCase):
     Actions with timeline entries with attached classes should
     influence the classes too, and vice-versa
     """
+    fixtures = ('lessons',)
+
     def setUp(self):
         self.teacher = create_teacher()
         self.customer = create_customer()
@@ -23,7 +25,7 @@ class TestCancellation(TestCase):
     def _buy_a_lesson(self, lesson):
         c = Class(
             customer=self.customer,
-            lesson=lesson
+            lesson_type=lesson.get_contenttype(),
         )
         c.save()
         return c
@@ -66,7 +68,7 @@ class TestCancellation(TestCase):
         c = self._buy_a_lesson(lesson)
         c.schedule(  # go through the simple scheduling process, without a special-crafted timeline entry
             teacher=self.teacher,
-            date=timezone.make_aware(datetime(2032, 5, 3, 12, 30)),
+            date=self.tzdatetime(2032, 5, 3, 12, 30),
             allow_besides_working_hours=True
         )
         c.save()
