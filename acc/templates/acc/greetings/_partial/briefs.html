@@ -1,5 +1,5 @@
 {% load i18n %}
-{% load buy_now from paypal_buttons %}
+{% load stripe %}
 
 <section class="row subscription__briefs">
     <div class="col-md-3 col-md-offset-3 subscription-brief">
@@ -14,9 +14,11 @@
             </div>
             {% endfor %}
         </div>
-        <div class="subscription-brief__payment">
-            {% include 'payments/stripe.html' %}
-        </div>
+        {% if product1_tier %}
+            <div class="subscription-brief__payment">
+                {% stripe_form product1 product1_tier.cost request.user.crm %}
+            </div>
+        {% endif %}
     </div>
     <div class="col-md-3 subscription-brief subscription-brief-beginners">
         <h3 class="subscription-brief__title">Beginners</h3>
@@ -30,9 +32,11 @@
             </div>
             {% endfor %}
         </div>
-        <div class="subscription-brief__payment">
-            {% include 'payments/stripe.html' %}
-        </div>
+        {% if simple_subscription_tier %}
+            <div class="subscription-brief__payment">
+                {% stripe_form simple_subscription simple_subscription_tier.cost request.user.crm %}
+            </div>
+        {% endif %}
     </div>
 </section>
 <div class="row">

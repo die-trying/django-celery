@@ -51,7 +51,7 @@ class Payment(models.Model):
                 idempotency_key=self.uuid,
             )
         except:
-            logger.error('Stripe charging error', ext_info=True)
+            logger.error('Stripe charging error')
             return False
 
         return True
