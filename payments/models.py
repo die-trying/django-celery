@@ -1,14 +1,25 @@
 import uuid
 
-import stripe
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from djmoney.models.fields import MoneyField
 
+from payments.stripe import stripe
+
 
 class Payment(models.Model):
+    STRIPE_CURRENCY_MULTIPLIERS = {
+        """
+        This is a list of multipliers, that convert moneyfield ammount to stripe ammount.
+
+        Stripe accepts only smallest currency units — cents for dollars, копейки for rubles
+        see https://support.stripe.com/questions/which-zero-decimal-currencies-does-stripe-support
+        """
+        'JPY': 1,
+    }
+
     customer = models.ForeignKey('crm.Customer', related_name='payments', editable=False)
     timestamp = models.DateTimeField(auto_now_add=True)
 
@@ -17,8 +28,6 @@ class Payment(models.Model):
     product = GenericForeignKey('product_type', 'product_id')
 
     cost = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
-
-    history_record = models.ForeignKey('history.PaymentEvent', related_name='payment')
 
     is_complete = models.BooleanField(default=False)
 
@@ -38,9 +47,11 @@ class Payment(models.Model):
     def charge(self):
         pass
 
-    def _stripe_cost(self):
+    def _stripe_amount(self):
         """
-        Returns a tuple with amount and currency, understandable by stripe, built
-        from self.cost
+        Returns a strip amount — smalles currency unit
         """
-        pass
+        print(str(self.cost.currency))
+        multiplyer = self.STRIPE_CURRENCY_MULTIPLIERS.get(str(self.cost.currency), 100)  # default multiplier is 100, 1 USD is 100 cents
+
+        return self.cost.amount * multiplyer

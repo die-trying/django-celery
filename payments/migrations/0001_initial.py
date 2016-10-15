@@ -30,7 +30,6 @@ class Migration(migrations.Migration):
                 ('stripe_token', models.CharField(max_length=140, editable=False)),
                 ('uuid', models.UUIDField(default=uuid.uuid4, editable=False)),
                 ('customer', models.ForeignKey(related_name='payments', to='crm.Customer', editable=False)),
-                ('history_record', models.ForeignKey(to='history.PaymentEvent', related_name='payment')),
                 ('product_type', models.ForeignKey(to='contenttypes.ContentType', on_delete=django.db.models.deletion.PROTECT)),
             ],
         ),
