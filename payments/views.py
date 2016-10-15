@@ -1,15 +1,20 @@
-import stripe
-from django.conf import settings
+from payments.models import Payment
+from products.models import Product1
 
 
 # Create your views here.
 
 
 def process(request):
-    stripe.api_key = settings.STRIPE_API_KEY
-    stripe.Charge.create(
-        amount=10000,
-        currency='USD',
-        source=request.POST.get('stripeToken'),
-        description='Descr example'
+    product = Product1.objects.get(pk=1)
+
+    p = Payment(
+        product=product,
+        cost=product.cost,
+        customer=request.user.crm,
+        stripe_token=request.POST['stripeToken'],
     )
+
+    p.save()
+
+    p.charge()
