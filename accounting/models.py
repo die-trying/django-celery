@@ -12,6 +12,10 @@ class EventManager(models.Manager):
 
 
 class Event(models.Model):
+    """
+    Single accounting event record. Accounting evennt is everything, that affects
+    teacher payments.
+    """
     EVENT_TYPES = (
         ('class', _('Completed class')),
         ('customer_inspired_cancellation', _('Customer inspired cancellation')),
@@ -35,7 +39,13 @@ class Event(models.Model):
         if self.event_type == 'class':
             return self.originator.start
 
+        if self.event_type == 'customer_inspired_cancellation':  # accounting record appears exactly when user cancells a class
+            return self.timestamp
+
     @property
     def originator_customers(self):
         if self.event_type == 'class':
             return list(i.customer for i in self.originator.classes.all())
+
+        if self.event_type == 'customer_inspired_cancellation':
+            return [self.originator.customer]
