@@ -21,6 +21,14 @@ config = {
   css_vendor_files: './build/css-vendor-files.json'
 }
 
+static_path = () ->
+  if process.env.CIRCLE_BRANCH
+    configured_static_path = config.static[process.env.CIRCLE_BRANCH]
+    if configured_static_path? then configured_static_path else config.static.dev
+
+  else
+    config.static.dev
+
 css_pre_process = lazypipe()
   .pipe () ->
     $.if !config.production, $.sourcemaps.init()
@@ -30,7 +38,7 @@ css_pre_process = lazypipe()
   .pipe $.stylus,
     use: nib()
     rawDefine:
-      static: if process.env.CIRCLE_BRANCH then config.static[process.env.CIRCLE_BRANCH] else config.static.dev
+      static: static_path()
 
 css_post_process = lazypipe()
   .pipe $.uglifycss
@@ -102,9 +110,8 @@ gulp.task 'default', ['css', 'js', 'css:admin', 'js:admin'], () ->
   gulp.watch config.js.admin, ['js:admin']
 
 gulp.task 'production', () ->
-  if process.env.CIRCLE_BRANCH
-    $.util.log 'CI: building production assets with external static path', \
-      $.util.colors.magenta config.static[process.env.CIRCLE_BRANCH]
+  $.util.log 'Building production assets with external static path', \
+    $.util.colors.magenta static_path()
 
   config.production = true
   run_sequence ['css', 'js', 'css:admin', 'js:admin']
