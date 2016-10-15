@@ -88,3 +88,4 @@ class ClassEvent(HistoryEvent):
 
 class PaymentEvent(ProductEvent):
     customer = models.ForeignKey('crm.Customer', related_name='payment_events')
+    payment = models.ForeignKey('payments.Payment', related_name='history_record')

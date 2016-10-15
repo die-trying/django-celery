@@ -1,5 +1,6 @@
 import uuid
 
+from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -31,17 +32,39 @@ class Payment(models.Model):
         self.stripe = get_stripe_instance()
 
     def clean(self):
+        """
+        Use this method to run pre-charge checks
+        """
         return True
 
-    def charge(self):
-        result = self._charge_stripe()
+    def charge(self, request=None):
+        """
+        Query stripe for charging
+        """
+        result = self._charge_by_stripe()
         if result:
-            self.purchase_product()
+            self.save()
+            self._log_payment_event(request)
+            self.ship()
 
-    def purchase_product(self):
-        return True
+    def ship(self):
+        """
+        Actualy ship the product to the customer
+        """
+        self.product.ship(self.customer)
 
-    def _charge_stripe(self):
+    def _log_payment_event(self, request):
+        PaymentEvent = apps.get_model('history.PaymentEvent')
+        ev = PaymentEvent(
+            customer=self.customer,
+            product=self.product,
+            price=self.cost,
+            payment=self,
+        )
+        ev.request = request
+        ev.save()
+
+    def _charge_by_stripe(self):
         try:
             self.stripe.Charge.create(
                 amount=stripe_amount(self.cost),
@@ -55,12 +78,3 @@ class Payment(models.Model):
             return False
 
         return True
-
-    def _stripe_amount(self):
-        """
-        Returns a strip amount — smalles currency unit
-        """
-        print(str(self.cost.currency))
-        multiplyer = self.STRIPE_CURRENCY_MULTIPLIERS.get(str(self.cost.currency), 100)  # default multiplier is 100, 1 USD is 100 cents
-
-        return self.cost.amount * multiplyer

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from unittest.mock import patch
 
 from django.test import override_settings
@@ -5,8 +6,6 @@ from moneyed import RUB, Money
 
 from elk.utils.testing import TestCase
 from payments.stripe import get_stripe_instance, stripe_amount
-
-from decimal import Decimal
 
 
 class TestStripe(TestCase):
