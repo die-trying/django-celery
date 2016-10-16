@@ -1,8 +1,16 @@
 from unittest.mock import MagicMock
 
 
-def mock_stripe(p, success=True):
+def patch_stripe(p, success=True):
+    p.stripe = mock_stripe(success)
+
+
+def mock_stripe(success=True):
+    stripe = MagicMock()
+
     if success:
-        p.stripe.Charge.create = MagicMock(return_value=True)
+        stripe.Charge.create = MagicMock(return_value=True)
     else:
-        p.stripe.Charge.create = MagicMock(side_effect=ValueError)
+        stripe.Charge.create = MagicMock(side_effect=ValueError)
+
+    return stripe

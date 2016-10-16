@@ -2,7 +2,7 @@ from moneyed import RUB, Money
 
 from elk.utils.testing import TestCase, create_customer, mock_request
 from payments.models import Payment
-from payments.tests import mock_stripe
+from payments.tests import patch_stripe
 from products.models import Product1
 
 
@@ -20,7 +20,7 @@ class TestPayments(TestCase):
             cost=Money(300, RUB)
         )
 
-        mock_stripe(p, success=False)
+        patch_stripe(p, success=False)
         p.charge()
         self.assertIsNone(self.customer.subscriptions.first())
 
@@ -33,7 +33,7 @@ class TestPayments(TestCase):
             cost=Money(300, RUB)
         )
 
-        mock_stripe(p, success=True)
+        patch_stripe(p, success=True)
         p.charge(request=mock_request())
 
         self.assertIsNotNone(self.customer.subscriptions.first())  # chage() should have shipped the subscription
@@ -45,7 +45,23 @@ class TestPayments(TestCase):
             cost=Money(300, RUB)
         )
 
-        mock_stripe(p, success=True)
+        patch_stripe(p, success=True)
         p.charge(request=mock_request())
 
         self.assertIsNotNone(self.customer.payment_events.filter(payment=p).first())
+
+    def test_charge_result(self):
+        """
+        Charge() should return a boolean result of stripe communication
+        """
+        p = Payment(
+            customer=self.customer,
+            product=self.product,
+            cost=Money(300, RUB)
+        )
+
+        patch_stripe(p, success=True)
+        self.assertTrue(p.charge(request=mock_request()))
+
+        patch_stripe(p, success=False)
+        self.assertFalse(p.charge())

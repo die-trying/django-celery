@@ -22,7 +22,7 @@ class HistoryEvent(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     src = models.CharField('Event source', max_length=10, choices=EVENT_SOURCES, default='customer')
     ip = models.GenericIPAddressField(default='127.0.0.1')
-    raw_useragent = models.TextField()
+    raw_useragent = models.TextField(null=True)
 
     is_mobile = models.NullBooleanField(null=True)
     is_tablet = models.NullBooleanField(null=True)

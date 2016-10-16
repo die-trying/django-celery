@@ -47,6 +47,8 @@ class Payment(models.Model):
             self._log_payment_event(request)
             self.ship()
 
+        return result
+
     def ship(self):
         """
         Actualy ship the product to the customer
@@ -71,7 +73,7 @@ class Payment(models.Model):
                 currency=str(self.cost.currency),
                 source=self.stripe_token,
                 description=self.product.name,
-                idempotency_key=self.uuid,
+                idempotency_key=str(self.uuid),
             )
         except:
             logger.error('Stripe charging error')

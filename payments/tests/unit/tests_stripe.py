@@ -5,7 +5,7 @@ from django.test import override_settings
 from moneyed import RUB, Money
 
 from elk.utils.testing import TestCase
-from payments.stripe import get_stripe_instance, stripe_amount
+from payments.stripe import get_stripe_instance, stripe_amount, stripe_currency
 
 
 class TestStripe(TestCase):
@@ -36,3 +36,10 @@ class TestStripe(TestCase):
     def test_stripe_9_99(self):
         cost = Money('9.99', RUB)
         self.assertEqual(stripe_amount(cost), 999)
+
+    def test_stripe_currency(self):
+        cost = Money(Decimal('20.00'), RUB)
+        self.assertEqual(stripe_currency(cost), 'RUB')
+
+        cost = Money(200, 'USD')
+        self.assertEqual(stripe_currency(cost), 'USD')

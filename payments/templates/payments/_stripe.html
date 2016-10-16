@@ -1,9 +1,14 @@
 <form action = "{% url 'payments:process' %}" method = "POST">
     {% csrf_token %}
+    <input type="hidden" name="product_type" value="{{ product_type }}">
+    <input type="hidden" name="product_id" value="{{ product.id }}">
+    <input type="hidden" name="amount" value="{{ amount }}">
+    <input type="hidden" name="currency" value="{{ currency }}">
+
     <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
         data-key="{{ stripe_pk }}"
         data-email="{{ crm.user.email }}"
-        data-amount="{{ amount }}"
+        data-amount="{{ stripe_amount }}"
         data-currency="{{ currency }}"
         data-name="{{ product.name }}"
         data-image="https://stripe.com/img/documentation/checkout/marketplace.png"

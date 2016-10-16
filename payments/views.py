@@ -1,18 +1,37 @@
+from django.contrib.contenttypes.models import ContentType
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, resolve_url
+from moneyed import Money
+
 from payments.models import Payment
-from products.models import Product1
-
-
-# Create your views here.
 
 
 def process(request):
-    product = Product1.objects.get(pk=1)  # FIXME
+    Product = get_object_or_404(ContentType, pk=request.POST['product_type']).model_class()
+    product = get_object_or_404(Product, pk=request.POST['product_id'])
 
     p = Payment(
         product=product,
-        cost=product.cost,  # FIXME: this value should be taken from tier
+        cost=Money(request.POST['amount'], request.POST['currency']),
         customer=request.user.crm,
         stripe_token=request.POST['stripeToken'],
     )
 
-    p.charge(request)
+    result = p.charge(request)
+
+    resulting_view = 'payments:success'
+
+    if not result:
+        resulting_view = 'payments:failure'
+
+    return redirect(
+        resolve_url(resulting_view, product_type=int(request.POST['product_type']), product_id=product.pk)
+    )
+
+
+def success(request, product_type, product_id):
+    return JsonResponse({'result': 'ok'})
+
+
+def failure(request, product_type, product_id):
+    return JsonResponse({'result': 'fail'})
