@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 import pytz
 from django.core import mail
 from django.test import override_settings
@@ -70,6 +72,22 @@ class TestTemplatedMail(TestCase):
         owl.send()
         m = owl.msg
         self.assertIn('reply@to.to', m.reply_to)
+
+    @patch('mailer.owl.logger')
+    def test_not_sending_mail_without_reciepient(self, logger):
+
+        logger.warning = MagicMock()
+
+        owl = Owl(
+            template='mailer/test.html',
+            ctx=self._ctx(),
+            to=[],
+        )
+        owl.msg.send = MagicMock()
+
+        owl.send()
+        self.assertEqual(owl.msg.send.call_count, 0)  # message should not go
+        self.assertEqual(logger.warning.call_count, 1)  # should log to sentry
 
     def test_timezone_str(self):
         """
