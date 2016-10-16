@@ -31,3 +31,8 @@ class TestStripe(TestCase):
     def test_stripe_amount_decimal(self):
         cost = Money(Decimal('20.00'), RUB)
         self.assertEqual(str(stripe_amount(cost)), '2000')  # should ignore .00
+
+    @patch.dict('payments.stripe.STRIPE_CURRENCY_MULTIPLIERS', {})
+    def test_stripe_9_99(self):
+        cost = Money('9.99', RUB)
+        self.assertEqual(stripe_amount(cost), 999)

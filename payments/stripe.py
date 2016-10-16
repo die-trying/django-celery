@@ -27,4 +27,4 @@ def stripe_amount(cost):
     """
     multiplyer = STRIPE_CURRENCY_MULTIPLIERS.get(str(cost.currency), 100)  # default multiplier is 100, 1 USD is 100 cents
 
-    return int(cost.amount) * multiplyer
+    return int(cost.amount * multiplyer)
