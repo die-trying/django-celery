@@ -1,14 +1,16 @@
 {% load i18n %}
-{% load naturaltime from custom_humanize %}
+{% load skype %}
 
 {% with next_class=request.user.crm.classes.nearest_scheduled %}
     {% if next_class %}
         <div class="next_class">
             <i class="fa fa-check-circle next_class__sign" aria-hidden="true"></i>
-            <p class="next_class__msg">{% trans "You have " %} {{ next_class.lesson.type_verbose_name }}
+            <p class="next_class__msg">{% trans "You are going to have a " %} {{ next_class.lesson_type | lower }}
                 {% trans 'with' %} {{ next_class.timeline.teacher.user.crm.full_name }},
                 {% trans 'starting at' %} <strong>{{ next_class.timeline.start | date:"SHORT_DATETIME_FORMAT" }}</strong>.
-                If something goes wrong, <a class="pseudo class_reschedule" data-class-id="{{ next_class.pk }}" href="#" data-toggle="modal" data-target="#issue-popup">{% trans 'contact us'%}</a> {% trans 'or' %} <a class="pseudo class_cancel" data-class-id="{{ next_class.pk }}" data-dismiss-after-cancellation=".next_class" href='#'>{% trans 'cancel' %}</a> it.</p>
+                If something goes wrong, <a class="pseudo class_reschedule" data-class-id="{{ next_class.pk }}" href="#" data-toggle="modal" data-target="#issue-popup">{% trans 'contact us'%}</a> {% trans 'or' %} <a class="pseudo class_cancel" data-class-id="{{ next_class.pk }}" data-dismiss-after-cancellation=".next_class" href='#'>{% trans 'cancel' %}</a> it.
+            </p>
+            <p class="next_class__skype">{{ next_class.timeline.teacher.user.crm.first_name | capfirst }}'s skype is {% skype_chat next_class.timeline.teacher.user.crm %}.</p>
         </div>
     {% endif %}
 {% endwith %}
