@@ -1,6 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, resolve_url
+from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from moneyed import Money
 
 from payments.models import Payment
@@ -30,7 +30,12 @@ def process(request):
 
 
 def success(request, product_type, product_id):
-    return JsonResponse({'result': 'ok'})
+    Product = get_object_or_404(ContentType, pk=product_type).model_class()
+    product = get_object_or_404(Product, pk=product_id)
+
+    return render(request, product.get_success_template_name(), {
+        'product': product,
+    })
 
 
 def failure(request, product_type, product_id):

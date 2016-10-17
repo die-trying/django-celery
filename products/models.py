@@ -44,6 +44,9 @@ class Product(models.Model):
         """
         raise NotImplemented('Please implement in subclass')
 
+    def get_success_template_name(self):
+        raise NotImplemented('Please implement in subclass')
+
     class Meta:
         abstract = True
 
@@ -82,6 +85,9 @@ class ProductWithLessons(Product):
         )
 
         s.save()
+
+    def get_success_template_name(self):
+        return 'payments/subscription_success.html'
 
     def lessons(self):
         """
