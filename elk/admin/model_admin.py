@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.humanize.templatetags.humanize import naturalday
 from django.db import models
 from django.template.defaultfilters import capfirst, time
+from django.utils import timezone
 from django.utils.html import format_html
 from django_markdown.models import MarkdownField
 from django_markdown.widgets import AdminMarkdownWidget
@@ -16,7 +17,8 @@ class AdminHelpersMixin():
         )
 
     def _datetime(self, date):
-        return capfirst(naturalday(date)) + ' ' + self._time(date)
+        local = timezone.localtime(date)
+        return capfirst(naturalday(local)) + ' ' + self._time(local)
 
     def _time(self, date):
         return time(date, 'TIME_FORMAT')
