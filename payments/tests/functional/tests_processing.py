@@ -1,3 +1,4 @@
+import json
 from unittest.mock import patch
 
 from django.contrib.contenttypes.models import ContentType
@@ -33,21 +34,11 @@ class TestPaymentProcessing(ClientTestCase):
             'stripeToken': 'tsttkn',
         })
 
-        self.assertRedirects(response, '/payments/%d/%d/success/' % (self.product_type.pk, self.product.pk))
-
+        result = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(result['result'], '/payments/%d/%d/success/' % (self.product_type.pk, self.product.pk))
         self.assertIsNotNone(self.customer.subscriptions.first())  # customer should have subscription now
 
-    @patch('payments.models.get_stripe_instance')
-    def test_success_page(self, stripe_instance):
-        stripe_instance.return_value = mock_stripe(success=True)
-        response = self.c.post('/payments/process/', {
-            'product_id': self.product.pk,
-            'product_type': self.product_type.pk,
-            'amount': self.cost.amount,
-            'currency': stripe_currency(self.cost),
-            'stripeToken': 'tsttkn',
-        }, follow=True)
-
+        response = self.c.get(result['result'])
         self.assertTemplateUsed(response, 'payments/result_base.html')
         self.assertEqual(response.context['product'], self.product)
 
@@ -63,21 +54,11 @@ class TestPaymentProcessing(ClientTestCase):
             'stripeToken': 'tsttkn',
         })
 
-        self.assertRedirects(response, '/payments/%d/%d/failure/' % (self.product_type.pk, self.product.pk))
-
+        result = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(result['result'], '/payments/%d/%d/failure/' % (self.product_type.pk, self.product.pk))
         self.assertIsNone(self.customer.subscriptions.first())  # customer should not gain with subscription
 
-    @patch('payments.models.get_stripe_instance')
-    def test_error_page(self, stripe_instance):
-        stripe_instance.return_value = mock_stripe(success=False)
-        response = self.c.post('/payments/process/', {
-            'product_id': self.product.pk,
-            'product_type': self.product_type.pk,
-            'amount': self.cost.amount,
-            'currency': stripe_currency(self.cost),
-            'stripeToken': 'tsttkn',
-        }, follow=True)
-
+        response = self.c.get(result['result'])
         self.assertTemplateUsed(response, 'payments/result_failure.html')
         self.assertIn('testing', response.context['msg'])  # mocked error message should appear in the template
 

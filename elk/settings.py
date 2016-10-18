@@ -132,6 +132,7 @@ TEMPLATES = [
                 'django.template.context_processors.tz',
 
                 'elk.context_processors.support_email',  # support email address configured in .env
+                'elk.context_processors.stripe_pk',  # stripe public key
                 'elk.context_processors.revision',  # git revision for frontend
 
                 'elk.context_processors.greeting',  # current customer greeting template

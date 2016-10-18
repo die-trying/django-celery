@@ -22,15 +22,19 @@
         {% endblock %}
 
         <script src="{% static 'js/vendor.js' %}?rev={{ REVISION }}"></script>
-        {% block js %} {# pages can require custom javascript files defining this block #}
-        {% endblock %}
         <script type="text/javascript">
             var Project = {
                 models: {},
                 controllers: {},
                 helpers: {},
-            } // quasi-global namespace
+            }; // quasi-global namespace
         </script>
+
+        {% block basejs %}
+        {% endblock %}
+
+        {% block js %} {# pages can require custom javascript files defining this block #}
+        {% endblock %}
         <script src="{% static 'js/app.js' %}?rev={{ REVISION }}"></script>
         {% include 'elk/analytics.html' %}
     </body>

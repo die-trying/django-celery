@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
-from django.shortcuts import get_object_or_404, redirect, render, resolve_url
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render, resolve_url
 from moneyed import Money
 
 from payments.models import StripePayment
@@ -24,9 +25,9 @@ def process(request):
         resulting_view = 'payments:failure'
         request.session['payment_error'] = p.error_message
 
-    return redirect(
-        resolve_url(resulting_view, product_type=int(request.POST['product_type']), product_id=product.pk)
-    )
+    return JsonResponse({
+        'result': resolve_url(resulting_view, product_type=int(request.POST['product_type']), product_id=product.pk)
+    })
 
 
 def success(request, product_type, product_id):

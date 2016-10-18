@@ -22,9 +22,7 @@ class TestStripe(TestCase):
 
     @patch.dict('payments.stripe.STRIPE_CURRENCY_MULTIPLIERS', {'RUB': 1000})
     def test_stripe_amount_configured(self):
-
         cost = Money(20, RUB)
-
         self.assertEqual(stripe_amount(cost), 20000)
 
     @patch.dict('payments.stripe.STRIPE_CURRENCY_MULTIPLIERS', {})

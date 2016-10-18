@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+from django.test import override_settings
+
 from elk.utils.testing import ClientTestCase, create_customer
 
 
@@ -46,3 +48,15 @@ class TestGreetingContextProcessor(ClientTestCase):
         response = self.c.get('/', follow=True)
 
         self.assertNotIn('GREETING', response.context)
+
+
+class TestSimpleContextProcessors(ClientTestCase):
+    @override_settings(SUPPORT_EMAIL='t@tt.tst')
+    def test_support_email(self):
+        response = self.c.get('/')
+        self.assertEqual(response.context['SUPPORT_EMAIL'], 't@tt.tst')
+
+    @override_settings(STRIPE_PK='tst100500')
+    def test_stripe_pk(self):
+        response = self.c.get('/')
+        self.assertEqual(response.context['STRIPE_PK'], 'tst100500')

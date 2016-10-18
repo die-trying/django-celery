@@ -36,7 +36,6 @@ class TestPaymentFormTag(ClientTestCase):
             'stripe_pk': 'test_100500_pk',
         })
 
-    @override_settings(STRIPE_PK='test_100500_pk')
     def test_stripe_parameters(self):
         html = self.tpl.render(Context({
             'product': self.product,
@@ -44,7 +43,6 @@ class TestPaymentFormTag(ClientTestCase):
             'customer': self.customer,
         }))
 
-        self.assertIn('data-key="test_100500_pk"', html)
         self.assertIn('data-email="%s"' % self.customer.user.email, html)
 
     def test_processing_parameters(self):
@@ -54,6 +52,6 @@ class TestPaymentFormTag(ClientTestCase):
             'customer': self.customer,
         }))
 
-        self.assertIn('name="product_type" value="%d"' % self.product_type.pk, html)
-        self.assertIn('name="amount" value="31.5"', html)
-        self.assertIn('name="currency" value="RUB"', html)
+        self.assertIn('data-product-type="%d"' % self.product_type.pk, html)
+        self.assertIn('data-amount="31.5"', html)
+        self.assertIn('data-currency="RUB"', html)
