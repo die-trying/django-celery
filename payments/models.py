@@ -5,6 +5,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from djmoney.models.fields import MoneyField
+from stripe.error import StripeError
 
 from elk.logging import logger
 from payments.stripe import get_stripe_instance, stripe_amount
@@ -34,7 +35,7 @@ class Payment(models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.stripe = get_stripe_instance()
+        self.error_message = ''
 
     def clean(self):
         """
@@ -64,6 +65,10 @@ class Payment(models.Model):
 
 
 class StripePayment(Payment):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.stripe = get_stripe_instance()
     stripe_token = models.CharField(max_length=140, editable=False)
 
     def charge(self, request=None):
@@ -87,7 +92,8 @@ class StripePayment(Payment):
                 description=self.product.name,
                 idempotency_key=str(self.uuid),
             )
-        except:
+        except StripeError as e:
+            self.error_message = str(e)
             logger.error('Stripe charging error')
             return False
 

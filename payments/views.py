@@ -1,5 +1,4 @@
 from django.contrib.contenttypes.models import ContentType
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from moneyed import Money
 
@@ -23,6 +22,7 @@ def process(request):
 
     if not result:
         resulting_view = 'payments:failure'
+        request.session['payment_error'] = p.error_message
 
     return redirect(
         resolve_url(resulting_view, product_type=int(request.POST['product_type']), product_id=product.pk)
@@ -39,4 +39,6 @@ def success(request, product_type, product_id):
 
 
 def failure(request, product_type, product_id):
-    return JsonResponse({'result': 'fail'})
+    return render(request, 'payments/result_failure.html', {
+        'msg': request.session.get('payment_error')
+    })

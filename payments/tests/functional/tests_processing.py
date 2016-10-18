@@ -67,6 +67,20 @@ class TestPaymentProcessing(ClientTestCase):
 
         self.assertIsNone(self.customer.subscriptions.first())  # customer should not gain with subscription
 
+    @patch('payments.models.get_stripe_instance')
+    def test_error_page(self, stripe_instance):
+        stripe_instance.return_value = mock_stripe(success=False)
+        response = self.c.post('/payments/process/', {
+            'product_id': self.product.pk,
+            'product_type': self.product_type.pk,
+            'amount': self.cost.amount,
+            'currency': stripe_currency(self.cost),
+            'stripeToken': 'tsttkn',
+        }, follow=True)
+
+        self.assertTemplateUsed(response, 'payments/result_failure.html')
+        self.assertIn('testing', response.context['msg'])  # mocked error message should appear in the template
+
     def test_bad_product_type(self):
         result = self.c.post('/payments/process/', {
             'product_id': self.product.pk,

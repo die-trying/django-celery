@@ -7,11 +7,12 @@
                 <h1>{% block title  %}Payment result{% endblock%}</h1>
             </div>
             {% block lead %}
-            <p class="lead">Card payment is denied with a your bank.</p>
+            <p class="lead">Text lead.</p>
             {% endblock %}
             {% block msg %}
             <p>If you beleave this is an error, <a href="#" data-toggle="modal" data-target="#issue-popup">drop us a like</a>.</p>
             {% endblock %}
         </div>
     </div>
+    {% block call_to_action %}{% endblock %}
 {% endblock %}
