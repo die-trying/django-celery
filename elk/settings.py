@@ -299,8 +299,8 @@ CELERY_TIMEZONE = env('TIME_ZONE')
 
 GEOIP_PATH = './geolite/'
 
-STRIPE_API_KEY = '***REMOVED***'
-STRIPE_PK = '***REMOVED***'
+STRIPE_API_KEY = env('STRIPE_API_KEY')
+STRIPE_PK = env('STRIPE_PK')
 
 # Uncomment this lines to catch all runtime warnings as errors
 
