@@ -65,7 +65,7 @@ class ProductEvent(HistoryEvent):
     """
     price = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
 
-    product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='+')
     product_id = models.PositiveIntegerField()
     product = GenericForeignKey('product_type', 'product_id')
 
@@ -86,6 +86,19 @@ class ClassEvent(HistoryEvent):
     scheduled_class = models.ForeignKey(Class)
 
 
+class PaymentEventManager(models.Manager):
+    def by_payment(self, payment):
+        return self.get_queryset().filter(
+            payment_type=ContentType.objects.get_for_model(payment),
+            payment_id=payment.pk,
+        )
+
+
 class PaymentEvent(ProductEvent):
+    objects = PaymentEventManager()
+
     customer = models.ForeignKey('crm.Customer', related_name='payment_events')
-    payment = models.ForeignKey('payments.Payment', related_name='history_record')
+
+    payment_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, related_name='+', limit_choices_to={'app_label': 'payments'})
+    payment_id = models.PositiveIntegerField()
+    payment = GenericForeignKey('payment_type', 'payment_id')

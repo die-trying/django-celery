@@ -11,7 +11,14 @@ from payments.stripe import get_stripe_instance, stripe_amount
 
 
 class Payment(models.Model):
-    customer = models.ForeignKey('crm.Customer', related_name='payments', editable=False)
+    """
+    Abstract payment.
+
+    Implementing payment you should define charge() method that calls ship()
+    when result is ok and sets self.error_message in case of error.
+
+    """
+    customer = models.ForeignKey('crm.Customer', related_name='+', editable=False)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     product_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, limit_choices_to={'app_label': 'products'})
@@ -21,8 +28,6 @@ class Payment(models.Model):
     cost = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
 
     is_complete = models.BooleanField(default=False)
-
-    stripe_token = models.CharField(max_length=140, editable=False)
 
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
 
@@ -37,17 +42,8 @@ class Payment(models.Model):
         """
         return True
 
-    def charge(self, request=None):
-        """
-        Query stripe for charging
-        """
-        result = self._charge_by_stripe()
-        if result:
-            self.save()
-            self._log_payment_event(request)
-            self.ship()
-
-        return result
+    class Meta:
+        abstract = True
 
     def ship(self):
         """
@@ -65,6 +61,22 @@ class Payment(models.Model):
         )
         ev.request = request
         ev.save()
+
+
+class StripePayment(Payment):
+    stripe_token = models.CharField(max_length=140, editable=False)
+
+    def charge(self, request=None):
+        """
+        Query stripe for charging
+        """
+        result = self._charge_by_stripe()
+        if result:
+            self.save()
+            self._log_payment_event(request)
+            self.ship()
+
+        return result
 
     def _charge_by_stripe(self):
         try:

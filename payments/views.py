@@ -3,14 +3,14 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from moneyed import Money
 
-from payments.models import Payment
+from payments.models import StripePayment
 
 
 def process(request):
     Product = get_object_or_404(ContentType, pk=request.POST['product_type']).model_class()
     product = get_object_or_404(Product, pk=request.POST['product_id'])
 
-    p = Payment(
+    p = StripePayment(
         product=product,
         cost=Money(request.POST['amount'], request.POST['currency']),
         customer=request.user.crm,
