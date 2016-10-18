@@ -56,7 +56,7 @@ class Customer(models.Model):
         ('trial', "User has a single trial class and didn't schedule it yet"),
         ('trial-scheduled', 'User has scheduled hist trial class'),
         ('out-of-classes', 'User has no classes (completed his trial, or purchased some other lessons without a subscription'),
-        ('no-subscription', "User has come classes, but hasn't purchase a subscription"),
+        ('classes-without-subscription', "User has come classes, but hasn't purchase a subscription"),
         ('subscription-active', "User is in process of active subscription"),
         ('subscription-finished', "user's subscription has finished, but he has some non-subscription-lessons"),
     )
@@ -148,7 +148,7 @@ class Customer(models.Model):
                 else:
                     return self._greeting('subscription-finished')
             else:
-                return self._greeting('no-subscription')
+                return self._greeting('classes-without-subscription')
 
         return self._greeting('out-of-classes')
 

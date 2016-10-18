@@ -3,6 +3,7 @@ from django.conf import settings
 from django.utils import timezone, translation
 from mail_templated import EmailMessage
 
+from elk.logging import logger
 from mailer.tasks import send_email
 
 
@@ -87,6 +88,10 @@ class Owl():
         """
         On the production host — run through celery
         """
+        if not self.clean():
+            logger.warning('Trying to send invalid message!')
+            return
+
         if not settings.EMAIL_ASYNC:
             self.msg.send()
         else:
@@ -97,3 +102,9 @@ class Owl():
     def queue(self):
         self.headers['X-ELK-Queued'] = 'True'
         send_email.delay(owl=self)
+
+    def clean(self):
+        if not self.to or not self.to[0]:
+            return False
+
+        return True

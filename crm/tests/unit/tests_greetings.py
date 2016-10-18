@@ -67,7 +67,7 @@ class TestGreetingType(TestCase):
         self.customer.classes.create(
             lesson_type=self.ordinary_lesson.get_contenttype(),
         )
-        self.assertEqual(self.customer.get_greeting_type(), 'no-subscription')
+        self.assertEqual(self.customer.get_greeting_type(), 'classes-without-subscription')
 
     def test_purchased_subscription_without_finishing_trial(self):
         """
