@@ -34,8 +34,14 @@ def create_user(**kwargs):
     Generate a simple user object.
 
     You can pass `mixer<https://github.com/klen/mixer>` keyword arguments for :model:`crm.Customer`
+    or 'password' argument if you want to log in with this user
     """
     user = mixer.blend('auth.user')
+
+    if kwargs.get('password'):
+        user.set_password(kwargs.pop('password'))
+        user.save()
+
     user.crm = create_customer(user=user, **kwargs)
 
     return user

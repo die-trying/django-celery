@@ -71,7 +71,7 @@ pytz==2015.7
 PyYAML==3.11
 raven==5.27.1
 redis==2.10.5
-requests==2.10.0
+requests==2.11.1
 requests-oauthlib==0.6.1
 responses==0.5.1
 rsa==3.4.2
@@ -80,6 +80,7 @@ simplegeneric==0.8.1
 simplejson==3.8.2
 six==1.10.0
 sqlparse==0.1.19
+stripe==1.41.0
 timezonefinder==1.5.7
 traitlets==4.2.1
 ua-parser==0.7.1

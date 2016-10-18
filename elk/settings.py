@@ -51,18 +51,19 @@ DATABASES = {
 
 INSTALLED_APPS = [
     'elk',
-    'crm',
-    'lessons',
-    'products',
-    'market',
-    'timeline',
-    'teachers',
-    'acc',
-    'history',
+    'crm',  # stuff related to student accounts
+    'lessons',  # lesson types — Ordinary lessons, Native speaker lessons etc
+    'products',  # staff that student can purchase, i.e. Subscription
+    'market',   # lesson planning takes place here
+    'timeline',  # teachers curricullom
+    'teachers',  # teachers database
+    'acc',   # acc — loggin in and out, homepage
+    'history',  # an app for future data mining — all significant user actions are recorded here
     'mailer',
-    'extevents',
-    'manual_class_logging',
-    'accounting',
+    'extevents',  # integrations with external calendars, like Google's one
+    'manual_class_logging',  # temporary app to log classes completed outside the system. Should be deleted in 2016
+    'accounting',  # teacher accounting — passed classes, customer inspired cancellation etc
+    'payments',  # students payment processing
 
     'easy_thumbnails',
     'image_cropping',
@@ -298,6 +299,8 @@ CELERY_TIMEZONE = env('TIME_ZONE')
 
 GEOIP_PATH = './geolite/'
 
+STRIPE_API_KEY = env('STRIPE_API_KEY')
+STRIPE_PK = env('STRIPE_PK')
 
 # Uncomment this lines to catch all runtime warnings as errors
 

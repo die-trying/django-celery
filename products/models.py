@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -10,6 +11,9 @@ from lessons.models import HappyHour, LessonWithNative, MasterClass, OrdinaryLes
 
 
 class Product(models.Model):
+    """
+    Base class for every product, that user can buy
+    """
     ENABLED = (
         (0, 'Inactive'),
         (1, 'Active'),
@@ -32,17 +36,59 @@ class Product(models.Model):
         """
         return Tier.objects.get_for_product(self, country)
 
+    def ship(self, customer):
+        """
+        Abstract method for shipping a product to customer.
+
+        Shipping should be simple creating an instance of subclassed :model:`market.ProductContainer`
+        """
+        raise NotImplemented('Please implement in subclass')
+
+    def get_success_template_name(self):
+        raise NotImplemented('Please implement in subclass')
+
     class Meta:
         abstract = True
 
 
+class SingleLessonProduct(Product):
+    """
+    Product for purchasing a single lesson of any type.
+
+    Please create this products by migrations, not through admin.
+    """
+    lesson_type = models.ForeignKey(ContentType, limit_choices_to={'app_label': 'lessons'})
+
+    def ship(self, customer):
+        Class = apps.get_model('market.Class')
+        c = Class(
+            customer=customer,
+            lesson_type=self.lesson_type,
+        )
+        c.save()
+
+
 class ProductWithLessons(Product):
     """
-    Base class for products that contain lessons.
+    Base class for products that contain multiple lessons.
 
     Please don't use admin for managing lessons of particular product —
     use the migrations. Example migration you can find ad products/migrations/0002_simplesubscription.py
     """
+
+    def ship(self, customer):
+        Subscription = apps.get_model('market.Subscription')
+
+        s = Subscription(
+            customer=customer,
+            product=self,
+        )
+
+        s.save()
+
+    def get_success_template_name(self):
+        return 'payments/subscription_success.html'
+
     def lessons(self):
         """
         Get all lesson attributes of a subscription

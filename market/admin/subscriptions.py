@@ -2,7 +2,7 @@ from date_range_filter import DateRangeFilter
 from django.contrib import admin
 
 from elk.admin.filters import BooleanFilter
-from market.admin.components import BuyableModelAdmin, ClassesLeftInline, ClassesPassedInline
+from market.admin.components import ClassesLeftInline, ClassesPassedInline, ProductContainerAdmin
 from market.models import Subscription
 
 
@@ -18,7 +18,7 @@ class IsFinishedFilter(BooleanFilter):
 
 
 @admin.register(Subscription)
-class SubscriptionAdmin(BuyableModelAdmin):
+class SubscriptionAdmin(ProductContainerAdmin):
     list_display = ('customer', '__str__', 'lesson_usage', 'planned_lessons', 'purchase_date',)
     list_filter = (('buy_date', DateRangeFilter), IsFinishedFilter)
     readonly_fields = ('lesson_usage', 'purchase_date', 'planned_lessons')

@@ -1,3 +1,4 @@
+{% load contact_us %}
 <div class="row">
     <div class="col-md-12">
         <h1>{% block title %}Hi, {{ request.user.first_name | capfirst }}!{% endblock %}</h1>
@@ -21,8 +22,7 @@
         <p>We want to develop this tool together with you, so we've launched
             the pre-production version and started keeping track of all your lesosns.
             Please be patient for some bugs, and feel free to
-            <a class="pseudo" data-toggle="modal" data-target="#issue-popup" href="#">drop us a line</a>
-            if you fill something goes wrong.
+            {% contact_us 'drop us a line' 'pseudo' %} if you fill something goes wrong.
         </p>
         {% endblock %}
 

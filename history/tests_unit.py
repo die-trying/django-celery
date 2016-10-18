@@ -1,8 +1,5 @@
-from elk.utils.testing import TestCase, create_customer, mock_request
+from elk.utils.testing import TestCase, mock_request
 from history.models import PaymentEvent
-from lessons.models import OrdinaryLesson
-from market.models import Class, Subscription
-from products.models import Product1 as product
 
 
 class TestEvent(TestCase):
@@ -30,40 +27,3 @@ class TestEvent(TestCase):
 
         self.assertEqual(ev.raw_useragent, 'WinXP; U/16')
         self.assertEqual(ev.ip, '127.0.0.5')
-
-    def test_single_lesson_log_entry_creation(self):
-        """
-        Buy a single lesson and find a respective log entry for it
-        """
-        customer = create_customer()
-        self.assertEqual(customer.payments.count(), 0)
-
-        c = Class(
-            customer=customer,
-            lesson_type=OrdinaryLesson.get_contenttype(),
-            buy_price=10,
-            buy_source='single',
-        )
-        c.request = mock_request()
-        c.save()
-
-        self.assertEqual(customer.payments.count(), 1)
-        self.assertEqual(customer.payments.all()[0].product, c)
-
-    def test_subscription_log_entry_creation(self):
-        """
-        Buy a subscription and find a respective log entry for it
-        """
-        customer = create_customer()
-        self.assertEqual(customer.payments.count(), 0)
-
-        s = Subscription(
-            customer=customer,
-            product=product.objects.get(pk=self.TEST_PRODUCT_ID),
-            buy_price=150,
-        )
-        s.request = mock_request(customer=customer)
-        s.save()
-
-        self.assertEqual(customer.payments.count(), 1, 'Check if only one log record appeared: for the subscription, not for classes')
-        self.assertEqual(customer.payments.all()[0].product, s)

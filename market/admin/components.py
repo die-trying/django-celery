@@ -4,8 +4,8 @@ from elk.admin import ModelAdmin, TabularInline
 from market.models import Class, Subscription
 
 
-class BuyableModelAdmin(ModelAdmin):
-    actions = None
+class ProductContainerAdmin(ModelAdmin):
+    ordering = ['-buy_date']
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(active=1)
@@ -13,10 +13,13 @@ class BuyableModelAdmin(ModelAdmin):
     def purchase_date(self, instance):
         return self._datetime(instance.buy_date)
 
+    purchase_date.admin_order_field = 'buy_date'
+
     def available(self, instance):
         return not instance.is_fully_used
 
     available.boolean = True
+    available.admin_order_field = '-is_fully_used'
 
 
 class SubscriptionsInline(TabularInline):

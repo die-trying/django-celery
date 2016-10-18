@@ -1,0 +1,18 @@
+{% extends 'elk/base.html' %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="page-header">
+                <h1>{% block title  %}Payment result{% endblock%}</h1>
+            </div>
+            {% block lead %}
+            <p class="lead">Text lead.</p>
+            {% endblock %}
+            {% block msg %}
+            <p>If you beleave this is an error, <a href="#" data-toggle="modal" data-target="#issue-popup">drop us a like</a>.</p>
+            {% endblock %}
+        </div>
+    </div>
+    {% block call_to_action %}{% endblock %}
+{% endblock %}

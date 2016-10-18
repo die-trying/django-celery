@@ -3,7 +3,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from djmoney.models.fields import MoneyField
 
-from crm.models import Customer
 from market.models import Class
 
 EVENT_SOURCES = (
@@ -23,7 +22,7 @@ class HistoryEvent(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     src = models.CharField('Event source', max_length=10, choices=EVENT_SOURCES, default='customer')
     ip = models.GenericIPAddressField(default='127.0.0.1')
-    raw_useragent = models.TextField()
+    raw_useragent = models.TextField(null=True)
 
     is_mobile = models.NullBooleanField(null=True)
     is_tablet = models.NullBooleanField(null=True)
@@ -66,7 +65,7 @@ class ProductEvent(HistoryEvent):
     """
     price = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
 
-    product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='+')
     product_id = models.PositiveIntegerField()
     product = GenericForeignKey('product_type', 'product_id')
 
@@ -87,5 +86,19 @@ class ClassEvent(HistoryEvent):
     scheduled_class = models.ForeignKey(Class)
 
 
+class PaymentEventManager(models.Manager):
+    def by_payment(self, payment):
+        return self.get_queryset().filter(
+            payment_type=ContentType.objects.get_for_model(payment),
+            payment_id=payment.pk,
+        )
+
+
 class PaymentEvent(ProductEvent):
-    customer = models.ForeignKey(Customer, related_name='payments')
+    objects = PaymentEventManager()
+
+    customer = models.ForeignKey('crm.Customer', related_name='payment_events')
+
+    payment_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, related_name='+', limit_choices_to={'app_label': 'payments'})
+    payment_id = models.PositiveIntegerField()
+    payment = GenericForeignKey('payment_type', 'payment_id')
