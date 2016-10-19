@@ -199,8 +199,6 @@ class Tier(models.Model):
 
     cost = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
 
-    paypal_button_id = models.CharField(max_length=128)
-
     def __str__(self):
         product_type = str(self.product_type).replace('Subscription type: ', '')
         if self.is_default:
