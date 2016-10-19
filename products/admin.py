@@ -44,7 +44,7 @@ class TierAdmin(ModelAdmin):
         ('product_type'),
         ('is_default'),
     )
-    list_display = ('_country', '_cost', 'product', 'is_default')
+    list_display = ('_country', 'name', '_cost', 'product', 'is_default')
     exclude = ['product_id']
 
     def _country(self, instance):
@@ -53,6 +53,6 @@ class TierAdmin(ModelAdmin):
     _country.admin_order_field = 'country'
 
     def _cost(self, instance):
-        return instance.name
+        return '%s %s' % (instance.cost.amount, instance.cost.currency)
 
     _cost.admin_order_field = 'cost'
