@@ -20,5 +20,11 @@
     {% include "crm/issue_form.html" %}
 {% endblock %}
 
+{% block basejs %}
+<script type="text/javascript">
+    Project.helpers.stripe_pk = function(){ return "{{ STRIPE_PK }}";}
+</script>
+{% endblock %}
+
 {% block js %} {# pages can require custom javascript files defining this block #}
 {% endblock %}

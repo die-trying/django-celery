@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load skype %}
+{% load contact_us %}
 
 {% with next_class=request.user.crm.classes.nearest_scheduled %}
     {% if next_class %}
@@ -8,7 +9,8 @@
             <p class="next_class__msg">{% trans "You are going to have a " %} {{ next_class.lesson_type | lower }}
                 {% trans 'with' %} {{ next_class.timeline.teacher.user.crm.full_name }},
                 {% trans 'starting at' %} <strong>{{ next_class.timeline.start | date:"SHORT_DATETIME_FORMAT" }}</strong>.
-                If something goes wrong, <a class="pseudo class_reschedule" data-class-id="{{ next_class.pk }}" href="#" data-toggle="modal" data-target="#issue-popup">{% trans 'contact us'%}</a> {% trans 'or' %} <a class="pseudo class_cancel" data-class-id="{{ next_class.pk }}" data-dismiss-after-cancellation=".next_class" href='#'>{% trans 'cancel' %}</a> it.
+                If something goes wrong, {% contact_us 'contact us' 'pseudo class_reschedule' %} {% trans 'or' %}
+                <a class="pseudo class_cancel" data-class-id="{{ next_class.pk }}" data-dismiss-after-cancellation=".next_class" href='#'>{% trans 'cancel' %}</a> it.
             </p>
             <p class="next_class__skype">{{ next_class.timeline.teacher.user.crm.first_name | capfirst }}'s skype is {% skype_chat next_class.timeline.teacher.user.crm %}.</p>
         </div>

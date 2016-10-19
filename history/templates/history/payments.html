@@ -8,7 +8,7 @@
     <h1>{% trans 'Your payments' %}</h1>
 </div>
 
-{% if user.crm.payments.count %}
+{% if user.crm.payment_events.count %}
     <div class="table-responsive">
         <table class="payments-history table table-striped">
             <thead>
@@ -20,7 +20,7 @@
                 </tr>
             </thead>
             <tbody>
-            {% for payment in user.crm.payments.all %}
+            {% for payment in user.crm.payment_events.all %}
                 <tr>
                     <th class="payments-history__first-column">{{ forloop.counter }}</th>
                     <td class="payments-history__date-column">{{ payment.time | naturalday:"SHORT_DATE_FORMAT" | capfirst }}, {{ payment.time | time:"TIME_FORMAT" }}</td>

@@ -10,6 +10,12 @@ def support_email(request):
     }
 
 
+def stripe_pk(request):
+    return {
+        'STRIPE_PK': settings.STRIPE_PK,
+    }
+
+
 def greeting(request):
     if request.user is None or request.user.id is None:
         return {}

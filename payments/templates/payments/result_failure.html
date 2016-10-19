@@ -1,0 +1,20 @@
+{% extends 'payments/result_base.html' %}
+{% load contact_us %}
+
+{% block title %}Payment error :-({% endblock %}
+{% block lead %}<p class="lead">Payment is denied by payment system</p>{% endblock %}
+
+{% block msg %}
+<p>
+All we know is that Stripe says: {{ msg | lower }} The best solution is to drop a line to us.
+</p>
+{% endblock %}
+
+{% block call_to_action %}
+<div class="row big-blue-button">
+    <div class="col-md-12 text-center">
+        {% contact_us 'Drop a line' 'btn btn-primary btn-lg' %}
+        <small>We'll take care about your payment</small>
+    </div>
+</div>
+{% endblock %}

@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from elk.admin.filters import BooleanFilter
 from market.admin.actions import MarkAsUsedForm, mark_as_used, renew
-from market.admin.components import BuyableModelAdmin
+from market.admin.components import ProductContainerAdmin
 from market.models import Class
 
 
@@ -29,7 +29,7 @@ class AvailableFilter(BooleanFilter):
 
 
 @admin.register(Class)
-class ClassAdmin(BuyableModelAdmin):
+class ClassAdmin(ProductContainerAdmin):
     verbose_name = 'Class'
     verbose_name_plural = 'Purchased lessons'
     model = Class

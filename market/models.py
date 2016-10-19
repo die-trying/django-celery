@@ -18,14 +18,19 @@ from timeline.models import Entry as TimelineEntry
 MARK_CLASSES_AS_USED_AFTER = timedelta(hours=1)
 
 
-class BuyableProductManager(models.Manager):
+class ProductContainerManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(active=1)
 
+    def active(self):
+        return self.get_queryset() \
+            .filter(is_fully_used=False) \
+            .first()
 
-class BuyableProduct(models.Model):
+
+class ProductContainer(models.Model):
     """
-    Parent of every buyable object
+    Base class for product container — object, that represents a customer perchase
     """
     ENABLED = (
         (0, 'Inactive'),
@@ -60,7 +65,6 @@ class BuyableProduct(models.Model):
         Make a brand-new class, like it was never used before
         """
         self.is_fully_used = False
-        self.timeline = None
         self.save()
 
     class Meta:
@@ -68,16 +72,12 @@ class BuyableProduct(models.Model):
         ordering = ('buy_date',)
 
 
-class SubscriptionManager(BuyableProductManager):
+class SubscriptionManager(ProductContainerManager):
     use_for_related_fields = True
-
-    def active(self):
-        return self.get_queryset() \
-            .filter(is_fully_used=False) \
-            .first()
+    pass
 
 
-class Subscription(BuyableProduct):
+class Subscription(ProductContainer):
     """
     Represents a single purchased subscription.
 
@@ -109,7 +109,7 @@ class Subscription(BuyableProduct):
         if not is_new:  # check, if we should enable\disable lessons
             self.__update_classes()
 
-        super(Subscription, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
         if is_new:
             self.__add_lessons_to_user()
@@ -180,7 +180,7 @@ class Subscription(BuyableProduct):
         return True
 
 
-class ClassesManager(BuyableProductManager):
+class ClassesManager(ProductContainerManager):
     """
     Almost all of this methods assume, that they are called from a related
     manager customer.classes, like customer.classes.nearest()
@@ -269,7 +269,7 @@ class ClassesManager(BuyableProductManager):
         return timezone.now()
 
 
-class Class(BuyableProduct):
+class Class(ProductContainer):
     """
     Represents a single purchased lesson.
 
@@ -486,6 +486,10 @@ class Class(BuyableProduct):
         entry.classes.remove(self, bulk=True)  # expcitly disable running of self.save()
         self.renew()
         entry.save()
+
+    def renew(self):
+        self.timeline = None
+        super().renew()
 
     def can_be_scheduled(self, entry):
         """

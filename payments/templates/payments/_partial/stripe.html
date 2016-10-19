@@ -1,0 +1,9 @@
+{# For internal use. Please use templatetag, for usage examples see payments/tests/functional/tests_payment_form.py #}
+<button class="btn btn-primary btn-stripe"
+    data-email="{{ crm.user.email }}"
+    data-amount="{{ amount }}"
+    data-stripe-amount="{{ stripe_amount }}"
+    data-currency="{{ currency }}"
+    data-name="{{ product.name }}"
+    data-product-type="{{ product_type }}"
+    data-product-id="{{ product.id }}">Pay by card</button>
