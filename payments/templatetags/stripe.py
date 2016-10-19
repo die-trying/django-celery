@@ -11,12 +11,18 @@ register = template.Library()
 
 @register.simple_tag(takes_context=True)
 def stripe_form(context, *args, **kwargs):
-    tpl = get_template('payments/_stripe.html')
+    tpl = get_template('payments/_partial/stripe.html')
 
     ctx = _ctx(*args, **kwargs)
     ctx['csrf_token'] = context.get('csrf_token')
 
     return tpl.render(Context(ctx))
+
+
+@register.simple_tag
+def stripe_processing_popup():
+    tpl = get_template('payments/_partial/processing-popup.html')
+    return tpl.render(Context({}))
 
 
 def _ctx(product, cost, crm):

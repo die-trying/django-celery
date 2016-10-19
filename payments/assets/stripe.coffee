@@ -1,3 +1,5 @@
+$processing_popup = $ '.payment-processing-popup'
+
 $.fn.stripe = () ->
   $this = $ this
 
@@ -6,6 +8,7 @@ $.fn.stripe = () ->
     image: 'https://stripe.com/img/documentation/checkout/marketplace.png'  # please change
     locale: 'auto'
     token: (token) ->  # POST server with token and payment params when stripe allowed the transaction
+      $processing_popup.modal 'show'
       $.post '/payments/process/',
         stripeToken: token.id
         amount: $this.data 'amount'
@@ -13,6 +16,7 @@ $.fn.stripe = () ->
         product_id: $this.data 'product-id'
         currency: $this.data 'currency'
       , (response) ->
+        $processing_popup.modal 'hide'
         window.location.href = response.result
 
     $this.on 'click', (e) ->  # open stripe form and request a payment

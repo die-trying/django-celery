@@ -3,12 +3,12 @@ from django.template import Context, Template
 from django.test import override_settings
 from moneyed import RUB, Money
 
-from elk.utils.testing import ClientTestCase, create_customer
+from elk.utils.testing import TestCase, create_customer
 from payments.templatetags import stripe
 from products.models import Product1
 
 
-class TestPaymentFormTag(ClientTestCase):
+class TestPaymentFormTag(TestCase):
     fixtures = ('products', 'lessons')
 
     @classmethod
@@ -55,3 +55,11 @@ class TestPaymentFormTag(ClientTestCase):
         self.assertIn('data-product-type="%d"' % self.product_type.pk, html)
         self.assertIn('data-amount="31.5"', html)
         self.assertIn('data-currency="RUB"', html)
+
+
+class TestPaymentProcessingPopup(TestCase):
+    def test_payment_proessing_popup(self):
+        tpl = Template("{% load stripe_processing_popup from stripe %} {% stripe_processing_popup %}")
+        html = tpl.render(Context({}))
+
+        self.assertIn('div class="modal payment-processing-popup', html)
