@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.template.defaultfilters import capfirst
 from django.utils import timezone
 from django.utils.dateformat import format
 from django.utils.translation import ugettext as _
@@ -189,6 +190,38 @@ class Entry(models.Model):
 
         return s
 
+    def event_title(self, for_whom='customer'):
+        """
+        Short event title
+        Like 'Signle lesson with Fedor' or 'Defining happyness with Marry'
+        """
+        lesson_type = capfirst(self.lesson.type_verbose_name)
+        lesson_name = self.lesson.name
+        teacher = self.teacher.user.crm.first_name
+
+        if for_whom == 'customer':
+            if hasattr(self.lesson, 'host'):
+                return "{lesson_name} with {teacher}".format(
+                    lesson_name=lesson_name,
+                    teacher=teacher,
+                )
+            else:
+                return '{lesson_type} with {teacher}'.format(
+                    lesson_type=lesson_type,
+                    teacher=teacher,
+                )
+
+        if for_whom == 'teacher':
+            customer = self.classes.first().customer.user.crm.full_name
+
+            if hasattr(self.lesson, 'host'):
+                return lesson_name
+            else:
+                return '{lesson_type} with {customer}'.format(
+                    lesson_type=lesson_type,
+                    customer=customer,
+                )
+
     def save(self, *args, **kwargs):
         self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
         self.__update_slots()  # update free slot count, check if no classes were added without spare slots for it
@@ -302,12 +335,12 @@ class Entry(models.Model):
             'slots_available': self.slots,
         }
 
-    def as_ical(self, title, tz=None):
+    def as_ical(self, for_whom='customer'):
         ical = Ical(
             start=self.start,
             end=self.end,
             uid=self.pk,
-            summary=title,
+            summary=self.event_title(for_whom),
         )
         return ical.as_string()
 

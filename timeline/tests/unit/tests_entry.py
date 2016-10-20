@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from freezegun import freeze_time
 from mixer.backend.django import mixer
 
-from elk.utils.testing import TestCase, create_customer, create_teacher
+from elk.utils.testing import ClassIntegrationTestCase, TestCase, create_customer, create_teacher
 from lessons import models as lessons
 from market.models import Class
 from timeline.models import Entry as TimelineEntry
@@ -152,3 +152,56 @@ class EntryTestCase(TestCase):
         entry.is_finished = True
         entry.save()
         self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 0)
+
+
+class TestEntryTitle(ClassIntegrationTestCase):
+    def test_customer_single_lesson(self):
+        self.lesson = lessons.OrdinaryLesson.get_default()
+
+        c = self._buy_a_lesson()
+        entry = self._create_entry()
+        self._schedule(c, entry)
+
+        title = c.timeline.event_title()  # we use `c.timeline` instead of `entry` because scheduling has created another timeline entry and our entry is invalid now
+
+        self.assertIn('Single lesson', title)
+        self.assertIn('with %s' % self.host.user.crm.first_name, title)
+
+    def test_customer_hosted_lesson(self):
+        self.lesson = mixer.blend(lessons.MasterClass, name='Test Lesson Name', host=self.host, slots=5)
+
+        entry = self._create_entry()
+        entry.slots = 5
+        entry.save()
+        c = self._buy_a_lesson()
+        self._schedule(c, entry)
+
+        title = entry.event_title()
+
+        self.assertIn('Test Lesson Name', title)
+        self.assertIn('with %s' % self.host.user.crm.first_name, title)
+
+    def test_teacher_single_lesson(self):
+        self.lesson = lessons.OrdinaryLesson.get_default()
+
+        c = self._buy_a_lesson()
+        entry = self._create_entry()
+        self._schedule(c, entry)
+
+        title = c.timeline.event_title(for_whom='teacher')  # we use `c.timeline` instead of `entry` because scheduling has created another timeline entry and our entry is invalid now
+
+        self.assertIn('Single lesson', title)
+        self.assertIn('with %s' % self.customer.first_name, title)
+
+    def test_teacher_hosted_Lesson(self):
+        self.lesson = mixer.blend(lessons.MasterClass, name='Test Lesson Name', host=self.host, slots=5)
+
+        entry = self._create_entry()
+        entry.slots = 5
+        entry.save()
+        c = self._buy_a_lesson()
+        self._schedule(c, entry)
+
+        title = entry.event_title(for_whom='teacher')
+
+        self.assertEqual(title, 'Test Lesson Name')
