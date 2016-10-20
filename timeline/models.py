@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+import icalendar
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -7,12 +8,11 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
 from django.utils.dateformat import format
-from django.utils.timezone import localtime
 from django.utils.translation import ugettext as _
 
 from accounting.models import Event as AccEvent
 from extevents.models import ExternalEvent
-from teachers.models import Absence, Teacher, WorkingHours
+from teachers.models import Absence, WorkingHours
 
 CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)
 
@@ -136,7 +136,7 @@ class Entry(models.Model):
 
     objects = EntryManager()
 
-    teacher = models.ForeignKey(Teacher, related_name='timeline_entries', on_delete=models.PROTECT)
+    teacher = models.ForeignKey('teachers.Teacher', related_name='timeline_entries', on_delete=models.PROTECT)
 
     start = models.DateTimeField()
     end = models.DateTimeField()
@@ -290,8 +290,8 @@ class Entry(models.Model):
         """
         Dictionary representation of a model. For details see model description.
         """
-        start = localtime(self.start)
-        end = localtime(self.end)
+        start = timezone.localtime(self.start)
+        end = timezone.localtime(self.end)
         return {
             'id': self.pk,
             'title': self.__str__(),
@@ -301,6 +301,17 @@ class Entry(models.Model):
             'slots_taken': self.taken_slots,
             'slots_available': self.slots,
         }
+
+    def _ical(self, title, tz=None):
+        cal = icalendar.Calendar()
+
+        event = icalendar.Event()
+        event.add('dtstart', self.start)
+        event.add('dtend', self.end)
+        event.add('summary', title)
+
+        cal.add_component(event)
+        return cal.to_ical()
 
     def clean(self):  # NOQA
         if not self.allow_overlap and self.is_overlapping():
