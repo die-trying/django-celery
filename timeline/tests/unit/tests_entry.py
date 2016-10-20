@@ -1,13 +1,13 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest.mock import MagicMock
 
+import icalendar
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.utils import timezone
 from freezegun import freeze_time
 from mixer.backend.django import mixer
 
-from elk.utils.testing import TestCase, create_customer, create_teacher
+from elk.utils.testing import ClassIntegrationTestCase, TestCase, create_customer, create_teacher
 from lessons import models as lessons
 from market.models import Class
 from timeline.models import Entry as TimelineEntry
@@ -99,6 +99,19 @@ class EntryTestCase(TestCase):
             entry.classes.add(c)  # please don't use it in your code! use :model:`market.Class`.assign_entry() instead
             entry.save()
 
+    def test_as_ical(self):
+        """
+        Test ical representation
+        """
+        lesson = mixer.blend(lessons.MasterClass, host=self.teacher1)
+        entry = mixer.blend(TimelineEntry, lesson=lesson, teacher=self.teacher1)
+        ical = icalendar.Calendar.from_ical(entry.as_ical('test title'))
+
+        ev = ical.walk('VEVENT')[0]
+
+        self.assertEqual(ev['dtstart'].dt, entry.start)
+        self.assertEqual(ev['dtend'].dt, entry.end)
+
     def test_assign_entry_to_a_different_teacher(self):
         """
         We should not have possibility to assign an event with different host
@@ -123,19 +136,72 @@ class EntryTestCase(TestCase):
 
     def test_to_be_marked_as_finished_queryset(self):
         lesson = mixer.blend(lessons.MasterClass, host=self.teacher1, duration='01:00:00')
-        mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson, start=timezone.make_aware(datetime(2016, 12, 15, 15, 14)))
+        mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson, start=self.tzdatetime(2016, 12, 15, 15, 14))
 
-        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=timezone.make_aware(datetime(2016, 12, 15, 17, 15)))
+        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=self.tzdatetime(2016, 12, 15, 17, 15))
         self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 1)
 
-        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=timezone.make_aware(datetime(2016, 12, 15, 17, 13)))
+        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=self.tzdatetime(2016, 12, 15, 17, 13))
         self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 0)  # two minutes in past this entry shoud not be marked as finished
 
     def test_dont_automaticaly_mark_finished_entries_as_finished_one_more_time(self):
         lesson = mixer.blend(lessons.MasterClass, host=self.teacher1, duration='01:00:00')
-        entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson, start=timezone.make_aware(datetime(2016, 12, 15, 15, 14)))
+        entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson, start=self.tzdatetime(2016, 12, 15, 15, 14))
 
-        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=timezone.make_aware(datetime(2016, 12, 15, 17, 15)))
+        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=self.tzdatetime(2016, 12, 15, 17, 15))
         entry.is_finished = True
         entry.save()
         self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 0)
+
+
+class TestEntryTitle(ClassIntegrationTestCase):
+    def test_customer_single_lesson(self):
+        self.lesson = lessons.OrdinaryLesson.get_default()
+
+        c = self._buy_a_lesson()
+        entry = self._create_entry()
+        self._schedule(c, entry)
+
+        title = c.timeline.event_title()  # we use `c.timeline` instead of `entry` because scheduling has created another timeline entry and our entry is invalid now
+
+        self.assertIn('Single lesson', title)
+        self.assertIn('with %s' % self.host.user.crm.first_name, title)
+
+    def test_customer_hosted_lesson(self):
+        self.lesson = mixer.blend(lessons.MasterClass, name='Test Lesson Name', host=self.host, slots=5)
+
+        entry = self._create_entry()
+        entry.slots = 5
+        entry.save()
+        c = self._buy_a_lesson()
+        self._schedule(c, entry)
+
+        title = entry.event_title()
+
+        self.assertIn('Test Lesson Name', title)
+        self.assertIn('with %s' % self.host.user.crm.first_name, title)
+
+    def test_teacher_single_lesson(self):
+        self.lesson = lessons.OrdinaryLesson.get_default()
+
+        c = self._buy_a_lesson()
+        entry = self._create_entry()
+        self._schedule(c, entry)
+
+        title = c.timeline.event_title(for_whom='teacher')  # we use `c.timeline` instead of `entry` because scheduling has created another timeline entry and our entry is invalid now
+
+        self.assertIn('Single lesson', title)
+        self.assertIn('with %s' % self.customer.first_name, title)
+
+    def test_teacher_hosted_Lesson(self):
+        self.lesson = mixer.blend(lessons.MasterClass, name='Test Lesson Name', host=self.host, slots=5)
+
+        entry = self._create_entry()
+        entry.slots = 5
+        entry.save()
+        c = self._buy_a_lesson()
+        self._schedule(c, entry)
+
+        title = entry.event_title(for_whom='teacher')
+
+        self.assertEqual(title, 'Test Lesson Name')

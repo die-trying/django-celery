@@ -5,14 +5,15 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.template.defaultfilters import capfirst
 from django.utils import timezone
 from django.utils.dateformat import format
-from django.utils.timezone import localtime
 from django.utils.translation import ugettext as _
 
 from accounting.models import Event as AccEvent
 from extevents.models import ExternalEvent
-from teachers.models import Absence, Teacher, WorkingHours
+from mailer.ical import Ical
+from teachers.models import Absence, WorkingHours
 
 CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)
 
@@ -136,7 +137,7 @@ class Entry(models.Model):
 
     objects = EntryManager()
 
-    teacher = models.ForeignKey(Teacher, related_name='timeline_entries', on_delete=models.PROTECT)
+    teacher = models.ForeignKey('teachers.Teacher', related_name='timeline_entries', on_delete=models.PROTECT)
 
     start = models.DateTimeField()
     end = models.DateTimeField()
@@ -189,6 +190,38 @@ class Entry(models.Model):
 
         return s
 
+    def event_title(self, for_whom='customer'):
+        """
+        Short event title
+        Like 'Signle lesson with Fedor' or 'Defining happyness with Marry'
+        """
+        lesson_type = capfirst(self.lesson.type_verbose_name)
+        lesson_name = self.lesson.name
+        teacher = self.teacher.user.crm.first_name
+
+        if for_whom == 'customer':
+            if hasattr(self.lesson, 'host'):
+                return "{lesson_name} with {teacher}".format(
+                    lesson_name=lesson_name,
+                    teacher=teacher,
+                )
+            else:
+                return '{lesson_type} with {teacher}'.format(
+                    lesson_type=lesson_type,
+                    teacher=teacher,
+                )
+
+        if for_whom == 'teacher':
+            customer = self.classes.first().customer.user.crm.full_name
+
+            if hasattr(self.lesson, 'host'):
+                return lesson_name
+            else:
+                return '{lesson_type} with {customer}'.format(
+                    lesson_type=lesson_type,
+                    customer=customer,
+                )
+
     def save(self, *args, **kwargs):
         self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
         self.__update_slots()  # update free slot count, check if no classes were added without spare slots for it
@@ -200,17 +233,6 @@ class Entry(models.Model):
             super().save(*args, **kwargs)
         else:
             self.delete()
-
-    def dangerously_save(self):
-        """
-        Save a timeline entry despite cleaning process. In fact it's your SUPERPOWER,
-        so please don't use it in any user-accessable code, only from the shell.
-        """
-        self.__update_slots()
-        super().save()
-
-        if self.__self_delete_if_needed() or self.taken_slots == 0:  # if entry should be deleted
-            self.dangerously_delete()
 
     def delete(self, src='teacher'):
         """
@@ -290,8 +312,8 @@ class Entry(models.Model):
         """
         Dictionary representation of a model. For details see model description.
         """
-        start = localtime(self.start)
-        end = localtime(self.end)
+        start = timezone.localtime(self.start)
+        end = timezone.localtime(self.end)
         return {
             'id': self.pk,
             'title': self.__str__(),
@@ -301,6 +323,16 @@ class Entry(models.Model):
             'slots_taken': self.taken_slots,
             'slots_available': self.slots,
         }
+
+    def as_ical(self, for_whom='customer'):
+        ical = Ical(
+            start=self.start,
+            end=self.end,
+            uid=self.pk,
+            summary=self.event_title(for_whom),
+        )
+        return ical.as_string()
+
 
     def clean(self):  # NOQA
         if not self.allow_overlap and self.is_overlapping():

@@ -1,7 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.core.urlresolvers import reverse
-from django.utils import timezone
 from mixer.backend.django import mixer
 
 from elk.utils.testing import ClientTestCase, create_customer, create_teacher
@@ -19,7 +18,7 @@ class EntryCardTest(ClientTestCase):
         self.entry = mixer.blend(TimelineEntry,
                                  teacher=self.teacher,
                                  lesson=self.lesson,
-                                 start=timezone.make_aware(datetime(2032, 12, 1, 15, 0), timezone.get_default_timezone())
+                                 start=self.tzdatetime(2032, 12, 1, 15, 0),
                                  )
 
     def test_404_for_wrong_teacher(self):

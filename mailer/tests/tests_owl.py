@@ -73,6 +73,15 @@ class TestTemplatedMail(TestCase):
         m = owl.msg
         self.assertIn('reply@to.to', m.reply_to)
 
+    def test_attaching(self):
+        owl = self._owl()
+        owl.attach(filename='testing_file_name_100500.txt', content=b'just testing')
+
+        self.assertEqual(len(owl.msg.attachments), 1)
+
+        att = owl.msg.attachments[0]
+        self.assertIn('testing_file_name_100500.txt', att)
+
     @patch('mailer.owl.logger')
     def test_not_sending_mail_without_reciepient(self, logger):
 
