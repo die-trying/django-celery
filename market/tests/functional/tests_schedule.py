@@ -111,6 +111,9 @@ class ScheduleTestCase(TestCase):
         self.assertIn(self.host.user.email, out_emails)
         self.assertIn(self.customer.user.email, out_emails)
 
+        for email in mail.outbox:
+            self.assertEqual(len(email.attachments), 1)  # should add an attachment
+
     @override_settings(EMAIL_ASYNC=False)
     def test_cancellation_email(self):
         lesson = products.OrdinaryLesson.get_default()

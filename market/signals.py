@@ -18,6 +18,7 @@ def notify_student_class_scheduled(sender, **kwargs):
         to=[c.customer.user.email],
         timezone=c.customer.timezone,
     )
+    owl.attach('elk-class.ics', content=c.timeline.as_ical(for_whom='customer'))
     owl.send()
 
 
@@ -32,6 +33,7 @@ def notify_teacher_class_scheduled(sender, **kwargs):
         to=[c.timeline.teacher.user.email],
         timezone=c.timeline.teacher.user.crm.timezone,
     )
+    owl.attach('elk-class.ics', content=c.timeline.as_ical(for_whom='teacher'))
     owl.send()
 
 
