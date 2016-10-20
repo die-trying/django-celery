@@ -34,3 +34,14 @@ class TestIcal(TestCase):
 
         self.assertIsNotNone(ev)
         self.assertEqual(ev['summary'], 'tst-smrr')
+
+    def test_calendar_boilerplate(self):
+        c = icalendar.Calendar.from_ical(
+            self.ical.as_string()
+        )
+        self.assertIn('ELK', c['prodid'])
+        self.assertIn('2.0', c['version'])
+        self.assertIn('REQUEST', c['method'])
+
+        alarm = c.walk('VALARM')[0]
+        self.assertIn('DISPLAY', alarm.to_ical().decode())
