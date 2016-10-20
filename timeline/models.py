@@ -234,17 +234,6 @@ class Entry(models.Model):
         else:
             self.delete()
 
-    def dangerously_save(self):
-        """
-        Save a timeline entry despite cleaning process. In fact it's your SUPERPOWER,
-        so please don't use it in any user-accessable code, only from the shell.
-        """
-        self.__update_slots()
-        super().save()
-
-        if self.__self_delete_if_needed() or self.taken_slots == 0:  # if entry should be deleted
-            self.dangerously_delete()
-
     def delete(self, src='teacher'):
         """
         Unschedule all attached classes before deletion. Unscheduling a class
