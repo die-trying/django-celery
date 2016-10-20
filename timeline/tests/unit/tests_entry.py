@@ -1,9 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest.mock import MagicMock
 
+import icalendar
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.utils import timezone
 from freezegun import freeze_time
 from mixer.backend.django import mixer
 
@@ -99,6 +99,19 @@ class EntryTestCase(TestCase):
             entry.classes.add(c)  # please don't use it in your code! use :model:`market.Class`.assign_entry() instead
             entry.save()
 
+    def test_as_ical(self):
+        """
+        Test ical representation
+        """
+        lesson = mixer.blend(lessons.MasterClass, host=self.teacher1)
+        entry = mixer.blend(TimelineEntry, lesson=lesson, teacher=self.teacher1)
+        ical = icalendar.Calendar.from_ical(entry.as_ical('test title'))
+
+        ev = ical.walk('VEVENT')[0]
+
+        self.assertEqual(ev['dtstart'].dt, entry.start)
+        self.assertEqual(ev['dtend'].dt, entry.end)
+
     def test_assign_entry_to_a_different_teacher(self):
         """
         We should not have possibility to assign an event with different host
@@ -123,19 +136,19 @@ class EntryTestCase(TestCase):
 
     def test_to_be_marked_as_finished_queryset(self):
         lesson = mixer.blend(lessons.MasterClass, host=self.teacher1, duration='01:00:00')
-        mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson, start=timezone.make_aware(datetime(2016, 12, 15, 15, 14)))
+        mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson, start=self.tzdatetime(2016, 12, 15, 15, 14))
 
-        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=timezone.make_aware(datetime(2016, 12, 15, 17, 15)))
+        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=self.tzdatetime(2016, 12, 15, 17, 15))
         self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 1)
 
-        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=timezone.make_aware(datetime(2016, 12, 15, 17, 13)))
+        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=self.tzdatetime(2016, 12, 15, 17, 13))
         self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 0)  # two minutes in past this entry shoud not be marked as finished
 
     def test_dont_automaticaly_mark_finished_entries_as_finished_one_more_time(self):
         lesson = mixer.blend(lessons.MasterClass, host=self.teacher1, duration='01:00:00')
-        entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson, start=timezone.make_aware(datetime(2016, 12, 15, 15, 14)))
+        entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson, start=self.tzdatetime(2016, 12, 15, 15, 14))
 
-        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=timezone.make_aware(datetime(2016, 12, 15, 17, 15)))
+        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=self.tzdatetime(2016, 12, 15, 17, 15))
         entry.is_finished = True
         entry.save()
         self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 0)

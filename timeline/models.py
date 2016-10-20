@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-import icalendar
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -12,6 +11,7 @@ from django.utils.translation import ugettext as _
 
 from accounting.models import Event as AccEvent
 from extevents.models import ExternalEvent
+from mailer.ical import Ical
 from teachers.models import Absence, WorkingHours
 
 CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)
@@ -302,16 +302,15 @@ class Entry(models.Model):
             'slots_available': self.slots,
         }
 
-    def _ical(self, title, tz=None):
-        cal = icalendar.Calendar()
+    def as_ical(self, title, tz=None):
+        ical = Ical(
+            start=self.start,
+            end=self.end,
+            uid=self.pk,
+            summary=title,
+        )
+        return ical.as_string()
 
-        event = icalendar.Event()
-        event.add('dtstart', self.start)
-        event.add('dtend', self.end)
-        event.add('summary', title)
-
-        cal.add_component(event)
-        return cal.to_ical()
 
     def clean(self):  # NOQA
         if not self.allow_overlap and self.is_overlapping():
