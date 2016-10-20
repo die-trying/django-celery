@@ -86,7 +86,9 @@ class Owl():
     @disable_i18n
     def send(self):
         """
-        On the production host — run through celery
+        Send message
+
+        On the production host uses celery, on dev — django configured backend.
         """
         if not self.clean():
             logger.warning('Trying to send invalid message!')
@@ -102,6 +104,14 @@ class Owl():
     def queue(self):
         self.headers['X-ELK-Queued'] = 'True'
         send_email.delay(owl=self)
+
+    def attach(self, filename=None, content=None, mimetype=None):
+        """
+        Add an attachment to the message
+
+        See http://django-mail-templated.readthedocs.io/en/master/api.html?highlight=attach#mail_templated.EmailMessage.attach
+        """
+        return self.msg.attach(filename, content, mimetype)
 
     def clean(self):
         if not self.to or not self.to[0]:
