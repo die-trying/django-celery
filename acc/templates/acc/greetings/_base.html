@@ -19,7 +19,7 @@
         {% endblock %}
 
         {% block disclaimer %}
-        <p>We want to develop this tool together with you, so we've launched
+        <p class="homepage-disclaimer">We want to develop this tool together with you, so we've launched
             the pre-production version and started keeping track of all your lesosns.
             Please be patient for some bugs, and feel free to
             {% contact_us 'drop us a line' 'pseudo' %} if you fill something goes wrong.
@@ -35,13 +35,12 @@
 </div>
 
 {% block call_to_action %}
-<div class="row home-page-big-blue-button">
+<div class="row homepage-big-blue-button">
     <div class="col-md-12 text-center">
-        {% if request.user.crm.can_schedule_classes %}
-        <button class="btn btn-primary btn-lg load_schedule_popup" data-toggle="modal" data-target=".schedule-popup-container">Plan a lesson</button>
+        {% if request.user.crm.classes.nearest_scheduled %}
+            <button class="btn btn-primary btn-lg load_schedule_popup" data-toggle="modal" data-target=".schedule-popup-container">Plan another lesson</button>
         {% else %}
-        <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="issue-popup">Contact Fedor to redeem lessons</button>
-        <small>You'll be able to book your lessons right after that</small>
+            <button class="btn btn-primary btn-lg load_schedule_popup" data-toggle="modal" data-target=".schedule-popup-container">Plan a lesson</button>
         {% endif %}
     </div>
 </div>
