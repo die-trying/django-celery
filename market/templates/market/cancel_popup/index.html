@@ -8,13 +8,13 @@
         <div class="modal-body">
             <div class="row">
                 <div class="col-md-12">
-                    <p>{% trans "We'll wait untill it's comfortable for you to schedule a next class." %}</p>
+                    <p>{% trans "We'll wait untill it's convenient for you to schedule a next class." %}</p>
                 </div>
             </div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">No, i'm not sure</button>
-            <button type="button" class="btn btn-primary" data-class-cancellation-url="{% url 'market:cancel' object.pk %}">Cancel my lesson</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">I'm not sure</button>
+            <button type="button" class="btn btn-primary class_cancel_popup__submit" data-loading-text="Cancelling" data-class-cancellation-url="{% url 'market:cancel' object.pk %}">Cancel my lesson!</button>
         </div>
     </div>
 </div>
