@@ -13,7 +13,7 @@ from django.utils.translation import ugettext as _
 from accounting.models import Event as AccEvent
 from extevents.models import ExternalEvent
 from mailer.ical import Ical
-from teachers.models import Absence, WorkingHours
+from teachers.models import Absence
 
 CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)
 
@@ -271,8 +271,8 @@ class Entry(models.Model):
         if self.lesson:
             self.__get_data_from_lesson()   # When the entry is not saved, we can run into situation when we know the lesson, but don't know the end of entry.
 
-        hours_start = WorkingHours.objects.for_date(teacher=self.teacher, date=self.start)
-        hours_end = WorkingHours.objects.for_date(teacher=self.teacher, date=self.end)
+        hours_start = self.teacher.working_hours.for_date(date=self.start)
+        hours_end = self.teacher.working_hours.for_date(date=self.end)
 
         if hours_start is None or hours_end is None:
             return False

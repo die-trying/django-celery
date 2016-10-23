@@ -186,7 +186,7 @@ class Teacher(models.Model):
             return self.__find_timeline_entries(date=date, **kwargs)
 
         # otherwise — return all available time based on working hours
-        hours = WorkingHours.objects.for_date(teacher=self, date=date)
+        hours = self.working_hours.for_date(date=date)
         if hours is None:
             return None
         return self.__all_free_slots(hours.start, hours.end, period)
@@ -302,7 +302,7 @@ class Teacher(models.Model):
 
 
 class WorkingHoursManager(models.Manager):
-    def for_date(self, date, teacher):
+    def for_date(self, date):
         """
         Return working hours object for the date.
 
@@ -313,7 +313,7 @@ class WorkingHoursManager(models.Manager):
         date = timezone.localtime(date)
 
         try:
-            hours = self.get(teacher=teacher, weekday=date.weekday())
+            hours = self.get(weekday=date.weekday())
         except ObjectDoesNotExist:
             return None
 

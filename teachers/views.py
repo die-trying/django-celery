@@ -28,3 +28,16 @@ class TeacherDetail(DetailView):
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['timeslots'] = list(self._timeslots(ctx['object']))
+
+        return ctx
+
+    def _timeslots(self, teacher):
+        for date in self.request.user.crm.classes.dates_for_planning():
+            yield {
+                'date': date,
+                'slots': teacher.find_free_slots(date)
+            }
