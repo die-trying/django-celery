@@ -17,7 +17,7 @@ class EntryCRUDTest(ClientTestCase):
     Test hand-crafted form for event editing throught the calendar.
     """
     def setUp(self):
-        self.teacher = create_teacher()
+        self.teacher = create_teacher(works_24x7=True)
         self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher, duration=timedelta(minutes=33))
         self.lesson_type = self.lesson.get_contenttype().pk
 
@@ -62,8 +62,6 @@ class EntryCRUDTest(ClientTestCase):
 
         entry = TimelineEntry.objects.get(pk=self.added_entry['id'])
         self.assertIsNotNone(entry)
-
-        self.assertTrue(entry.allow_besides_working_hours)
 
     def _update(self):
         pk = self.added_entry['id']

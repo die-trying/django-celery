@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.test import override_settings
 from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_teacher
@@ -106,6 +107,7 @@ class TestOverlapValidation(EntryValidationTestCase):
             self.assertIsNotNone(entry)  # should not throw anything
 
 
+@override_settings(TIME_ZONE='UTC')
 class TestWorkingHoursValiation(EntryValidationTestCase):
     def test_working_hours(self):
         mixer.blend(WorkingHours, teacher=self.teacher, start='12:00', end='13:00', weekday=0)
@@ -170,8 +172,9 @@ class TestWorkingHoursValiation(EntryValidationTestCase):
             end=self.tzdatetime(2032, 5, 3, 14, 0),
             allow_besides_working_hours=False
         )
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(ValidationError, msg='Entry does not fit teachers working hours'):
             entry.clean()
+
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
         entry.save()
         self.assertIsNotNone(entry.pk)  # should be saved now
@@ -237,7 +240,6 @@ class TestTeacherPresenceValidation(EntryValidationTestCase):
             lesson=self.lesson,
             start=self.tzdatetime(2016, 5, 3, 13, 30),
             end=self.tzdatetime(2016, 5, 3, 14, 00),
-            allow_when_teacher_is_busy=False,
         )
         vacation = Absence(
             type='vacation',
@@ -260,52 +262,12 @@ class TestExternalEventValidation(EntryValidationTestCase):
             end=self.tzdatetime(2032, 5, 3, 14, 00),
         )
 
-    def test_teacher_available_true(self):
-        self.assertTrue(self.entry.teacher_has_no_events())
-
-    def test_teacher_available_true_becuase_of_event_is_for_another_teacher(self):
-        mixer.blend(
-            ExternalEvent,
-            teacher=create_teacher(),  # some other teacher, not the one owning self.entry
-            start=self.tzdatetime(2032, 5, 2, 00, 00),
-            end=self.tzdatetime(2032, 5, 5, 23, 59),
-        )
-        self.assertTrue(self.entry.teacher_has_no_events())
-
-    def test_teacher_available_false(self):
-        mixer.blend(
-            ExternalEvent,
-            teacher=self.teacher,
-            start=self.tzdatetime(2032, 5, 2, 00, 00),
-            end=self.tzdatetime(2032, 5, 5, 23, 59),
-        )
-        self.assertFalse(self.entry.teacher_has_no_events())
-
-    def test_teacher_has_events_due_to_event_starts_inside_of_period(self):
-        mixer.blend(
-            ExternalEvent,
-            teacher=self.teacher,
-            start=self.tzdatetime(2032, 5, 3, 13, 45),
-            end=self.tzdatetime(2032, 5, 5, 23, 59),
-        )
-        self.assertFalse(self.entry.teacher_has_no_events())
-
-    def test_teacher_has_events_due_to_event_ends_inside_of_period(self):
-        mixer.blend(
-            ExternalEvent,
-            teacher=self.teacher,
-            start=self.tzdatetime(2032, 5, 2, 00, 00),
-            end=self.tzdatetime(2032, 5, 3, 13, 45),
-        )
-        self.assertFalse(self.entry.teacher_has_no_events())
-
     def test_cant_save_due_to_teacher_has_events(self):
         entry = TimelineEntry(
             teacher=self.teacher,
             lesson=self.lesson,
             start=self.tzdatetime(2016, 5, 3, 13, 30),
             end=self.tzdatetime(2016, 5, 3, 14, 00),
-            allow_when_teacher_has_external_events=False,
         )
         mixer.blend(
             ExternalEvent,

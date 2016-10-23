@@ -39,7 +39,7 @@ class TestClassManager(TestCase):
         replace the above lines with the SortingHat invocation
         """
         c.schedule(
-            teacher=create_teacher(),
+            teacher=create_teacher(works_24x7=True),
             date=date,
             allow_besides_working_hours=True,
         )

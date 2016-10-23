@@ -11,7 +11,7 @@ from timeline.models import Entry as TimelineEntry
 
 class EntryCardTest(ClientTestCase):
     def setUp(self):
-        self.teacher = create_teacher()
+        self.teacher = create_teacher(works_24x7=True)
         self.customer = create_customer()
         self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher, duration=timedelta(minutes=33), slots=8)
 

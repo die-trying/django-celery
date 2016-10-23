@@ -1,5 +1,6 @@
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db.models import F
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -164,7 +165,7 @@ class SortingHat():
                     teacher=self.teacher,
                     date=self.date
                 )
-        except CannotBeScheduled:
+        except (CannotBeScheduled, ValidationError):
             """
             Should not be thrown in normal circumstances. When you see this error,
             check the method :model:`market.class`.can_be_scheduled() — there are all

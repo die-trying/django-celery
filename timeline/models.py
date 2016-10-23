@@ -11,8 +11,8 @@ from django.utils.dateformat import format
 from django.utils.translation import ugettext as _
 
 from accounting.models import Event as AccEvent
-from extevents.models import ExternalEvent
 from mailer.ical import Ical
+from market.auto_schedule import AutoSchedule
 from teachers.models import Absence
 
 CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)
@@ -92,10 +92,7 @@ class Entry(models.Model):
     This model is also used to validate a distinct point in the timetable. The common
     way to validate is to create an entry and run the model clean() method. All checks
     are configurable by boolean instance parameters:
-        * allow_overlap: allow entries, that overlap with others
-        * allow_when_teacher_is_busy: allow entries, when there is a registered :model:`teachers.Absence`
         * allow_besides_working_hours: allow entries the don't fit teachers :model:`teachers.WorkingHours`
-        * allow_when_teacher_has_external_events: allow entries that overlap some :model:`extevents.ExternalEvent`, e.g. teachers google calendar
 
     By default all this checks are disabled, you should enable them manualy when creating a model:
     ::
@@ -104,10 +101,7 @@ class Entry(models.Model):
             teacher=self,
             start=start,
             end=start + period,
-            allow_overlap=False,
             allow_besides_working_hours=False,
-            allow_when_teacher_is_busy=False,
-            allow_when_teacher_has_external_events=False,
         )
         try:
             entry.clean()
@@ -141,10 +135,8 @@ class Entry(models.Model):
 
     start = models.DateTimeField()
     end = models.DateTimeField()
-    allow_overlap = models.BooleanField(default=True)
+
     allow_besides_working_hours = models.BooleanField(default=True)
-    allow_when_teacher_is_busy = models.BooleanField(default=True)
-    allow_when_teacher_has_external_events = models.BooleanField(default=True)
 
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
     lesson_id = models.PositiveIntegerField(null=True, blank=True)
@@ -291,15 +283,6 @@ class Entry(models.Model):
 
         return True
 
-    def teacher_has_no_events(self):
-        """
-        Check if teaher has no external events registered
-        """
-        if ExternalEvent.objects.filter(teacher=self.teacher, start__lt=self.end, end__gt=self.start):
-            return False
-
-        return True
-
     def is_in_past(self):
         """
         Check, if timeline entry is in past
@@ -338,20 +321,14 @@ class Entry(models.Model):
         """
         TODO: merge it with market.AutoSchedule
         """
-        if not self.allow_overlap and self.is_overlapping():
-            raise ValidationError('Entry time overlapes with some other entry of this teacher')
+
+        self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
+
+        auto_schedule = AutoSchedule(self.teacher, exclude_timeline_entries=[self.pk])
+        auto_schedule.clean(self.start, self.end)
 
         if not self.allow_besides_working_hours and not self.is_fitting_working_hours():
-            raise ValidationError('Entry time does not fit teachers working hours')
-
-        if not self.allow_when_teacher_is_busy and not self.teacher_is_present():
-            raise ValidationError('Teacher is not available for the entry period')
-
-        if not self.allow_when_teacher_has_external_events and not self.teacher_has_no_events():
-            raise ValidationError('Teacher has external events in this period')
-
-        if self.start < timezone.now():
-            raise ValidationError('Could not move timeline entry to the past!')
+            raise ValidationError('Entry does not fit teachers working hours')
 
     def __self_delete_if_needed(self):
         """

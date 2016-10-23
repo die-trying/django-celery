@@ -463,8 +463,7 @@ class Class(ProductContainer):
                 teacher=teacher,
                 lesson=self.lesson_type.model_class().get_default(),
                 start=date,
-                allow_besides_working_hours=allow_besides_working_hours,
-                allow_overlap=allow_overlap,
+                allow_besides_working_hours=False,
             )
 
     def cancel(self, src='teacher', request=None):
@@ -502,16 +501,6 @@ class Class(ProductContainer):
             return False
 
         if self.lesson_type != entry.lesson_type:
-            return False
-
-        try:
-            entry.clean()
-        except ValidationError:
-            """
-            If you can see this error, please investigate the way timenetry was crated by.
-            Possibly there is a place in the system, that generates unschedulable timeline entries.
-            """
-            logger.error("Timeline entry can't be scheduled")
             return False
 
         return True
