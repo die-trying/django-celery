@@ -1,6 +1,9 @@
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.generic import DetailView
 
 from teachers.models import Teacher, WorkingHours
 
@@ -15,3 +18,13 @@ def hours(request, username):
         hours_list.append(hours.as_dict())
 
     return JsonResponse(hours_list, safe=False)
+
+
+class TeacherDetail(DetailView):
+    model = Teacher
+    slug_url_kwarg = 'username'
+    slug_field = 'user__username'
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)

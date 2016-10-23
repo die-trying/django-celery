@@ -1,0 +1,19 @@
+{% extends 'elk/base.html' %}
+{% load django_markdown %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ object.user.crm.full_name }}</h1>
+</div>
+<div class="row">
+    <div class="col-md-3">
+        <img class="teacher-face img-circle" src="{{ object.get_teacher_photo }}" alt="{{ object.user.crm.full_name }}">
+            <div class="teacher-card__contacts">
+                
+            </div>
+    </div>
+    <div class="col-md-6">
+        <p>{{ object.description | markdown }}</p>
+    </div>
+</div>
+{% endblock %}
