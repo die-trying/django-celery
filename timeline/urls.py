@@ -28,10 +28,6 @@ urlpatterns = [
         view=views.calendar_delete,
         name='timeline_delete',
         ),
-    url(regex=r'(?P<username>.+)/check_entry/(?P<start>[\d\:\ \-]+)/(?P<end>[\d\:\ \-]+)/$',
-        view=views.check_entry,
-        name='check_entry',
-        ),
     url(r'(?P<username>.+).json', views.calendar_json, name='timeline.json'),
     url(r'(?P<username>.+)/$', views.calendar, name='timeline'),
 ]
