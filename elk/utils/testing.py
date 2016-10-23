@@ -29,6 +29,15 @@ def __add_all_lessons(teacher):
         teacher.allowed_lessons.add(lesson)
 
 
+def __add_working_hours_24x7(teacher):
+    for weekday in range(0, 7):
+        teacher.working_hours.create(
+            weekday=weekday,
+            start='00:00',
+            end='23:59',
+        )
+
+
 def create_user(**kwargs):
     """
     Generate a simple user object.
@@ -60,7 +69,7 @@ def create_customer(user=None, **kwargs):
     return user.crm
 
 
-def create_teacher(accepts_all_lessons=True):
+def create_teacher(accepts_all_lessons=True, works_24x7=False):
     """
     Generate a simple teacher object.
     """
@@ -71,6 +80,9 @@ def create_teacher(accepts_all_lessons=True):
 
     if accepts_all_lessons:
         __add_all_lessons(teacher)
+
+    if works_24x7:
+        __add_working_hours_24x7(teacher)
 
     return teacher
 
@@ -186,11 +198,12 @@ class ClassIntegrationTestCase(ClientTestCase):
     """
 
     def setUp(self):
-        self.host = create_teacher()
+        self.host = create_teacher(accepts_all_lessons=True, works_24x7=True)
         self.customer = create_customer()
         self.lesson = lessons.OrdinaryLesson.get_default()
 
-    def _create_entry(self):
+    @patch('timeline.models.Entry.clean')
+    def _create_entry(self, clean):
         entry = TimelineEntry(
             slots=1,
             lesson=self.lesson,
