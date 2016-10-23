@@ -5,10 +5,9 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.template.defaultfilters import time
 from django.utils import timezone
 from django.utils.dateformat import format
 from django.utils.translation import ugettext_lazy as _
@@ -17,6 +16,8 @@ from image_cropping import ImageRatioField
 from image_cropping.templatetags.cropping import cropped_thumbnail
 
 from elk.utils.date import day_range
+from market.auto_schedule import AutoSchedule
+from teachers.slot_list import SlotList
 
 TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
 PLANNING_DELTA = datetime.timedelta(hours=12)
@@ -38,11 +39,6 @@ def _planning_ofsset(start):
         start = start.replace(minute=0)
 
     return start
-
-
-class SlotList(list):
-    def as_dict(self):
-        return [{'server': time(timezone.localtime(i), 'H:i'), 'user': time(timezone.localtime(i), 'TIME_FORMAT')} for i in sorted(self)]
 
 
 class TeacherManager(models.Manager):
@@ -189,7 +185,9 @@ class Teacher(models.Model):
         hours = self.working_hours.for_date(date=date)
         if hours is None:
             return None
-        return self.__all_free_slots(hours.start, hours.end, period)
+
+        auto_schedule = AutoSchedule(teacher=self)
+        return auto_schedule.slots(hours.start, hours.end, period)
 
     def available_lessons(self, lesson_type):
         """
@@ -244,44 +242,6 @@ class Teacher(models.Model):
         for entry in TimelineEntry.objects.filter(teacher=self, start__range=day_range(date), **kwargs):
             slots.append(entry.start)
         return slots
-
-    def __all_free_slots(self, start, end, period):
-        """
-        Get all existing time slots, not checking an event type — by teacher's
-        working hours.
-
-        Returns an iterable of slots as datetime objects.
-        """
-        slots = SlotList()
-        slot = _planning_ofsset(start)
-        while slot + period <= end:
-            if self.__check_availability(slot, period):
-                slots.append(slot)
-
-            slot += period
-
-        return slots
-
-    def __check_availability(self, start, period):
-        """
-        Create a test timeline entry and check if teacher is available.
-        """
-        TimelineEntry = apps.get_model('timeline.Entry')
-        entry = TimelineEntry(
-            teacher=self,
-            start=start,
-            end=start + period,
-            allow_overlap=False,
-            allow_besides_working_hours=False,
-            allow_when_teacher_is_busy=False,
-            allow_when_teacher_has_external_events=False,
-        )
-        try:
-            entry.clean()
-        except ValidationError:
-            return False
-
-        return True
 
     def __delete_lesson_types_that_dont_require_a_timeline_entry(self, kwargs):
         """

@@ -335,6 +335,9 @@ class Entry(models.Model):
 
 
     def clean(self):  # NOQA
+        """
+        TODO: merge it with market.AutoSchedule
+        """
         if not self.allow_overlap and self.is_overlapping():
             raise ValidationError('Entry time overlapes with some other entry of this teacher')
 
