@@ -48,13 +48,11 @@ class AutoSchedule():
         """
         slot_list = SlotList()
         while start <= end - period:
-            print(timezone.now(), 'checking', start, start + period)
             try:
                 self.clean(start, start + period)
             except ValidationError:
                 continue
             else:
-                print('good')
                 slot_list.append(start)
             finally:
                 start += period
@@ -63,7 +61,6 @@ class AutoSchedule():
 
     def clean(self, start, end):
         if start < timezone.now() or end < timezone.now():
-            print('entry in past')
             raise ValidationError('Entry is in past!')
 
         if not self.absenses.is_present(start, end):
