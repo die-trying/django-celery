@@ -33,14 +33,14 @@ class AutoSchedule():
     """
     Big class for automatically generating teachers schedule
     """
-    def __init__(self, teacher):
+    def __init__(self, teacher, exclude_timeline_entries=[]):
         super().__init__()
 
         self.teacher = teacher
 
         self.extevents = BusyPeriods(teacher.busy_periods.all())
         self.absenses = BusyPeriods(teacher.absences.approved())
-        self.timeline_entries = BusyPeriods(teacher.timeline_entries.filter(end__gte=timezone.now()))
+        self.timeline_entries = BusyPeriods(teacher.timeline_entries.filter(end__gte=timezone.now()).exclude(pk__in=exclude_timeline_entries))
 
     def slots(self, start, end, period=timedelta(minutes=30)):
         """

@@ -118,6 +118,14 @@ class TestAutoschedule(TestCase):
         s = AutoSchedule(self.teacher)
         self.assertEqual(len(s.timeline_entries), 10)
 
+    @freeze_time('2032-12-05 13:30')
+    def test_timeline_entry_exclusion(self):
+        start = self.tzdatetime(2032, 12, 5, 14, 0)
+        entry = mixer.blend('timeline.Entry', teacher=self.teacher, start=start, end=start + timedelta(minutes=30))
+
+        s = AutoSchedule(self.teacher, exclude_timeline_entries=[entry.pk])
+        self.assertEqual(len(s.timeline_entries), 0)
+
     def test_slots(self):
         s = AutoSchedule(self.teacher)
 
