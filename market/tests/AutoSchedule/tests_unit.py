@@ -1,4 +1,5 @@
 from datetime import timedelta
+from unittest.mock import MagicMock
 
 from freezegun import freeze_time
 from mixer.backend.django import mixer
@@ -98,14 +99,14 @@ class TestAutoschedule(TestCase):
             mixer.blend('extevents.ExternalEvent', teacher=self.teacher)
 
         s = AutoSchedule(self.teacher)
-        self.assertEqual(len(s.extevents), 10)
+        self.assertEqual(len(s.busy_periods['extevents']['src']), 10)
 
     def test_init_absenses(self):
         for i in range(0, 10):
             mixer.blend('teachers.Absence', teacher=self.teacher, approved=True)
 
         s = AutoSchedule(self.teacher)
-        self.assertEqual(len(s.absenses), 10)
+        self.assertEqual(len(s.busy_periods['absences']['src']), 10)
 
     @freeze_time('2032-12-05 13:30')
     def test_init_timeline_entries(self):
@@ -116,7 +117,7 @@ class TestAutoschedule(TestCase):
             start = end
 
         s = AutoSchedule(self.teacher)
-        self.assertEqual(len(s.timeline_entries), 10)
+        self.assertEqual(len(s.busy_periods['other_entries']['src']), 10)
 
     @freeze_time('2032-12-05 13:30')
     def test_timeline_entry_exclusion(self):
@@ -124,7 +125,7 @@ class TestAutoschedule(TestCase):
         entry = mixer.blend('timeline.Entry', teacher=self.teacher, start=start, end=start + timedelta(minutes=30))
 
         s = AutoSchedule(self.teacher, exclude_timeline_entries=[entry.pk])
-        self.assertEqual(len(s.timeline_entries), 0)
+        self.assertEqual(len(s.busy_periods['other_entries']['src']), 0)
 
     def test_slots(self):
         s = AutoSchedule(self.teacher)
@@ -168,3 +169,22 @@ class TestAutoschedule(TestCase):
         s = AutoSchedule(self.teacher)
         slot_list = s.slots(start, start + timedelta(hours=2))
         self.assertEqual(len(slot_list), 3)
+
+    def test_cleaning_smoke(self):
+        """
+        Mock every busy_period's is_present() method and check for error message
+        """
+        s = AutoSchedule(self.teacher)
+        busy_periods = s.busy_periods.keys()
+
+        start = self.tzdatetime(2032, 12, 5, 14, 0)
+        end = start + timedelta(minutes=30)
+
+        for busy_period_type in busy_periods:
+            schedule = AutoSchedule(self.teacher)
+            busy_period = schedule.busy_periods.get(busy_period_type)
+
+            busy_period['src'].is_present = MagicMock(return_value=False)
+
+            with self.assertRaises(busy_period['exception']):
+                schedule.clean(start, end)

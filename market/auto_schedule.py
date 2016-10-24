@@ -10,6 +10,11 @@ from teachers.slot_list import SlotList
 class BusyPeriods(UserList):
     """
     Abstract representation of a busy period
+
+    Params:
+        - queryset: a querset with periods of inavailability
+        - start_field: field with a period start (default: 'start')
+        - end_field: field with a period end (default: 'end')
     """
     def __init__(self, queryset, start_field='start', end_field='end'):
         super().__init__()
@@ -29,6 +34,18 @@ class BusyPeriods(UserList):
         return True
 
 
+class TeacherHasEvents(ValidationError):
+    pass
+
+
+class TeacherIsAbsent(ValidationError):
+    pass
+
+
+class TeacherHasOtherLessons(ValidationError):
+    pass
+
+
 class AutoSchedule():
     """
     Big class for automatically generating teachers schedule
@@ -38,9 +55,20 @@ class AutoSchedule():
 
         self.teacher = teacher
 
-        self.extevents = BusyPeriods(teacher.busy_periods.all())
-        self.absenses = BusyPeriods(teacher.absences.approved())
-        self.timeline_entries = BusyPeriods(teacher.timeline_entries.filter(end__gte=timezone.now()).exclude(pk__in=exclude_timeline_entries))
+        self.busy_periods = {
+            'extevents': {
+                'src': BusyPeriods(teacher.busy_periods.all()),
+                'exception': TeacherHasEvents,
+            },
+            'absences': {
+                'src': BusyPeriods(teacher.absences.approved()),
+                'exception': TeacherIsAbsent,
+            },
+            'other_entries': {
+                'src': BusyPeriods(teacher.timeline_entries.filter(end__gte=timezone.now()).exclude(pk__in=exclude_timeline_entries)),
+                'exception': TeacherHasOtherLessons,
+            },
+        }
 
     def slots(self, start, end, period=timedelta(minutes=30)):
         """
@@ -59,15 +87,15 @@ class AutoSchedule():
 
         return slot_list
 
+    def test(self, period_type, start, end):
+        busy_period = self.busy_periods.get(period_type)
+
+        return busy_period['src'].is_present(start, end)
+
     def clean(self, start, end):
         if start < timezone.now() or end < timezone.now():
             raise ValidationError('Entry is in past!')
 
-        if not self.absenses.is_present(start, end):
-            raise ValidationError('Teacher has a registered absence')
-
-        if not self.extevents.is_present(start, end):
-            raise ValidationError('Teacher has a personal event in this period')
-
-        if not self.timeline_entries.is_present(start, end):
-            raise ValidationError('Teacher has other lessons in this period')
+        for period_type, busy_period in self.busy_periods.items():
+            if not self.test(period_type, start, end):
+                raise busy_period['exception']('Autoschedule validation error: %s' % period_type)
