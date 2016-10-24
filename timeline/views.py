@@ -4,6 +4,7 @@ from django.http import Http404, JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateformat import format
+from django.utils.dateparse import parse_datetime
 from django.views.generic.edit import CreateView, UpdateView
 
 from crm.models import Customer
@@ -126,3 +127,18 @@ def calendar_json(request, username):
         entries.append(entry.as_dict())
 
     return JsonResponse(entries, safe=False)
+
+
+@staff_member_required
+def check_entry(request, username, start, end):
+    entry = TimelineEntry(
+        start=timezone.make_aware(parse_datetime(start)),
+        end=timezone.make_aware(parse_datetime(end)),
+        teacher=get_object_or_404(Teacher, user__username=username),
+    )
+    return JsonResponse({
+        'is_overlapping': entry.is_overlapping(),
+        'is_fitting_hours': entry.is_fitting_working_hours(),
+        'teacher_is_present': entry.teacher_is_present(),
+        'teacher_has_no_events': entry.teacher_has_no_events(),
+    }, safe=False)

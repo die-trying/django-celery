@@ -33,6 +33,7 @@
                 <div class="form-group">
                     <label for="id_duration">{% trans 'Duration:' %}</label>
                     <input readonly maxlength=5 placeholder='HH:MM' type="text" class="form-control", id="id_duration" name="duration" rv-value="model.lesson.duration">
+                    {% include 'timeline/forms/entry/err.html' %}
                     {% if object.taken_slots %}
                         <p class="timeline-entry-form__slots">
                             {% if object.slots != 1 %} {# multiple students #}

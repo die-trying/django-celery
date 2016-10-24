@@ -7,12 +7,17 @@ class Model extends MicroEvent
     @urls = {
       create: '/timeline/%s/create/'
       update: '/timeline/%s/%d/update/'
+      validate_entry: '/timeline/%s/check_entry/%s/%s'
       lessons: '/lessons/%s/type/%s/available.json'
     }
     @_set_date(date) if date?
 
     @bind 'lessons_fetched', () =>
       @set_lesson()
+      @check_entry()
+
+    @bind 'lesson_set', () =>
+      @check_entry()
 
   update_state: (what_has_changed) ->
 
@@ -22,6 +27,7 @@ class Model extends MicroEvent
     switch what_has_changed
       when 'lesson_type' then @fetch_lessons()
       when 'lesson_id' then @set_lesson()
+      when 'start', 'end' then @check_entry()
 
   fetch_lessons: () ->
     # Get available lessons from server, based on selected lesson_type
@@ -46,6 +52,31 @@ class Model extends MicroEvent
       if lesson.id is selected_lesson_id
         @lesson = lesson
         @trigger 'lesson_set'
+
+  check_entry: () ->
+    # Check with server if current time (start_time, start_date and duration) are
+    # overlapping with already existant timeline entries
+
+    @_set_err('none')
+
+    return if not @lesson # no need to check duration if we don't know a lesson
+    return if @lesson.id is @initial_lesson_id  # with initial lesson, there is no need to check anything
+
+    @start = @_get_start_time()
+    @end = @_get_end_time()
+
+    return if not @start? or not @end?
+
+    url = sprintf @urls['validate_entry'], @username, @start, @end
+    $.getJSON url, (response) =>
+      if not response.is_fitting_hours
+        @_set_err('besides_hours')
+      if response.is_overlapping
+        @_set_err('overlap')
+      if not response.teacher_is_present
+        @_set_err('absent')
+      if not response.teacher_has_no_events
+        @_set_err('has_events')
 
   _get_start_time: () ->
     # Construct start time in server understandable format

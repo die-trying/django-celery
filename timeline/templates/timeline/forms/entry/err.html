@@ -1,0 +1,6 @@
+<p class="timeline-entry-form__err text-danger">
+    <i class="fa fa-exclamation-triangle" rv-if="model.overlap" title="Event overlaps with another one!"></i>
+    <i class="fa fa-clock-o" rv-if="model.besides_hours" title="Event does not fit teacher working hours!"></i>
+    <i class="fa fa-sun-o" rv-if="model.absent" title="Teacher is absent on this period!"></i>
+    <i class="fa fa-calendar-times-o" rv-if="model.has_events" title="Teacher has personal events on this period!"></i>
+</p>
