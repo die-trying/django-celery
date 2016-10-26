@@ -6,10 +6,12 @@ from django.shortcuts import get_list_or_404, get_object_or_404, redirect, rende
 from django.utils import timezone
 from django.utils.dateformat import format
 from django.utils.dateparse import parse_datetime
+from django.utils.decorators import method_decorator
 from django.views.generic.edit import CreateView, UpdateView
 
 from crm.models import Customer
 from elk.utils import date
+from elk.views import DelteWithoutConfirmationView
 from market.auto_schedule import AutoSchedule
 from market.models import Class
 from market.sortinghat import SortingHat
@@ -26,38 +28,37 @@ def calendar(request, username):
     })
 
 
-class TeacherCtxMixin():
+class TimelineEntryBaseView():
+    model = TimelineEntry
+    form_class = TimelineEntryForm
+    template_name = 'timeline/entry_form.html'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['teacher'] = get_object_or_404(Teacher, user__username=self.kwargs['username'])
         return context
 
-
-class EntryCreate(TeacherCtxMixin, CreateView):
-    template_name = 'timeline/entry_form.html'
-    form_class = TimelineEntryForm
-
-    def get_success_url(self):
-        return reverse('timeline:timeline', kwargs=self.kwargs)
-
-
-class EntryUpdate(TeacherCtxMixin, UpdateView):
-    template_name = 'timeline/entry_form.html'
-    form_class = TimelineEntryForm
-    model = TimelineEntry
-
     def get_success_url(self):
         return reverse(
             'timeline:timeline',
-            kwargs={'username': self.kwargs['username']},
+            kwargs={'username': self.kwargs['username']}
         )
 
+    @method_decorator(staff_member_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
-@staff_member_required
-def calendar_delete(request, username, pk):
-    entry = get_object_or_404(TimelineEntry, teacher__user__username=username, pk=pk)
-    entry.delete()
-    return redirect(reverse('timeline:timeline', kwargs={'username': username}))
+
+class EntryCreate(TimelineEntryBaseView, CreateView):
+    pass
+
+
+class EntryUpdate(TimelineEntryBaseView, UpdateView):
+    pass
+
+
+class EntryDelete(TimelineEntryBaseView, DelteWithoutConfirmationView):
+    pass
 
 
 @staff_member_required

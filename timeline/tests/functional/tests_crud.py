@@ -26,21 +26,17 @@ class EntryCRUDTest(ClientTestCase):
         self._update()
         self._delete()
 
-    def test_cancel_link_presence(self):
-        """
-        Delete link should be present by default and should be hidden for past entries
-        """
-        self._create()
-        entry = TimelineEntry.objects.get(pk=self.added_entry['id'])
+    def test_login_required(self):
+        self.c.logout()
+        entry = mixer.blend(TimelineEntry, teacher=self.teacher)
+        delete_link = '/timeline/%s/%d/delete/' % (self.teacher.user.username, entry.pk)
 
-        response = self.c.get('/timeline/%s/%d/' % (self.teacher.user.username, entry.pk))
-        self.assertNotContains(response, 'p class="timeline-entry-form__delete"')
+        response = self.c.get(delete_link)
 
-        entry.start = self.tzdatetime(2016, 6, 28, 12, 0)  # a day before
-        entry.save()
+        self.assertRedirects(response, '/admin/login/?next=%s' % delete_link)
 
-        response = self.c.get('/timeline/%s/%d/' % (self.teacher.user.username, entry.pk))
-        self.assertNotContains(response, 'p class="timeline-entry-form__delete"')
+        entry.refresh_from_db()  # assure entry in constant
+        self.assertIsNotNone(entry.pk)
 
     def _create(self):
         response = self.c.post('/timeline/%s/add/' % self.teacher.user.username, {

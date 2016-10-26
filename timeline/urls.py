@@ -1,5 +1,4 @@
 from django.conf.urls import url
-from django.contrib.admin.views.decorators import staff_member_required
 
 from . import views
 
@@ -18,15 +17,15 @@ urlpatterns = [
         ),
 
     url(regex=r'(?P<username>.+)/add/$',
-        view=staff_member_required(views.EntryCreate.as_view()),
+        view=views.EntryCreate.as_view(),
         name='timeline_create',
         ),
     url(regex=r'(?P<username>.+)/(?P<pk>\d+)/$',
-        view=staff_member_required(views.EntryUpdate.as_view()),
+        view=views.EntryUpdate.as_view(),
         name='timeline_update',
         ),
     url(regex=r'(?P<username>.+)/(?P<pk>\d+)/delete/$',
-        view=views.calendar_delete,
+        view=views.EntryDelete.as_view(),
         name='timeline_delete',
         ),
 
