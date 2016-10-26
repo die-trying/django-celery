@@ -33,17 +33,17 @@ class EntryCRUDTest(ClientTestCase):
         self._create()
         entry = TimelineEntry.objects.get(pk=self.added_entry['id'])
 
-        response = self.c.get('/timeline/%s/%d/update/' % (self.teacher.user.username, entry.pk))
+        response = self.c.get('/timeline/%s/%d/' % (self.teacher.user.username, entry.pk))
         self.assertNotContains(response, 'p class="timeline-entry-form__delete"')
 
         entry.start = self.tzdatetime(2016, 6, 28, 12, 0)  # a day before
         entry.save()
 
-        response = self.c.get('/timeline/%s/%d/update/' % (self.teacher.user.username, entry.pk))
+        response = self.c.get('/timeline/%s/%d/' % (self.teacher.user.username, entry.pk))
         self.assertNotContains(response, 'p class="timeline-entry-form__delete"')
 
     def _create(self):
-        response = self.c.post('/timeline/%s/create/' % self.teacher.user.username, {
+        response = self.c.post('/timeline/%s/add/' % self.teacher.user.username, {
             'lesson_type': self.lesson_type,
             'lesson_id': self.lesson.pk,
             'teacher': self.teacher.pk,
@@ -66,7 +66,7 @@ class EntryCRUDTest(ClientTestCase):
     def _update(self):
         pk = self.added_entry['id']
 
-        response = self.c.post('/timeline/%s/%d/update/' % (self.teacher.user.username, pk), {
+        response = self.c.post('/timeline/%s/%d/' % (self.teacher.user.username, pk), {
             'lesson_type': self.lesson_type,
             'lesson_id': self.lesson.pk,
             'teacher': self.teacher.pk,
@@ -85,16 +85,11 @@ class EntryCRUDTest(ClientTestCase):
 
     def _delete(self):
         pk = self.added_entry['id']
-        response = self.c.get('/timeline/%s/%d/update/' % (self.teacher.user.username, pk))
-        self.assertEqual(response.status_code, 200, 'Should generate an edit form')
+        response = self.c.get('/timeline/%s/%d/delete/' % (self.teacher.user.username, pk))
+        self.assertEqual(response.status_code, 302)
 
-        with self.assertHTML(response, 'a.text-danger') as (delete_link,):
-            delete_link = delete_link.attrib.get('href')
-            response = self.c.get(delete_link)
-            self.assertEqual(response.status_code, 302)
-
-            with self.assertRaises(TimelineEntry.DoesNotExist):  # should be deleted now
-                TimelineEntry.objects.get(pk=pk)
+        with self.assertRaises(TimelineEntry.DoesNotExist):  # should be deleted now
+            TimelineEntry.objects.get(pk=pk)
 
     def __get_entry_from(self):
         response = self.c.get('/timeline/%s.json?start=2016-06-28&end=2016-06-30' % self.teacher.user.username)

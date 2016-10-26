@@ -154,8 +154,7 @@ class Entry(models.Model):
     def is_free(self):
         return self.taken_slots < self.slots
 
-    @property
-    def admin_url(self):
+    def get_absolute_url(self):
         return reverse('timeline:entry_card', kwargs={
             'username': self.teacher.user.username,
             'pk': self.pk

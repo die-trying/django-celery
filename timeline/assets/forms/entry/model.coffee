@@ -4,9 +4,11 @@ class Model extends MicroEvent
 
   constructor: (@username, @pk=null, date=null) ->
     @_set_err('none')
+    @submit_disabled = true
+
     @urls = {
-      create: '/timeline/%s/create/'
-      update: '/timeline/%s/%d/update/'
+      create: '/timeline/%s/add/'
+      update: '/timeline/%s/%d/'
       validate_entry: '/timeline/%s/check_entry/%s/%s'
       lessons: '/lessons/%s/type/%s/available.json'
     }
@@ -54,13 +56,15 @@ class Model extends MicroEvent
         @trigger 'lesson_set'
 
   check_entry: () ->
-    # Check with server if current time (start_time, start_date and duration) are
-    # overlapping with already existant timeline entries
-
+    # Check with server if current time (start_time, start_date and duration) are ok
     @_set_err('none')
 
-    return if not @lesson # no need to check duration if we don't know a lesson
-    return if @lesson.id is @initial_lesson_id  # with initial lesson, there is no need to check anything
+    if @pk and @lesson  # if we are updating an entry and lesson is selected
+      if @lesson.id is parseInt(@initial_lesson_id) # and the lesson is initial
+        return
+    else
+      if @pk and not @lesson  # if we are updateing entry and lesson is not loaded yet
+        return
 
     @start = @_get_start_time()
     @end = @_get_end_time()
@@ -68,15 +72,12 @@ class Model extends MicroEvent
     return if not @start? or not @end?
 
     url = sprintf @urls['validate_entry'], @username, @start, @end
+
     $.getJSON url, (response) =>
-      if not response.is_fitting_hours
-        @_set_err('besides_hours')
-      if response.is_overlapping
-        @_set_err('overlap')
-      if not response.teacher_is_present
-        @_set_err('absent')
-      if not response.teacher_has_no_events
-        @_set_err('has_events')
+      if response.result is 'ok'
+        @_set_err('none')
+      else
+        @_set_err(response.result)
 
   _get_start_time: () ->
     # Construct start time in server understandable format
@@ -113,19 +114,16 @@ class Model extends MicroEvent
     h = '0' + h if h.length is 1
     h + ':' + m
 
-  _set_err: (err_type='none') ->
-    if err_type is 'none'
+  _set_err: (err='none') ->
+    if err is 'none'
       @has_err = false
-      @overlap = false
-      @besides_hours = false
-      @absent = false
-      @has_events = false
+      @err = ''
+
+      if @lesson
+        @submit_disabled = false
     else
       @has_err = true
-      switch err_type
-        when 'overlap' then @overlap = true
-        when 'besides_hours' then @besides_hours = true
-        when 'absent' then @absent = true
-        when 'has_events' then @has_events = true
+      @submit_disabled = true
+      @err = err
 
 Project.models.TimelineEntryModel = Model
