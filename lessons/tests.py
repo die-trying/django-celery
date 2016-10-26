@@ -17,11 +17,6 @@ class TestLessonsUnit(TestCase):
 
         self.assertIsNotNone(mixer.blend(lessons.MasterClass, host=hard_working_teacher))
 
-    def test_admin_url(self):
-        l = mixer.blend(lessons.MasterClass, host=create_teacher())
-        self.assertIn(str(l.pk), l.admin_url)
-        self.assertIn('admin/lessons/masterclass', l.admin_url)
-
     def test_type_verbose_name(self):
         l = mixer.blend(lessons.OrdinaryLesson)
         self.assertIn('single', str(l.type_verbose_name))
