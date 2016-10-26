@@ -7,6 +7,22 @@ from django.utils import timezone
 from teachers.slot_list import SlotList
 
 
+class TeacherHasEvents(ValidationError):
+    pass
+
+
+class TeacherIsAbsent(ValidationError):
+    pass
+
+
+class TeacherHasOtherLessons(ValidationError):
+    pass
+
+
+class EntryIsInPast(ValidationError):
+    pass
+
+
 class BusyPeriods(UserList):
     """
     Abstract representation of a busy period
@@ -32,18 +48,6 @@ class BusyPeriods(UserList):
                 return False
 
         return True
-
-
-class TeacherHasEvents(ValidationError):
-    pass
-
-
-class TeacherIsAbsent(ValidationError):
-    pass
-
-
-class TeacherHasOtherLessons(ValidationError):
-    pass
 
 
 class AutoSchedule():
@@ -94,7 +98,7 @@ class AutoSchedule():
 
     def clean(self, start, end):
         if start < timezone.now() or end < timezone.now():
-            raise ValidationError('Entry is in past!')
+            raise EntryIsInPast('Entry is in past!')
 
         for period_type, busy_period in self.busy_periods.items():
             if not self.test(period_type, start, end):
