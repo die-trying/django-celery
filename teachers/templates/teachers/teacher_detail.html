@@ -1,14 +1,15 @@
 {% extends 'elk/base.html' %}
 {% load django_markdown %}
+{% load humanize %}
 
 {% block content %}
 <div class="page-header">
     <h1>{{ object.user.crm.full_name }}</h1>
 </div>
-<div class="row">
+<section class="row teacher-detail__intro">
     <div class="col-md-3">
         <img class="teacher-face img-circle" src="{{ object.get_teacher_photo }}" alt="{{ object.user.crm.full_name }}">
-            <div class="teacher-card__contacts">
+            <div class="teacher-detail__contacts">
 
             </div>
     </div>
@@ -17,13 +18,28 @@
     </div>
 </div>
 
-{% for slot_group in object.timeslots %}
-<div class="row teacher-card__timeslot-group">
-    <div class="col-md-12">
-        <h1>{{ slot_group.date }}</h1>
-        <p>{{ slot_group.slots }}
-    </div>
-</div>
-{% endfor %}
+{% if timeslots %}
+    <section class="teacher-detail__timeslots container-fluid">
+    <h2>{{ object.user.crm.first_name }}'s timeslots</h2>
+    {% for slot_group in timeslots %}
+        <div class="row teacher-detail__timeslot-group">
+            <div class="col-md-1 date">
+                <h3>{{ slot_group.date | naturalday:'SHORT_DATE_FORMAT'|capfirst }}</h3>
+            </div>
+            <div class="col-md-6 slots">
+                {% if slot_group.slots %}
+                    <div class="btn-group" data-toggle="buttons">
+                         {% for slot in slot_group.slots.as_dict %}
+                             <label class="btn btn-default">
+                                 <input type="radio" data-time="{{ slot.server }}" data-date="{{ slot_group.date|date:'c' }}"></input>{{ slot.user }}
+                             </label>
+                         {% endfor %}
+                     </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+    </section>
+{% endif %}
 
 {% endblock %}
