@@ -1,0 +1,31 @@
+
+.issue-form-toggle
+    @keyframes fadein
+        from { opacity: 0 }
+        to   { opacity: 1 }
+    @media (max-width: 768px)
+        display: none
+
+    position: fixed
+    bottom: 0
+    right: 60px
+
+    border-radius: 5px 5px 0 0
+    background-color: #222222
+
+    cursor: pointer
+
+    i
+        animation: fadein .3s
+
+    &__open
+        display: block
+        padding: 5px 10px
+        color: #cccccc
+        &:hover, &:focus
+            text-decoration: none
+            outline: none
+        &:hover
+            color: #ffffff
+        &:focus
+            color: #cccccc
