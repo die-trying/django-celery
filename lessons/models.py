@@ -211,8 +211,8 @@ class TrialLesson(Lesson):
 
 
 class LessonWithNative(Lesson):
-    _long_name = _('Face-to-face lesson with native speaker')
-    _long_name_plural = _('Face-to-face lessons with native speaker')
+    _long_name = _('Individual lesson with native speaker')
+    _long_name_plural = _('Individual lessons with native speaker')
 
     @classmethod
     def sort_order(cls):

@@ -9,20 +9,23 @@
 <div class="row">
     <div class="col-md-8">
         {% block lead %}
-        <p class="lead">Welcome to the ELK dashboard!</p>
+        <p class="lead">Welcome to the ELK Dashboard!</p>
         {% endblock %}
         {% block message %}
-        <p>
-         Dashboard is a place, where you can see interseting staff that is happening right now in the ELK world,
-         plan a lesson or review your ELK subscription status.
-        </p>
+        <p class="before_list">On Dashboard, you can:</p>
+        <ul>
+            <li>plan your lessons</li>
+            <li>review your ELK subscription status</li>
+            <li>see all of the interesting stuff that’s happening right now in the ELK world</li>
+        </ul>
+
         {% endblock %}
 
         {% block disclaimer %}
-        <p class="homepage-disclaimer">We want to develop this tool together with you, so we've launched
-            the pre-production version and started keeping track of all your lesosns.
-            Please be patient for some bugs, and feel free to
-            {% contact_us 'drop us a line' 'pseudo' %} if you fill something goes wrong.
+        <p class="homepage-disclaimer">ELK Academy is thrilled to have recently
+            launched Dashboard, and we’re excited to continue developing this new tool.
+            Please feel free to {% contact_us 'drop us a line' 'pseudo' %} if you encounter any difficulties
+            while navigating the website.  We’d love your input!
         </p>
         {% endblock %}
 
