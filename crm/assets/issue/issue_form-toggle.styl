@@ -1,8 +1,5 @@
 
 .issue-form-toggle
-    @keyframes fadein
-        from { opacity: 0 }
-        to   { opacity: 1 }
     @media (max-width: 768px)
         display: none
 
@@ -15,8 +12,8 @@
 
     cursor: pointer
 
-    i
-        animation: fadein .3s
+    .fa
+        min-width: 14px // to avoid flashing
 
     &__open
         display: block
