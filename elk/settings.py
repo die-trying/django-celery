@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'djmoney',
     'anymail',
     'mail_templated',
+    'rest_framework',
     'django_countries',
     'django_markdown',
     'django_user_agents',
@@ -211,6 +212,9 @@ INTERNAL_IPS = [
     '91.197.114.155',
     '91.197.113.166',
 ]
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticated',),
+}
 
 if not DEBUG:
     RAVEN_CONFIG = {

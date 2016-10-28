@@ -3,8 +3,10 @@ from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
+from rest_framework.routers import DefaultRouter
 
 from acc.views import Homepage
+from teachers.api.viewsets import TeacherViewSet
 
 """
 URL of every app should be namespaced with the prefix of the app name,
@@ -12,6 +14,9 @@ in example namespace for buy_single url in the market app is market:buy_single,
 and for starting social auth — app:social:begin.
 """
 
+
+router = DefaultRouter()
+router.register(r'teachers', TeacherViewSet)
 
 urlpatterns = [
     url(name='home', regex=r'^$', view=login_required(Homepage.as_view())),
@@ -24,6 +29,7 @@ urlpatterns = [
     url(r'^teachers/', include('teachers.urls', namespace='teachers')),
     url(r'^payments/', include('payments.urls', namespace='payments')),
 
+    url(r'^api/', include(router.urls, namespace='api')),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^markdown/', include('django_markdown.urls')),
