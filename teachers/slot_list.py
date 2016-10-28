@@ -1,13 +1,8 @@
-from collections import UserList
-
-from django.template.defaultfilters import time
-from django.utils import timezone
+from sortedcontainers import SortedList
 
 
-class SlotList(UserList):
-    def as_dict(self):
-        return [
-            {
-                'server': time(timezone.localtime(i), 'H:i'),
-                'user': time(timezone.localtime(i), 'TIME_FORMAT')
-            } for i in sorted(self.data)]
+class SlotList(SortedList):
+    """
+    List os timeslots, serializers with two values: server and user time
+    """
+    pass

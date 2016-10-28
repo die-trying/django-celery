@@ -120,6 +120,7 @@ class Lesson(models.Model):
         return None
 
     def as_dict(self):
+        return
         """Dicitionary representation of a lesson"""
         d = {
             'id': self.pk,
@@ -167,15 +168,6 @@ class HostedLesson(Lesson):
 
             else:
                 super().save(*args, **kwargs)
-
-    def as_dict(self):
-        """
-        Add host information to dictionary representation.
-        """
-        result = super().as_dict()
-        if self.host:  # TODO: unittest it
-            result['host'] = self.host.as_dict()
-        return result
 
     class Meta:
         abstract = True

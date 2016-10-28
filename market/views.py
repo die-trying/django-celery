@@ -4,7 +4,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
+from lessons.api.serializers import factory as lesson_serializer_factory
 from market.sortinghat import SortingHat
+from teachers.api.serializers import TeacherSerializer, TimeSlotSerializer
 from teachers.models import Teacher
 
 
@@ -21,8 +23,8 @@ def teachers(request, date, lesson_type):
 
     teachers = []
     for teacher in teachers_with_slots:
-        teacher_dict = teacher.as_dict()
-        teacher_dict['slots'] = teacher.free_slots.as_dict()
+        teacher_dict = TeacherSerializer(teacher).data
+        teacher_dict['slots'] = TimeSlotSerializer(teacher.free_slots, many=True).data
         teachers.append(teacher_dict)
 
     return JsonResponse(teachers, safe=False)
@@ -40,8 +42,9 @@ def lessons(request, date, lesson_type):
 
     result = []
     for lesson in lessons:
-        lesson_dict = lesson.as_dict()
-        lesson_dict['slots'] = lesson.free_slots.as_dict()
+        Serializer = lesson_serializer_factory(lesson)
+        lesson_dict = Serializer(lesson).data
+        lesson_dict['slots'] = TimeSlotSerializer(lesson.free_slots, many=True).data
         result.append(lesson_dict)
 
     return JsonResponse(result, safe=False)

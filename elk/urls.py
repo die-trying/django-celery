@@ -25,7 +25,6 @@ urlpatterns = [
     url(r'^market/', include('market.urls', namespace='market')),
     url(r'^history/', include('history.urls', namespace='history')),
     url(r'^timeline/', include('timeline.urls', namespace='timeline')),
-    url(r'^lessons/', include('lessons.urls', namespace='lessons')),
     url(r'^teachers/', include('teachers.urls', namespace='teachers')),
     url(r'^payments/', include('payments.urls', namespace='payments')),
 

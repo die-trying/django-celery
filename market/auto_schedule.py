@@ -85,7 +85,7 @@ class AutoSchedule():
             except ValidationError:
                 continue
             else:
-                slot_list.append(start)
+                slot_list.add(start)
             finally:
                 start += period
 

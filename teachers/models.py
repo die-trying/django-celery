@@ -148,16 +148,6 @@ class Teacher(models.Model):
 
         super().save(*args, **kwargs)
 
-    def as_dict(self):
-        return {
-            'id': self.pk,
-            'name': str(self.user.crm),
-            'announce': self.announce,
-            'description': self.description,
-            'profile_photo': self.user.crm.get_profile_photo(),
-            'teacher_photo': self.get_teacher_photo(),
-        }
-
     def __str__(self):
         return '%s (%s)' % (self.user.crm.full_name, self.user.username)
 
@@ -250,7 +240,7 @@ class Teacher(models.Model):
         TimelineEntry = apps.get_model('timeline.entry')
         slots = SlotList()
         for entry in TimelineEntry.objects.filter(teacher=self, start__range=day_range(date), **kwargs):
-            slots.append(entry.start)
+            slots.add(entry.start)
         return slots
 
     def __delete_lesson_types_that_dont_require_a_timeline_entry(self, kwargs):
