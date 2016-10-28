@@ -6,10 +6,9 @@ from freezegun import freeze_time
 from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_teacher
-from extevents.models import ExternalEvent
 from lessons import models as lessons
 from teachers import models
-from teachers.models import Absence, Teacher, WorkingHours
+from teachers.models import Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
@@ -47,62 +46,6 @@ class TestTeacherManager(TestCase):
 
         slots = self.teacher.find_free_slots(date=self.tzdatetime(2032, 5, 5))
         self.assertIsNone(slots)  # should not throw DoesNotExist
-
-    def test_get_free_slots_event_bypass(self):
-        """
-        Add an event and check that get_free_slots should not return any slot,
-        overlapping with it
-        """
-        entry = TimelineEntry(teacher=self.teacher,
-                              lesson=mixer.blend(lessons.OrdinaryLesson),
-                              start=self.tzdatetime(2032, 5, 3, 14, 0),
-                              end=self.tzdatetime(2032, 5, 3, 14, 30),
-                              )
-        entry.save()
-        slots = self.teacher.find_free_slots(date=self.tzdatetime(2032, 5, 3))
-        self.assertEquals(len(slots), 3)
-
-    def test_get_free_slots_offset_event_bypass(self):
-        """
-        Add event with an offset, overlapping two time slots. Should return
-        two timeslots less, then normal test_get_free_slots().
-        """
-        entry = TimelineEntry(teacher=self.teacher,
-                              lesson=mixer.blend(lessons.OrdinaryLesson),
-                              start=self.tzdatetime(2032, 5, 3, 14, 10),
-                              end=self.tzdatetime(2032, 5, 3, 14, 40)
-                              )
-        entry.save()
-        slots = self.teacher.find_free_slots(date=self.tzdatetime(2032, 5, 3))
-        self.assertEquals(len(slots), 2)
-
-    def test_get_free_slots_absence_bypass(self):
-        """
-        Create an absence record and check if find_free_slots does not return
-        a timeslot that is is overriding
-        """
-        absence = Absence(
-            teacher=self.teacher,
-            start=self.tzdatetime(2032, 5, 3, 14, 10),
-            end=self.tzdatetime(2032, 5, 3, 14, 30),
-        )
-        absence.save()
-        slots = self.teacher.find_free_slots(date=self.tzdatetime(2032, 5, 3))
-        self.assertEqual(len(slots), 3)
-
-    def test_get_free_slots_external_event_bypass(self):
-        """
-        Create an external event and check if find_free_slots does not return
-        a timleslot that it is overriding.
-        """
-        mixer.blend(
-            ExternalEvent,
-            teacher=self.teacher,
-            start=self.tzdatetime(2032, 5, 3, 14, 10),
-            end=self.tzdatetime(2032, 5, 3, 14, 30),
-        )
-        slots = self.teacher.find_free_slots(date=self.tzdatetime(2032, 5, 3))
-        self.assertEqual(len(slots), 3)
 
     def test_get_free_slots_from_past(self):
         """
