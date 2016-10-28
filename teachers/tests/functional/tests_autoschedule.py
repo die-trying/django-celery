@@ -47,6 +47,16 @@ class TestTeacherManager(TestCase):
         slots = self.teacher.find_free_slots(date=self.tzdatetime(2032, 5, 5))
         self.assertIsNone(slots)  # should not throw DoesNotExist
 
+    def test_get_free_slots_for_dates(self):
+        dates = (
+            self.tzdatetime(2032, 5, 3),
+            self.tzdatetime(2032, 5, 5),
+        )
+
+        res = list(self.teacher.free_slots_for_dates(dates))
+        self.assertEqual(len(res), 2)
+        self.assertEqual(len(res[0]['slots']), 4)
+
     def test_get_free_slots_from_past(self):
         """
         Make sure, that timeline slots are not returned from distant past

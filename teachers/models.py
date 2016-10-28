@@ -189,6 +189,16 @@ class Teacher(models.Model):
         auto_schedule = AutoSchedule(teacher=self)
         return auto_schedule.slots(hours.start, hours.end, period)
 
+    def free_slots_for_dates(self, dates):
+        """
+        Get an iterable of by-day auto schedule
+        """
+        for date in dates:
+            yield {
+                'date': date,
+                'slots': self.find_free_slots(date)
+            }
+
     def available_lessons(self, lesson_type):
         """
         Get list of lessons, that teacher can lead
