@@ -20,12 +20,6 @@ class CustomerTestCase(TestCase):
         self.assertEqual(customer_with_user.last_name, 'Borshev')
         self.assertEqual(customer_with_user.email, 'f@f213.in')
 
-        customer_without_user = Customer.objects.get(pk=2)
-        self.assertEqual(customer_without_user.full_name, 'Vasiliy Poupkine')
-        self.assertEqual(customer_without_user.first_name, 'Vasiliy')
-        self.assertEqual(customer_without_user.last_name, 'Poupkine')
-        self.assertEqual(customer_without_user.email, 'f@f213.in')
-
     def test_can_cancel_classes(self):
         customer = create_customer()
 

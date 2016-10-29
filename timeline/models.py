@@ -175,8 +175,12 @@ class Entry(models.Model):
 
         s = ''
 
-        if self.lesson.slots == 1 and self.classes.count():
-            s += "%s: %s" % (self.classes.first().customer.full_name, self.lesson.type_verbose_name)
+        if self.lesson.slots == 1:
+            customer_name = self.classes.values_list('customer__user__first_name', 'customer__user__last_name')
+            if len(customer_name):
+                s += "%s: %s" % (' '.join(customer_name[0]), self.lesson.type_verbose_name)
+            else:
+                return _('Usual lesson')
 
         else:
             s += '%s (%d/%d)' % (self.lesson.name, self.taken_slots, self.slots)
