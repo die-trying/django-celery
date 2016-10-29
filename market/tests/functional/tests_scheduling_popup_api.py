@@ -77,8 +77,8 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
         self.assertEquals(records[0]['name'], first_master_class.name)
         self.assertEquals(records[1]['name'], second_master_class.name)
 
-        self.assertEquals(records[0]['host']['name'], self.first_teacher.user.crm.full_name)
-        self.assertEquals(records[1]['host']['name'], self.second_teacher.user.crm.full_name)
+        self.assertEquals(records[0]['host'], self.first_teacher.user.crm.full_name)
+        self.assertEquals(records[1]['host'], self.second_teacher.user.crm.full_name)
 
     @patch('teachers.models.timezone.now')
     def test_filter_by_lesson_type_timezone(self, now):

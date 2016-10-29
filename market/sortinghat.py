@@ -1,6 +1,5 @@
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ValidationError
 from django.db.models import F
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -49,7 +48,6 @@ class SortingHat():
         'E_CLASS_NOT_FOUND': _("You don't have available lessons"),
         'E_ENTRY_NOT_FOUND': _("Your choice is not found in the curriculum"),
         'E_CANT_SCHEDULE': _("Your choice does not fit teachers timeline"),
-        'E_UNKNOWN': "Unknown scheduling error"
     }
 
     def do_the_thing(self):
@@ -75,11 +73,9 @@ class SortingHat():
         """
         Set error code
         """
-        if err not in self.errs.keys():
-            err = 'E_UNKNOWN'
 
         if msg is None:
-            msg = self.errs.get(err)
+            msg = self.errs.get(err, 'Internal scheduling error, please contact us')
 
         self.err = err
         self.msg = msg
@@ -165,7 +161,7 @@ class SortingHat():
                     teacher=self.teacher,
                     date=self.date
                 )
-        except (CannotBeScheduled, ValidationError):
+        except CannotBeScheduled:
             """
             Should not be thrown in normal circumstances. When you see this error,
             check the method :model:`market.class`.can_be_scheduled() — there are all
@@ -173,6 +169,10 @@ class SortingHat():
             any find the reason.
             """
             self.__set_err('E_CANT_SCHEDULE')
+            return
+
+        except Exception as e:
+            self.__set_err(e.__class__.__name__)
             return
 
         self.__set_err('E_NONE')

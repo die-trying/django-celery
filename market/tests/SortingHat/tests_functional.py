@@ -133,7 +133,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
             type_id=ordinary_lesson_type,
         )
         self.assertFalse(response['result'])
-        self.assertEquals(response['error'], 'E_CANT_SCHEDULE')
+        self.assertEquals(response['error'], 'DoesNotFitWorkingHours')
 
     def test_schedule_an_ordinary_lesson(self):
         """

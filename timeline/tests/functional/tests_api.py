@@ -52,7 +52,6 @@ class EntryAPITest(ClientTestCase):
         for i in range(0, 10):
             entry = mixer.blend(TimelineEntry, teacher=self.teacher, start=x)
             x += timedelta(days=1)
-            print(x.__class__)
             entry.save()
 
         response = self.c.get('/timeline/%s.json?start=2013-01-01&end=2016-01-03' % self.teacher.user.username)

@@ -14,6 +14,8 @@ from accounting.models import Event as AccEvent
 from mailer.ical import Ical
 from market.auto_schedule import AutoSchedule
 from teachers.models import Absence
+from timeline.exceptions import DoesNotFitWorkingHours
+
 
 CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)
 
@@ -327,7 +329,7 @@ class Entry(models.Model):
         auto_schedule.clean(self.start, self.end)
 
         if not self.allow_besides_working_hours and not self.is_fitting_working_hours():
-            raise ValidationError('Entry does not fit teachers working hours')
+            raise DoesNotFitWorkingHours('Entry does not fit teachers working hours')
 
     def __self_delete_if_needed(self):
         """

@@ -63,8 +63,8 @@ class TestScheduler(TestCase):
 
         s._SortingHat__set_err('NON_EXISTENT_ERR_TEXT')
 
-        self.assertEquals(s.err, 'E_UNKNOWN')
-        self.assertEquals(s.msg, 'Unknown scheduling error')
+        self.assertEquals(s.err, 'NON_EXISTENT_ERR_TEXT')
+        self.assertIn('Internal', s.msg)
 
         self.assertFalse(s.result)
         s._SortingHat__set_err('E_NONE')
