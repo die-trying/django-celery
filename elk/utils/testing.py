@@ -16,6 +16,7 @@ from django.test import TestCase as StockTestCase
 from django.test import Client, RequestFactory
 from django.utils import timezone
 from mixer.backend.django import mixer
+from rest_framework.test import APIClient
 from with_asserts.mixin import AssertHTMLMixin
 
 from lessons import models as lessons
@@ -151,7 +152,20 @@ class TestCase(StockTestCase):
         )
 
 
-class ClientTestCase(TestCase, AssertHTMLMixin):
+class SuperUserTestCaseMixin():
+    @classmethod
+    def _generate_superuser(cls):
+        cls.superuser = User.objects.create_superuser('root', 'root@wheel.com', 'ohGh7jai4Cee')
+        create_customer(user=cls.superuser)
+        cls.superuser_login = 'root'
+        cls.superuser_password = 'ohGh7jai4Cee'  # store, if children will need it
+
+    @classmethod
+    def _login(cls):
+        cls.c.login(username=cls.superuser_login, password=cls.superuser_password)
+
+
+class ClientTestCase(TestCase, SuperUserTestCaseMixin, AssertHTMLMixin):
     """
     Generic test case with automatic login process and all required assets.
 
@@ -170,17 +184,21 @@ class ClientTestCase(TestCase, AssertHTMLMixin):
         cls.c = Client()
         cls.factory = RequestFactory()
 
-        cls.__generate_superuser()
+        cls._generate_superuser()
+        cls._login()
 
+
+class APITestCase(TestCase, SuperUserTestCaseMixin):
+    """
+    Generic Test Case for API, using Django REST Framework test harness
+    """
     @classmethod
-    def __generate_superuser(cls):
-        cls.superuser = User.objects.create_superuser('root', 'root@wheel.com', 'ohGh7jai4Cee')
-        create_customer(user=cls.superuser)
+    def setUpClass(cls):
+        super().setUpClass()
 
-        cls.c.login(username='root', password='ohGh7jai4Cee')
-
-        cls.superuser_login = 'root'
-        cls.superuser_password = 'ohGh7jai4Cee'  # store, if children will need it
+        cls.c = APIClient()
+        cls._generate_superuser()
+        cls._login()
 
 
 class ClassIntegrationTestCase(ClientTestCase):
