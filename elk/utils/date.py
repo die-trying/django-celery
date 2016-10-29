@@ -3,9 +3,17 @@
     models.
 """
 from copy import copy
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 
 from django.utils.dateformat import format
+
+
+def minute_till_midnight(date):
+    return datetime.combine(date, time.max)
+
+
+def minute_after_midnight(date):
+    return datetime.combine(date + timedelta(days=1), time.min)
 
 
 def ago(date=datetime.now(), fmt='Y-m-d', **kwargs):

@@ -1,4 +1,5 @@
 from datetime import timedelta
+from unittest.mock import MagicMock, patch
 
 from django.contrib.contenttypes.models import ContentType
 from django.test import override_settings
@@ -73,6 +74,15 @@ class TestTeacherManager(TestCase):
         """
         slots = self.teacher.find_free_slots(date=self.tzdatetime(2016, 7, 25))
         self.assertEquals(len(slots), 1)  # should return 1 slot instead of 4
+
+    def test_autoschedule_ends_this_day(self):
+        afternight_working_hours = MagicMock()
+        afternight_working_hours.start = self.tzdatetime(2032, 12, 5, 23, 30)
+        afternight_working_hours.end = self.tzdatetime(2032, 12, 6, 4, 30)
+
+        with patch('teachers.models.WorkingHoursManager.for_date', return_value=afternight_working_hours):
+            res = self.teacher.find_free_slots(date=self.tzdatetime(2032, 12, 5))
+            self.assertEqual(len(res), 1)
 
     def test_free_slots_for_lesson_type(self):
         """
@@ -207,6 +217,7 @@ class TestTeacherManager(TestCase):
         ordinary_lesson_type = lessons.OrdinaryLesson.get_contenttype()
         teachers = Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 3), lesson_type=ordinary_lesson_type.pk)
         self.assertEquals(len(teachers), 1)
+        print(teachers[0].free_slots)
         self.assertEquals(len(teachers[0].free_slots), 4)  # should find all timeline entries because ordinary lesson does not require a timeline entry
 
     def test_find_lessons_return_nothing(self):

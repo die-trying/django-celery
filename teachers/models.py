@@ -15,7 +15,7 @@ from django_markdown.models import MarkdownField
 from image_cropping import ImageRatioField
 from image_cropping.templatetags.cropping import cropped_thumbnail
 
-from elk.utils.date import day_range
+from elk.utils.date import day_range, minute_after_midnight, minute_till_midnight
 from market.auto_schedule import AutoSchedule
 from teachers.slot_list import SlotList
 
@@ -176,6 +176,9 @@ class Teacher(models.Model):
         if hours is None:
             return None
 
+        if hours.end > timezone.make_aware(minute_till_midnight(date)):
+            hours.end = timezone.make_aware(minute_after_midnight(date))
+
         auto_schedule = AutoSchedule(teacher=self)
         return auto_schedule.slots(hours.start, hours.end, period)
 
@@ -301,14 +304,6 @@ class WorkingHours(models.Model):
     weekday = models.IntegerField('Weekday', choices=WEEKDAYS)
     start = models.TimeField('Start hour (EDT)')
     end = models.TimeField('End hour (EDT)')
-
-    def as_dict(self):
-        return {
-            'id': self.pk,
-            'weekday': self.weekday,
-            'start': str(self.start),
-            'end': str(self.end)
-        }
 
     def does_fit(self, time):
         """
