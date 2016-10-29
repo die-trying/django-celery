@@ -5,10 +5,10 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from mixer.backend.django import mixer
 
-from elk.utils.testing import ClientTestCase, create_teacher
+from elk.utils.testing import APITestCase, create_customer, create_teacher
 
 
-class EntryAPITest(ClientTestCase):
+class EntryAPITest(APITestCase):
     """
     Generate dummy teachers timeline and fetch it through JSON
     """
@@ -18,6 +18,11 @@ class EntryAPITest(ClientTestCase):
         with a super user here.
         """
         self.teacher = create_teacher()
+        self.c.login(username=self.superuser_login, password=self.superuser_password)
+
+    def tearDown(self):
+        super().tearDown()
+        self.c.logout()
 
     def test_user(self):  # TODO: REFACTOR IT
         duration = timedelta(minutes=71)
@@ -49,8 +54,19 @@ class EntryAPITest(ClientTestCase):
             x += timedelta(days=1)
             entry.save()
 
-        response = self.c.get('/api/timeline/?teacher=%s&?start_0=2013-01-01&start_1=2016-01-03' % self.teacher.pk)
-        self.assertEqual(response.status_code, 200)
-
+        response = self.c.get('/api/timeline/', {
+            'teacher': self.teacher.pk,
+            'start_0': '2013-01-01',
+            'start_1': '2016-01-03',
+        })
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(len(data), 3)
+
+    def test_api_permissions(self):
+        someone = create_customer(password='123')
+
+        self.c.logout()
+        self.c.login(username=someone.user.username, password='123')
+        response = self.c.get('/api/timeline/')
+
+        self.assertEqual(response.status_code, 403)
