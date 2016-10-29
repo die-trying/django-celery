@@ -19,10 +19,10 @@ django-countries==3.4.1
 -e git+https://github.com/f213/django-suit-daterange-filter@a9d9c2e118f0006ca0fa842febbe0922fba75518#egg=django_date_range_filter
 django-debug-toolbar==1.4
 django-environ==0.4.0
+django-filter==0.15.3
 django-image-cropping==1.0.3
 django-mail-templated==2.6.2
 django-markdown-app==0.8.6
-django-memoize==2.0.0
 django-money==0.8
 django-nose==1.4.4
 django-picklefield==0.3.2

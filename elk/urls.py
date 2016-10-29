@@ -7,6 +7,7 @@ from rest_framework.routers import DefaultRouter
 
 from acc.views import Homepage
 from teachers.api.viewsets import TeacherViewSet
+from timeline.api.viewsets import TimelineViewset
 
 """
 URL of every app should be namespaced with the prefix of the app name,
@@ -17,6 +18,7 @@ and for starting social auth — app:social:begin.
 
 router = DefaultRouter()
 router.register(r'teachers', TeacherViewSet)
+router.register(r'timeline', TimelineViewset)
 
 urlpatterns = [
     url(name='home', regex=r'^$', view=login_required(Homepage.as_view())),

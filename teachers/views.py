@@ -2,7 +2,6 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.generic import DetailView
 
-from elk.views import JSONDetailView
 from teachers.models import Teacher
 
 
@@ -22,10 +21,3 @@ class TeacherDetail(DetailView):
         )
 
         return ctx
-
-
-class TeacherJSONDetail(JSONDetailView, TeacherDetail):
-    def serialize(self, context):
-        context['object'] = context['object'].as_dict()
-        context['timeslots'] = ''
-        return context

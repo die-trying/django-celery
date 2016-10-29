@@ -176,6 +176,7 @@ class ClientTestCase(TestCase, AssertHTMLMixin):
     def __generate_superuser(cls):
         cls.superuser = User.objects.create_superuser('root', 'root@wheel.com', 'ohGh7jai4Cee')
         create_customer(user=cls.superuser)
+
         cls.c.login(username='root', password='ohGh7jai4Cee')
 
         cls.superuser_login = 'root'

@@ -34,6 +34,5 @@ urlpatterns = [
         name='check_entry',
         ),
 
-    url(r'(?P<username>.+).json', views.calendar_json, name='timeline.json'),
     url(r'(?P<username>.+)/$', views.calendar, name='timeline'),
 ]

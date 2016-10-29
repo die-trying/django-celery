@@ -7,7 +7,6 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.defaultfilters import capfirst
 from django.utils import timezone
-from django.utils.dateformat import format
 from django.utils.translation import ugettext as _
 
 from accounting.models import Event as AccEvent
@@ -16,14 +15,13 @@ from market.auto_schedule import AutoSchedule
 from teachers.models import Absence
 from timeline.exceptions import DoesNotFitWorkingHours
 
-
 CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)
 
 
 class EntryManager(models.Manager):
 
     def get_queryset(self, exclude_void=True):
-        return super(EntryManager, self).get_queryset().exclude(active=0)
+        return super().get_queryset().exclude(active=0)
 
     def to_be_marked_as_finished(self):
         """
@@ -295,22 +293,6 @@ class Entry(models.Model):
         if self.end < (timezone.now() + CLASS_IS_FINISHED_AFTER):
             return True
         return False
-
-    def as_dict(self):
-        """
-        Dictionary representation of a model. For details see model description.
-        """
-        start = timezone.localtime(self.start)
-        end = timezone.localtime(self.end)
-        return {
-            'id': self.pk,
-            'title': self.__str__(),
-            'start': format(start, 'c'),   # ISO 8601
-            'end': format(end, 'c'),       # ISO 8601
-            'is_free': self.is_free,
-            'slots_taken': self.taken_slots,
-            'slots_available': self.slots,
-        }
 
     def as_ical(self, for_whom='customer'):
         ical = Ical(

@@ -21,13 +21,6 @@ class EntryTestCase(TestCase):
         self.teacher1 = create_teacher(works_24x7=True)
         self.teacher2 = create_teacher(works_24x7=True)
 
-    def test_entry_naming_simple(self):
-        """
-        """
-        lesson = mixer.blend(lessons.OrdinaryLesson, name='Test_Lesson_Name')
-        entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson)
-        self.assertIn('Test_Lesson_Name', str(entry))
-
     def test_entry_naming_with_student(self):
         lesson = mixer.blend(lessons.OrdinaryLesson, name='Test_Lesson_Name')
         entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson, start=self.tzdatetime(2016, 2, 6, 3, 0))

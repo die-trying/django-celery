@@ -2,7 +2,7 @@ class Model extends MicroEvent
   # This model represents a state of form. State should be updated by
   # Model.update_state('what_has_changed')
 
-  constructor: (@username, @pk=null, date=null) ->
+  constructor: (@username, @userid, @pk=null, date=null) ->
     @_set_err('none')
     @submit_disabled = true
 
@@ -10,7 +10,7 @@ class Model extends MicroEvent
       create: '/timeline/%s/add/'
       update: '/timeline/%s/%d/'
       validate_entry: '/timeline/%s/check_entry/%s/%s'
-      lessons: '/lessons/%s/type/%s/available.json'
+      lessons: '/api/teachers/%s/available_lessons.json?lesson_type=%s'
     }
     @_set_date(date) if date?
 
@@ -33,7 +33,7 @@ class Model extends MicroEvent
 
   fetch_lessons: () ->
     # Get available lessons from server, based on selected lesson_type
-    url = sprintf @urls['lessons'], @username, @lesson_type
+    url = sprintf @urls['lessons'], @userid, @lesson_type
     @lessons = []
     $.getJSON url, (response) =>
       for lesson in response

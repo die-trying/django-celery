@@ -2,7 +2,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.http import Http404, JsonResponse
-from django.shortcuts import get_list_or_404, get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateformat import format
 from django.utils.dateparse import parse_datetime
@@ -10,7 +10,6 @@ from django.utils.decorators import method_decorator
 from django.views.generic.edit import CreateView, UpdateView
 
 from crm.models import Customer
-from elk.utils import date
 from elk.views import DelteWithoutConfirmationView
 from market.auto_schedule import AutoSchedule
 from market.models import Class
@@ -114,23 +113,10 @@ def add_customer(request, username, pk, customer):
 
 
 @staff_member_required
-def calendar_json(request, username):
-    teacher = get_object_or_404(Teacher, user__username=username)
-    entries = []
-    start = request.GET.get('start', date.ago(days=16))
-    end = request.GET.get('end', date.fwd(days=16))
-
-    for entry in get_list_or_404(TimelineEntry,
-                                 start__range=(start, end),
-                                 teacher=teacher,
-                                 ):
-        entries.append(entry.as_dict())
-
-    return JsonResponse(entries, safe=False)
-
-
-@staff_member_required
 def check_entry(request, username, start, end):
+    """
+    TODO: move it to the API
+    """
     start = timezone.make_aware(parse_datetime(start))
     end = timezone.make_aware(parse_datetime(end))
 

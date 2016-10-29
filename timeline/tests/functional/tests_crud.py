@@ -1,6 +1,7 @@
 import json
 from datetime import timedelta
 
+from django.test import override_settings
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from freezegun import freeze_time
@@ -12,6 +13,7 @@ from timeline.models import Entry as TimelineEntry
 
 
 @freeze_time('2016-06-29 12:00')
+@override_settings(TIME_ZONE='Europe/Moscow')
 class EntryCRUDTest(ClientTestCase):
     """
     Test hand-crafted form for event editing throught the calendar.
@@ -48,16 +50,14 @@ class EntryCRUDTest(ClientTestCase):
             'duration': '00:33',
         })
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.teacher.timeline_entries.count(), 1)
 
         self.added_entry = self.__get_entry_from()
 
-        end = parse_datetime(self.added_entry['end'])
-        reference = timezone.make_aware(parse_datetime('2016-06-29 15:33:00'))
-        self.assertEqual(end, reference)
-        self.assertIn(self.lesson.name, self.added_entry['title'])
+        end = timezone.localtime(parse_datetime(self.added_entry['end']))
+        self.assertEqual(end, self.tzdatetime(2016, 6, 29, 15, 33))
 
-        entry = TimelineEntry.objects.get(pk=self.added_entry['id'])
-        self.assertIsNotNone(entry)
+        self.assertIsNotNone(TimelineEntry.objects.get(pk=self.added_entry['id']))
 
     def _update(self):
         pk = self.added_entry['id']
@@ -75,9 +75,7 @@ class EntryCRUDTest(ClientTestCase):
         self.added_entry = self.__get_entry_from()
 
         end = parse_datetime(self.added_entry['end'])
-        reference = timezone.make_aware(parse_datetime('2016-06-29 16:33:00'))
-        self.assertEqual(end, reference)
-        self.assertIn(self.lesson.name, self.added_entry['title'])
+        self.assertEqual(end, self.tzdatetime(2016, 6, 29, 16, 33))
 
     def _delete(self):
         pk = self.added_entry['id']
@@ -88,7 +86,7 @@ class EntryCRUDTest(ClientTestCase):
             TimelineEntry.objects.get(pk=pk)
 
     def __get_entry_from(self):
-        response = self.c.get('/timeline/%s.json?start=2016-06-28&end=2016-06-30' % self.teacher.user.username)
+        response = self.c.get('/api/timeline/?teacher=%d&start_0=2016-06-28&start_1=2016-06-30' % self.teacher.pk)
         self.assertEqual(response.status_code, 200)
         entries = json.loads(response.content.decode('utf-8'))
         self.assertEqual(len(entries), 1)
