@@ -135,6 +135,13 @@ class TestCase(StockTestCase):
         """
         return self.assertRegexpMatches(str(time), r'\d{2}\:\d{2}')
 
+    def assertRedirectsPartial(self, response, expected_url):
+        """
+        Check if response is a redirect and redirect URL contains expected_url
+        """
+        self.assertIn(response.status_code, [302, 301])
+        self.assertIn(expected_url, response.url)
+
     def tzdatetime(self, *args, **kwargs):
         """
         Create a timezoned datetime

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.shortcuts import redirect
 from django.utils.html import format_html
 from django.utils.translation import ugettext as _
 
@@ -62,6 +63,11 @@ class CustomerNotesInline(StackedInline):
         return False
 
 
+def export_to_mailchimp(modeladmin, request, queryset):
+    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    return redirect('crm:mailchimp_csv', ids=','.join(selected))
+
+
 @admin.register(Customer)
 class ExistingCustomerAdmin(ModelAdmin):
     """
@@ -76,7 +82,7 @@ class ExistingCustomerAdmin(ModelAdmin):
         HasClassesFilter,
         HasSubscriptionsFilter
     )
-    actions = None
+    actions = [export_to_mailchimp]
     readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions', 'corporate')
     search_fields = ('user__first_name', 'user__last_name')
     inlines = (CustomerNotesInline, SubscriptionsInline, ClassesLeftInline, ClassesPassedInline)
