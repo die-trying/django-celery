@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
-from django_markdown.utils import markdown
 
 
 class Language(models.Model):
@@ -118,24 +117,6 @@ class Lesson(models.Model):
         For usage example, see :model:`market.Class` manager.
         """
         return None
-
-    def as_dict(self):
-        return
-        """Dicitionary representation of a lesson"""
-        d = {
-            'id': self.pk,
-            'name': self.name,
-            'required_slots': self.slots,
-            'announce': markdown(self.announce),
-            'description': markdown(self.description),
-            'duration': str(self.duration)
-        }
-
-        if hasattr(self, 'available_slots_count'):  # set externaly, i.e in Teachers.objects.find_lessons()
-            d['available_slots_count'] = self.available_slots_count
-            # TODO unittest it
-
-        return d
 
     class Meta:
         abstract = True
