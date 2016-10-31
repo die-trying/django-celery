@@ -43,7 +43,7 @@ def _planning_ofsset(start):
 
 class TeacherManager(models.Manager):
     def with_photos(self):
-        return super().get_queryset()\
+        return super().get_queryset() \
             .filter(active=1) \
             .exclude(teacher_photo='') \
             .exclude(teacher_photo__isnull=True)
@@ -232,6 +232,12 @@ class Teacher(models.Model):
             result.append(lesson_types[i])
 
         return result
+
+    def get_absolute_url(self):
+        """
+        Teacher detail page
+        """
+        return reverse('teachers:detail', kwargs={'username': self.user.username})
 
     def timeline_url(self):
         """
