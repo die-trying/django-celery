@@ -1,3 +1,6 @@
+from datetime import timedelta
+
+from django.utils import timezone
 from django.views.generic.base import TemplateView
 
 from products.models import Product1, SimpleSubscription
@@ -22,6 +25,7 @@ class Homepage(TemplateView):
             'simple_subscription_tier': simple_subscription.get_tier(country=self.request.user.crm.country),
 
             'faces': self._teacher_faces('Fedor', 'Amanda', 'Andrew'),
+            'active_teachers': Teacher.objects.find_free(timezone.now() + timedelta(days=1))
         }
 
     def _teacher_faces(self, *faces):
