@@ -75,7 +75,7 @@ def create_teacher(accepts_all_lessons=True, works_24x7=False):
     Generate a simple teacher object.
     """
     customer = create_customer()
-    teacher = mixer.blend('teachers.teacher', user=customer.user)  # second level relations — that is wy i've created this helper
+    teacher = mixer.blend('teachers.teacher', user=customer.user, teacher_photo=mixer.RANDOM)  # second level relations — that is wy i've created this helper
     teacher.user.is_staff = True
     teacher.user.save()
 

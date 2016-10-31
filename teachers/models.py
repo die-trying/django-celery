@@ -42,6 +42,12 @@ def _planning_ofsset(start):
 
 
 class TeacherManager(models.Manager):
+    def with_photos(self):
+        return super().get_queryset()\
+            .filter(active=1) \
+            .exclude(teacher_photo='') \
+            .exclude(teacher_photo__isnull=True)
+
     def find_free(self, date, **kwargs):
         """
         Find teachers, that can host a specific event or work with no assigned
@@ -52,7 +58,7 @@ class TeacherManager(models.Manager):
         iterable of available slots as datetime.
         """
         teachers = []
-        for teacher in self.get_queryset().filter(active=1):
+        for teacher in self.with_photos().filter(active=1):
             free_slots = teacher.find_free_slots(date, **kwargs)
             if free_slots:
                 teacher.free_slots = free_slots
