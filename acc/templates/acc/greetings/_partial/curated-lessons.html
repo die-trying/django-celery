@@ -5,12 +5,12 @@
         <h2>Curated lessons</h2>
         <p>Individual lessons with your personal curator — centered around you, your interests and your goals.</p>
         {% endblocktrans %}
-        <div class="subscription-faces">
+        <div class="subscription-faces teacher-grid">
             {% for teacher in faces %}
-            <div class="subscription-faces__teacher">
+            <div class="teacher">
                 <img class="teacher-face img-circle" src="{{ teacher.get_teacher_photo }}" alt="{{ teacher.user.crm.full_name }}">
                 <strong>{{ teacher.user.crm.full_name }}</strong>
-                <p class="subscription-faces__teacher__announce">{{ teacher.announce }}</p>
+                <p class="teacher-announce">{{ teacher.announce }}</p>
             </div>
             {% endfor %}
         </div>

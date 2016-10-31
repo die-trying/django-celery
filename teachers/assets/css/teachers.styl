@@ -5,3 +5,26 @@ $size = 250px
     img
         width: $size
         height: $size
+
+.teacher-grid
+    .teacher
+        display: inline-block
+        text-align: center
+        vertical-align: top
+
+        img
+            display: block
+            margin-bottom: 10px
+
+        &-announce
+            display: block
+            width: 250px
+            font-size: 12px
+
+.teacher + .teacher
+    margin-left: 50px
+
+@media (max-width: 767px)
+    .teacher + .teacher
+        margin-left: unset
+        margin-top: 40px
