@@ -2,11 +2,27 @@ from elk.utils.testing import ClientTestCase, create_customer, create_teacher
 from teachers.slot_list import SlotList
 
 
-class TestTeacherDetail(ClientTestCase):
+class TestTeacherViews(ClientTestCase):
     def setUp(self):
         self.teacher = create_teacher(works_24x7=True)
+        self.other_teachers = []
+        for i in range(0, 10):
+            self.other_teachers.append(create_teacher())
 
-    def test_loading(self):
+    def test_list_loading(self):
+        """
+        Test teacher list
+
+        Feel free to modify assertions when you change teacher sort order
+        """
+        response = self.c.get('/teachers/')
+
+        with self.assertHTML(response, '.teacher-grid a') as teacher_link:
+            for i in range(1, 11):
+                url = teacher_link[i].attrib.get('href')
+                self.assertEqual(url, '/teachers/%s/' % self.other_teachers[i - 1].user.username)
+
+    def test_detail_loading(self):
         response = self.c.get('/teachers/%s/' % self.teacher.user.username)
 
         with self.assertHTML(response, 'img.teacher-face') as teacher_face:

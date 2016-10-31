@@ -13,6 +13,7 @@
 
         <div class="collapse navbar-collapse" id="navbar">
             <ul class="nav navbar-nav">
+                <!-- li class="{% is_active request '^/teachers/' %}"><a href="{% url 'teachers:list' %}">Teachers</a></li -->
                 {% if request.user.is_staff %}
                     <li class="{% is_active request '^/timeline/' %}"><a href="{% url 'timeline:timeline' username=request.user.username %}">Timeline</a></li>
                 {% endif %}

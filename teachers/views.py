@@ -1,18 +1,11 @@
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from django.views.generic import DetailView
-
+from elk.views import LoginRequiredDetailView, LoginRequiredListView
 from teachers.models import Teacher
 
 
-class TeacherDetail(DetailView):
+class TeacherDetail(LoginRequiredDetailView):
     model = Teacher
     slug_url_kwarg = 'username'
     slug_field = 'user__username'
-
-    @method_decorator(login_required)
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -21,3 +14,8 @@ class TeacherDetail(DetailView):
         )
 
         return ctx
+
+
+class TeacherList(LoginRequiredListView):
+    model = Teacher
+    queryset = Teacher.objects.with_photos()

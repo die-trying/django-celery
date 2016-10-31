@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic.edit import CreateView, UpdateView
 
 from crm.models import Customer
-from elk.views import DelteWithoutConfirmationView
+from elk.views import DeleteWithoutConfirmationView
 from market.auto_schedule import AutoSchedule
 from market.models import Class
 from market.sortinghat import SortingHat
@@ -56,7 +56,7 @@ class EntryUpdate(TimelineEntryBaseView, UpdateView):
     pass
 
 
-class EntryDelete(TimelineEntryBaseView, DelteWithoutConfirmationView):
+class EntryDelete(TimelineEntryBaseView, DeleteWithoutConfirmationView):
     pass
 
 
