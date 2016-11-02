@@ -1,16 +1,31 @@
 @import 'nib'
 
+.navbar
+    background-color: #B7BBBC
+
 .navbar__profile
     margin-top: 5px
     margin-bottom: 5px
 
-.navbar__profile-picture, .navbar__profile-username
-    display: inline-block
+    &-picture, &-username
+        display: inline-block
 
-.navbar__profile-username
-    max-width: 250px
-    margin-left: 5px
-    margin-right: 10px
+    &-username
+        max-width: 250px
+        margin-left: 5px
+        margin-right: 10px
 
-.navbar__profile-picture>img
-    max-height: 40px
+    &-picture>img
+        max-height: 40px
+
+    .logout
+        color: #262262
+        &:hover
+            color: #0000FF
+            text-decoration: none
+
+.elk-logo
+    padding: 5px 0
+    margin-right: 20px
+    img
+        height: 100%

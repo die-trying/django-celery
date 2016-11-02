@@ -1,0 +1,18 @@
+.btn-primary
+    background-color: #262262
+
+    outline: none !important
+    &:focus
+        background-color: #262262
+
+    &:hover
+        background-color: #2d4373
+        transition: background-color .1s
+
+    &:not(:hover)
+        transition: background-color .2s
+
+    &.disabled, &[disabled]
+        opacity: .35
+        &:hover
+            background-color: #262262
