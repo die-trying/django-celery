@@ -3,7 +3,7 @@
   "dependencies": {
     "jquery": "~2.1.4",
     "bootstrap": "^3.3.6",
-    "bootstrap-social": "~5.0.0",
+    "bootstrap-social": "^5.0.0",
     "moment": "~2.14.1",
     "fullcalendar": "~2.9.0",
     "sprintfjs": "~1.2.3",
@@ -14,7 +14,11 @@
     "bootstrap-select": "~1.10.0",
     "rivets": "~0.9.0",
     "microevent.js": "f213/microevent.js",
-    "js-cookie": "^2.1.3"
+    "js-cookie": "^2.1.3",
+    "font-awesome": "^4.7.0"
   },
-  "private": "true"
+  "private": "true",
+  "resolutions": {
+    "font-awesome": "^4.7.0"
+  }
 }

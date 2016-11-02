@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.shortcuts import redirect
 from django.utils.html import format_html
 from django.utils.translation import ugettext as _
 
@@ -62,6 +63,11 @@ class CustomerNotesInline(StackedInline):
         return False
 
 
+def export_to_mailchimp(modeladmin, request, queryset):
+    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    return redirect('crm:mailchimp_csv', ids=','.join(selected))
+
+
 @admin.register(Customer)
 class ExistingCustomerAdmin(ModelAdmin):
     """
@@ -76,7 +82,7 @@ class ExistingCustomerAdmin(ModelAdmin):
         HasClassesFilter,
         HasSubscriptionsFilter
     )
-    actions = None
+    actions = [export_to_mailchimp]
     readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions', 'corporate')
     search_fields = ('user__first_name', 'user__last_name', 'user__email')
     inlines = (CustomerNotesInline, SubscriptionsInline, ClassesLeftInline, ClassesPassedInline)
@@ -104,33 +110,33 @@ class ExistingCustomerAdmin(ModelAdmin):
         if request.resolver_match is not None and request.resolver_match.url_name == 'crm_customer_change':
             return queryset
 
-        return queryset.filter(user__teacher_data__isnull=True)
+        return queryset.prefetch_related('subscriptions', 'classes', 'user').filter(user__teacher_data__isnull=True)
 
     def Languages(self, instance):
         if not instance.languages.count():
             return '-'
 
-        return ', '.join(instance.languages.all().values_list('name', flat=True))
+        return ', '.join(instance.languages.values_list('name', flat=True))
 
     def classes(self, instance):
-        total = instance.classes.all()
+        total = instance.classes.count()
         if not total:
             return '—'
 
-        finished = total.filter(is_fully_used=True)
-        return '%d/%d' % (finished.count(), total.count())
+        finished = instance.classes.filter(is_fully_used=True).count()
+        return '%d/%d' % (finished, total)
 
     def subscriptions(self, instance):
-        if not instance.classes:
+        if not instance.classes.count():
             return '—'
 
-        total = instance.subscriptions.all()
+        total = instance.subscriptions.count()
 
         if not total:
             return '—'
 
-        finished = instance.subscriptions.filter(pk__in=total, is_fully_used=True)
-        return '%d/%d' % (finished.count(), total.count())
+        finished = instance.subscriptions.filter(is_fully_used=True).count()
+        return '%d/%d' % (finished, total)
 
     def save_formset(self, request, form, formset, change):
         """
