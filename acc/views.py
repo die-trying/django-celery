@@ -2,7 +2,9 @@ from datetime import timedelta
 
 from django.utils import timezone
 
-from elk.views import LoginRequiredTemplateView
+from crm.forms import CustomerProfileForm
+from crm.models import Customer
+from elk.views import LoginRequiredTemplateView, LoginRequiredUpdateView
 from products.models import Product1, SimpleSubscription
 from teachers.models import Teacher
 
@@ -34,3 +36,11 @@ class Homepage(LoginRequiredTemplateView):
         """
         for i in faces:
             yield Teacher.objects.filter(user__username=i).first()
+
+
+class CustomerProfile(LoginRequiredUpdateView):
+    form_class = CustomerProfileForm
+    model = Customer
+
+    def get_object(self, queryset=None):
+        return self.request.user.crm

@@ -1,0 +1,40 @@
+{% extends 'acc/profile.html' %}
+
+{% block form %}
+<div class="customer-profile">
+    <form class="form" method="POST">
+        {% csrf_token %}
+        <div class="customer-profile__intro">
+            <div class="field">
+                <label for="customer-profile__name">Name</label>
+                <span id="customer-profile__name">{{ request.user.crm.full_name }}</span>
+            </div>
+            <div class="field">
+                <label for="customer-profile__email">Email</label>
+                <span id="customer-profile__email"><a href="mailto:{{ request.user.email }}">{{ request.user.email }}</a></span>
+            </div>
+            <div class="field">
+                <label for="{{ form.birthday.id_for_label }}">Birthday</label>
+                <input type="hidden" name="birthday">
+                <span class="customer-profile__birthday">{{ form.birthday.value }}
+                (<a href="#" class="pseudo change-birthday">Change</a>)</span>
+            </div>
+        </div>
+
+        <div class="customer-profile__form">
+            <div class="form-group hidden fadein">
+                <label class="required" for="{{ form.skype.id_for_label }}">Skype id:</label>
+                <input type="text" class="form-control" name="skype" required id="{{ form.skype.id_for_label }}" value="{{ form.skype.value }}">
+            </div>
+
+            <div class="form-group hidden fadein">
+                <label for="{{ form.timezone.id_for_label }}">Timezone:</label>
+                {{ form.timezone }}
+            </div>
+
+        </div>
+
+        <input class="btn btn-primary" type="submit" value='Change'>
+    </form>
+</div>
+{% endblock %}
