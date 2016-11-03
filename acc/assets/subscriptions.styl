@@ -3,6 +3,7 @@
 .subscription
     &__curated-lessons
         margin-top: 40px
+        padding-bottom: 100px
 
     &__curated-lessons, &__briefs, &__individual-program
         font-size: 16px
@@ -22,7 +23,7 @@
         margin-left: 45px
 
     &__lessons
-        min-height: 260px
+        min-height: 290px
 
     &__lesson
         display: table-row
@@ -41,13 +42,31 @@
     &__payment
         relative: left 5px
         margin-top: 10px
-        padding-left: 20px
+        padding-left: 25px
 
 .subscription-brief-beginners>.subscription-brief__title
     margin-left: 30px
 
 .subscription-faces
     padding-top: 20px
+    margin-top: 20px
+    margin-bottom: 25px
+
+    &__teacher
+        display: inline-block
+        text-align: center
+        vertical-align: top
+        img
+            display: block
+            margin-bottom: 10px
+
+        &__announce
+            display: block
+            width: 250px
+            font-size: 12px
+
+    &__teacher + &__teacher
+        margin-left: 90px
 
 @media (max-width: 767px)
     .subscription

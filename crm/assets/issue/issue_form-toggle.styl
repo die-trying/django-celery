@@ -1,0 +1,29 @@
+
+.issue-form-toggle
+    @media (max-width: 768px)
+        display: none
+
+    position: fixed
+    bottom: 0
+    right: 60px
+
+    border-radius: 5px 5px 0 0
+    background-color: #222222
+
+    cursor: pointer
+
+    .fa
+        min-width: 14px // to avoid flashing
+        margin-left: 2px
+
+    &__open
+        display: block
+        padding: 5px 10px
+        color: #cccccc
+        &:hover, &:focus
+            text-decoration: none
+            outline: none
+        &:hover
+            color: #ffffff
+        &:focus
+            color: #cccccc
