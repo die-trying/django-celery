@@ -22,12 +22,12 @@
         </div>
 
         <div class="customer-profile__form">
-            <div class="form-group hidden fadein">
+            <div class="form-group">
                 <label class="required" for="{{ form.skype.id_for_label }}">Skype id:</label>
                 <input type="text" class="form-control" name="skype" required id="{{ form.skype.id_for_label }}" value="{{ form.skype.value }}">
             </div>
 
-            <div class="form-group hidden fadein">
+            <div class="form-group">
                 <label for="{{ form.timezone.id_for_label }}">Timezone:</label>
                 {{ form.timezone }}
             </div>

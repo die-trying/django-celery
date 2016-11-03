@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.utils.dateformat import format
 from django.utils.dateparse import parse_date
 
-from elk.utils.date import ago, day_range, fwd
+from elk.utils.date import ago, common_timezones, day_range, fwd
 from elk.utils.testing import TestCase
 
 
@@ -29,3 +29,7 @@ class TestDateUtils(TestCase):
     def test_day_range_for_datetime(self):
         r = day_range(datetime(2016, 2, 28))
         self.assertEquals(r, ('2016-02-28 00:00:00', '2016-02-28 23:59:59'))
+
+    def test_common_timezones(self):
+        a = list(common_timezones())
+        self.assertGreater(len(a), 32)

@@ -5,6 +5,7 @@
 from copy import copy
 from datetime import date, datetime, time, timedelta
 
+import pytz
 from django.utils.dateformat import format
 
 
@@ -45,3 +46,16 @@ def day_range(d):
         d + ' 00:00:00',
         d + ' 23:59:59',
     )
+
+
+def common_timezones():
+    """
+    List of common timezones
+
+    Excludes some rare and unneeded to the app timezones, like Asia or Antarctica ones
+    """
+    for tz in pytz.common_timezones:
+        if tz.startswith('Europe/') or tz.startswith('US/'):
+            yield (tz, tz)
+
+    yield ('UTC', 'UTC')
