@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.views.generic import DeleteView, DetailView, ListView
+from django.views.generic import DeleteView, DetailView, ListView, TemplateView
+from django.views.generic.edit import UpdateView
 
 
 class DeleteWithoutConfirmationView(DeleteView):
@@ -19,4 +20,12 @@ class LoginRequiredListView(_LoginRequiredViewMixin, ListView):
 
 
 class LoginRequiredDetailView(_LoginRequiredViewMixin, DetailView):
+    pass
+
+
+class LoginRequiredTemplateView(_LoginRequiredViewMixin, TemplateView):
+    pass
+
+
+class LoginRequiredUpdateView(_LoginRequiredViewMixin, UpdateView):
     pass

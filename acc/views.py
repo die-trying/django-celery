@@ -1,13 +1,13 @@
 from datetime import timedelta
 
 from django.utils import timezone
-from django.views.generic.base import TemplateView
 
+from elk.views import LoginRequiredTemplateView
 from products.models import Product1, SimpleSubscription
 from teachers.models import Teacher
 
 
-class Homepage(TemplateView):
+class Homepage(LoginRequiredTemplateView):
     template_name = 'acc/index.html'
 
     def get_context_data(self, **kwargs):

@@ -21,7 +21,7 @@ router.register(r'teachers', TeacherViewSet)
 router.register(r'timeline', TimelineViewset)
 
 urlpatterns = [
-    url(name='home', regex=r'^$', view=login_required(Homepage.as_view())),
+    url(name='home', regex=r'^$', view=Homepage.as_view()),
     url(r'^accounts/', include('acc.urls', namespace='acc')),
     url(r'^crm/', include('crm.urls', namespace='crm')),
     url(r'^market/', include('market.urls', namespace='market')),
