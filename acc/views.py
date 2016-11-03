@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.core.urlresolvers import reverse
 from django.utils import timezone
 
 from crm.forms import CustomerProfileForm
@@ -44,3 +45,6 @@ class CustomerProfile(LoginRequiredUpdateView):
 
     def get_object(self, queryset=None):
         return self.request.user.crm
+
+    def get_success_url(self):
+        return reverse('acc:profile')
