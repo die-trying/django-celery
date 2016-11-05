@@ -47,3 +47,15 @@ class CustomerTestCase(TestCase):
         with self.assertRaises(ValidationError):
             c.timezone = 'Noga/Test'
             c.save()
+
+    def test_profile_needs_updating_false(self):
+        c = create_customer()
+        c.skype = 'tstskp'
+        c.save()
+        self.assertFalse(c.profile_needs_updating())
+
+    def test_profile_neeeds_updating_true(self):
+        c = create_customer()
+        c.skype = ''
+        c.save()
+        self.assertTrue(c.profile_needs_updating())

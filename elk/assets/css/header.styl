@@ -7,6 +7,7 @@
 
 .navbar-profile
     &__photo
+        position: relative
         display: inline-block
         margin-right: 10px
         color: #262262
@@ -16,6 +17,15 @@
         &.active
             color: #333  // bootstrap body color
             pointer-events: none
+            .profile-needs-updating
+                display: none
+
+        .profile-needs-updating
+            absolute: left 50px top 2px
+            background-color: red
+            min-height: 8px
+            min-width: 8px
+            border-radius: 8px
 
      a:hover
             text-decoration: none
@@ -26,3 +36,8 @@
     margin-right: 30px
     img
         height: 100%
+
+.profile-needs-updating
+    position: relative
+    min-height: 10px
+    min-width: 10px

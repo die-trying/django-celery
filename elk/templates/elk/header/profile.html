@@ -9,6 +9,9 @@
         {% else %}
             <img class="img-circle" src="{% static 'no-photo.jpg' %}" />
         {% endif %}
+    {% if request.user.crm.profile_needs_updating %}
+        <span class="profile-needs-updating"></span>
+    {% endif %}
     {{ request.user.crm }}</a>
     (<a class="pseudo logout" href="{% url 'acc:logout' %}?next=/">{% trans 'Log&nbsp;out' %}</a>)
 </div>

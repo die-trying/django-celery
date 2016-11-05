@@ -168,6 +168,15 @@ class Customer(models.Model):
         )
         trial_lesson_added.send(sender=self)
 
+    def profile_needs_updating(self):
+        """
+        Check if we should advise a customer to change his profile
+        """
+        if len(self.skype) == 0:
+            return True
+
+        return False
+
     def is_trial_user(self):
         """
         Returns true if the only lesson off this user is trial. And it is not used.
