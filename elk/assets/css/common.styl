@@ -7,13 +7,14 @@
 body
     min-height: 640px
 
+a:not(:hover)
+    transition color .2s ease
 
 a.pseudo
     color black
     border-bottom: dotted 1px
     text-decoration: none
-    &:not(:hover)
-        transition color .5s ease
+
     &:hover
         color: #337ab7 // default bootstrap for '.text-primary'
         border-color: @color
@@ -67,7 +68,7 @@ dl.inline
 
 .progress .progress-bar
     min-width 30px
-    
+
 .table-no-border
     td
         border-top: none !important
