@@ -199,6 +199,15 @@ class ClassesManager(ProductContainerManager):
             .order_by('timeline__start') \
             .first()
 
+    def passed_or_scheduled(self):
+        """
+        List of 'my classes' — classes the are passed of scheduled
+        """
+
+        return self.get_queryset() \
+            .filter(is_scheduled=True, timeline__isnull=False) \
+            .order_by('-timeline__start')
+
     def starting_soon(self, delta):
         """
         Return a queryset with classes, that are about to start in `delta` time.

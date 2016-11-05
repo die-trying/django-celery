@@ -4,10 +4,21 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
+from elk.views import LoginRequiredTemplateView
 from lessons.api.serializers import factory as lesson_serializer_factory
 from market.sortinghat import SortingHat
 from teachers.api.serializers import TeacherSerializer, TimeSlotSerializer
 from teachers.models import Teacher
+
+
+class CustomerLessons(LoginRequiredTemplateView):
+    template_name = 'market/customer_lessons.html'
+
+    def get_context_data(self):
+        ctx = super().get_context_data()
+
+        ctx['object_list'] = self.request.user.crm.classes.passed_or_scheduled()
+        return ctx
 
 
 @login_required
