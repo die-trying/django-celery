@@ -29,7 +29,7 @@ class testBuyable(TestCase):
         )
         c.save()
 
-        self.assertEqual(str(c.name_for_user), str(lesson.type_verbose_name))
+        self.assertEqual(str(c.name_for_user), 'Curated lesson')  # feel free to change if you've renamed OrdinaryLesson
 
     def test_no_deletion(self):
         """

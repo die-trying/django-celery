@@ -25,31 +25,25 @@ class TestLessonsUnit(TestCase):
 
     def test_long_name(self):
         l = mixer.blend(lessons.OrdinaryLesson)
-        self.assertIn('Curated', str(l.long_name))
+        self.assertIn('Curated', l.long_name())
 
     def test_long_name_from_verbose_name(self):
         """
         Trial lessons don't defined custom long name but still have one from verbose_name
         """
         l = mixer.blend(lessons.TrialLesson)
-        self.assertIn('First', str(l.long_name))
+        self.assertIn('First', l.long_name())
 
     def test_long_name_plural(self):
         l = mixer.blend(lessons.OrdinaryLesson)
-        self.assertIn('Curated lessons', str(l.long_name_plural))
+        self.assertIn('Curated lessons', l.long_name_plural())
 
     def test_long_name_plural_from_verbose_name(self):
         """
         Trial lessons don't defined custom long name but still have one from verbose_name
         """
         l = mixer.blend(lessons.TrialLesson)
-        self.assertIn('First', str(l.long_name_plural))
-
-    # def test_assure_slot_count(self):
-    #     l = mixer.blend(lessons.OrdinaryLesson)
-    #     l.available_slots_count = 100500
-    #     result = l.as_dict()
-    #     self.assertEqual(result['available_slots_count'], 100500)
+        self.assertIn('First', l.long_name_plural())
 
 
 class TestLessonSerializers(TestCase):

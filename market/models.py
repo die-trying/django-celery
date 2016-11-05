@@ -317,7 +317,7 @@ class Class(ProductContainer):
 
     @property
     def name_for_user(self):
-        return self.lesson_type.model_class()._meta.verbose_name.lower()
+        return self.lesson_type.model_class().long_name()
 
     @property
     def finish_time(self):

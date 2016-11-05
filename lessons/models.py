@@ -57,19 +57,19 @@ class Lesson(models.Model):
     def type_verbose_name(self):
         return _(self.__class__._meta.verbose_name.lower())
 
-    @property
-    def long_name(self):
-        if hasattr(self.__class__, '_long_name'):
-            return self.__class__._long_name
+    @classmethod
+    def long_name(cls):
+        if hasattr(cls, '_long_name'):
+            return cls._long_name
 
-        return _(self.__class__._meta.verbose_name)
+        return _(cls._meta.verbose_name)
 
-    @property
-    def long_name_plural(self):
-        if hasattr(self.__class__, '_long_name_plural'):
-            return self.__class__._long_name_plural
+    @classmethod
+    def long_name_plural(cls):
+        if hasattr(cls, '_long_name_plural'):
+            return cls._long_name_plural
 
-        return _(self.__class__._meta.verbose_name_plural)
+        return _(cls._meta.verbose_name_plural)
 
     @classmethod
     def get_contenttype(cls):
