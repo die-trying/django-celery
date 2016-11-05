@@ -15,8 +15,8 @@
             <ul class="nav navbar-nav">
                 <!-- li class="{% is_active request '^/teachers/' %}"><a href="{% url 'teachers:list' %}">Teachers</a></li -->
                 <li class="{% is_active request '^/market/mylessons/' %}"><a href="{% url 'market:customer_lessons'%}">
-                    Lessons</li>
-                {% if request.user.teaching_data %}
+                    Lessons</a></li>
+                {% if request.user.is_staff %}
                     <li class="{% is_active request '^/timeline/' %}"><a href="{% url 'timeline:timeline' username=request.user.username %}">Timeline</a></li>
                 {% endif %}
             </ul>
