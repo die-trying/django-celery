@@ -1,10 +1,12 @@
 import json
+from datetime import timedelta
 
 from django.core.exceptions import ValidationError
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
 from elk.utils.testing import ClientTestCase, TestCase, create_teacher
+from lessons.api.serializers import factory as lessons_serializer_factory
 
 
 class TestLessonsUnit(TestCase):
@@ -16,11 +18,6 @@ class TestLessonsUnit(TestCase):
             mixer.blend(lessons.MasterClass, host=lazy_teacher)
 
         self.assertIsNotNone(mixer.blend(lessons.MasterClass, host=hard_working_teacher))
-
-    def test_admin_url(self):
-        l = mixer.blend(lessons.MasterClass, host=create_teacher())
-        self.assertIn(str(l.pk), l.admin_url)
-        self.assertIn('admin/lessons/masterclass', l.admin_url)
 
     def test_type_verbose_name(self):
         l = mixer.blend(lessons.OrdinaryLesson)
@@ -48,16 +45,49 @@ class TestLessonsUnit(TestCase):
         l = mixer.blend(lessons.TrialLesson)
         self.assertIn('First', str(l.long_name_plural))
 
-    def test_assure_markdown_is_rendered(self):
-        l = mixer.blend(lessons.OrdinaryLesson, description='**bold**')
-        result = l.as_dict()
-        self.assertIn('<strong>bold</strong>', result['description'])
+    # def test_assure_slot_count(self):
+    #     l = mixer.blend(lessons.OrdinaryLesson)
+    #     l.available_slots_count = 100500
+    #     result = l.as_dict()
+    #     self.assertEqual(result['available_slots_count'], 100500)
 
-    def test_assure_slot_count(self):
-        l = mixer.blend(lessons.OrdinaryLesson)
-        l.available_slots_count = 100500
-        result = l.as_dict()
-        self.assertEqual(result['available_slots_count'], 100500)
+
+class TestLessonSerializers(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.teacher = create_teacher()
+
+    def test_factory_hosted_lesson(self):
+        master_class = mixer.blend('lessons.MasterClass', host=self.teacher)
+        Serializer = lessons_serializer_factory(master_class)
+
+        serialized = Serializer(master_class).data
+
+        self.assertEqual(serialized['name'], master_class.name)
+
+    def test_factory_non_hosted_lesson(self):
+        ordinary_lesson = mixer.blend('lessons.OrdinaryLesson')
+        Serializer = lessons_serializer_factory(ordinary_lesson)
+
+        serialized = Serializer(ordinary_lesson).data
+
+        self.assertEqual(serialized['name'], ordinary_lesson.name)
+
+    def test_serializer_fields(self):
+        master_class = mixer.blend(
+            'lessons.MasterClass',
+            host=self.teacher,
+            announce='*test*',
+            duration=timedelta(minutes=30),
+        )
+        Serializer = lessons_serializer_factory(master_class)
+
+        serialized = Serializer(master_class).data
+
+        self.assertEqual(serialized['host'], self.teacher.user.crm.full_name)  # should serialize lesson host
+        self.assertIn('<em>test</em>', serialized['announce'])  # markdown should be rendered
+        self.assertEqual(serialized['duration'], '00:30:00')
 
 
 class TestLessonsAPI(ClientTestCase):
@@ -72,7 +102,10 @@ class TestLessonsAPI(ClientTestCase):
         """
         lesson_type = lessons.OrdinaryLesson.get_contenttype()
 
-        response = self.c.get('/lessons/%s/type/%d/available.json' % (self.teacher.user.username, lesson_type.pk))
+        response = self.c.get('/api/teachers/{teacher_id}/available_lessons.json?lesson_type={lesson_type_id}'.format(
+            teacher_id=self.teacher.pk,
+            lesson_type_id=lesson_type.pk,
+        ))
 
         self.assertEquals(response.status_code, 200)
 
@@ -89,7 +122,10 @@ class TestLessonsAPI(ClientTestCase):
         # copy-paste from previous test
         lesson_type = lessons.OrdinaryLesson.get_contenttype()
 
-        response = self.c.get('/lessons/%s/type/%d/available.json' % (self.teacher.user.username, lesson_type.pk))
+        response = self.c.get('/api/teachers/{teacher_id}/available_lessons.json?lesson_type={lesson_type_id}'.format(
+            teacher_id=self.teacher.pk,
+            lesson_type_id=lesson_type.pk,
+        ))
 
         self.assertEquals(response.status_code, 200)
 
@@ -101,7 +137,7 @@ class TestLessonsAPI(ClientTestCase):
 
         got_lesson = got_lessons[0]
 
-        self.assertDictEqual(got_lesson, default_lesson.as_dict())
+        self.assertEqual(got_lesson['id'], default_lesson.pk)
 
     def test_hosted_lessons_json(self):
         """
@@ -115,7 +151,10 @@ class TestLessonsAPI(ClientTestCase):
 
             lesson_type_id = klass.get_contenttype().pk
 
-            response = self.c.get('/lessons/%s/type/%d/available.json' % (self.teacher.user.username, lesson_type_id))
+            response = self.c.get('/api/teachers/{teacher_id}/available_lessons.json?lesson_type={lesson_type_id}'.format(
+                teacher_id=self.teacher.pk,
+                lesson_type_id=lesson_type_id,
+            ))
 
             self.assertEquals(response.status_code, 200)
             got_lessons = json.loads(response.content.decode('utf-8'))
@@ -124,4 +163,5 @@ class TestLessonsAPI(ClientTestCase):
 
             for i in got_lessons:
                 mocked_lesson = mocked_lessons[i['id']]
-                self.assertDictEqual(i, mocked_lesson.as_dict())
+                self.assertEqual(i['name'], mocked_lesson.name)
+                self.assertEqual(i['id'], mocked_lesson.pk)

@@ -1,14 +1,17 @@
 {% load i18n %}
+{% load navbar_tags %}
 {% load staticfiles %}
 
-<div class="navbar__profile-picture">
-    {% if request.user.crm.profile_photo %}
-        <img class="img-circle" src="{{ request.user.crm.get_profile_photo }}" data-no-retina />
-    {% else %}
-        <img class="img-circle" src="{% static 'no-photo.jpg' %}" />
+<div class="navbar-profile">
+    <a class="navbar-profile__photo {% is_active request '^/accounts/profile/' %}" href="{% url 'acc:profile' %}">
+        {% if request.user.crm.profile_photo %}
+            <img class="img-circle" src="{{ request.user.crm.get_profile_photo }}" data-no-retina />
+        {% else %}
+            <img class="img-circle" src="{% static 'no-photo.jpg' %}" />
+        {% endif %}
+    {% if request.user.crm.profile_needs_updating %}
+        <span class="profile-needs-updating"></span>
     {% endif %}
-</div>
-
-<div class="navbar__profile-username">
-    <p>{{ request.user.crm }} (<a class="logout" href="{% url 'acc:logout' %}?next=/">{% trans 'Log&nbsp;out' %}</a>)</p>
+    {{ request.user.crm }}</a>
+    (<a class="pseudo logout" href="{% url 'acc:logout' %}?next=/">{% trans 'Log&nbsp;out' %}</a>)
 </div>

@@ -1,0 +1,7 @@
+<div class="teacher">
+    <a href="{{ teacher.get_absolute_url }}">
+        <img src="{{ teacher.get_teacher_photo }}" alt="{{ teacher.user.crm.full_name}}" class="img-circle teacher-face">
+        <strong>{{ teacher.user.crm.full_name }}</strong>
+    </a>
+    <p class="teacher-announce">{{ teacher.announce }}</p>
+</div>

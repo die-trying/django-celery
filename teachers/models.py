@@ -5,10 +5,9 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.template.defaultfilters import time
 from django.utils import timezone
 from django.utils.dateformat import format
 from django.utils.translation import ugettext_lazy as _
@@ -16,7 +15,9 @@ from django_markdown.models import MarkdownField
 from image_cropping import ImageRatioField
 from image_cropping.templatetags.cropping import cropped_thumbnail
 
-from elk.utils.date import day_range
+from elk.utils.date import day_range, minute_after_midnight, minute_till_midnight
+from market.auto_schedule import AutoSchedule
+from teachers.slot_list import SlotList
 
 TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
 PLANNING_DELTA = datetime.timedelta(hours=12)
@@ -40,12 +41,13 @@ def _planning_ofsset(start):
     return start
 
 
-class SlotList(list):
-    def as_dict(self):
-        return [{'server': time(timezone.localtime(i), 'H:i'), 'user': time(timezone.localtime(i), 'TIME_FORMAT')} for i in sorted(self)]
-
-
 class TeacherManager(models.Manager):
+    def with_photos(self):
+        return super().get_queryset() \
+            .filter(active=1) \
+            .exclude(teacher_photo='') \
+            .exclude(teacher_photo__isnull=True)
+
     def find_free(self, date, **kwargs):
         """
         Find teachers, that can host a specific event or work with no assigned
@@ -56,7 +58,7 @@ class TeacherManager(models.Manager):
         iterable of available slots as datetime.
         """
         teachers = []
-        for teacher in self.get_queryset().filter(active=1):
+        for teacher in self.with_photos().filter(active=1):
             free_slots = teacher.find_free_slots(date, **kwargs)
             if free_slots:
                 teacher.free_slots = free_slots
@@ -152,16 +154,6 @@ class Teacher(models.Model):
 
         super().save(*args, **kwargs)
 
-    def as_dict(self):
-        return {
-            'id': self.pk,
-            'name': str(self.user.crm),
-            'announce': self.announce,
-            'description': self.description,
-            'profile_photo': self.user.crm.get_profile_photo(),
-            'teacher_photo': self.get_teacher_photo(),
-        }
-
     def __str__(self):
         return '%s (%s)' % (self.user.crm.full_name, self.user.username)
 
@@ -186,10 +178,25 @@ class Teacher(models.Model):
             return self.__find_timeline_entries(date=date, **kwargs)
 
         # otherwise — return all available time based on working hours
-        hours = WorkingHours.objects.for_date(teacher=self, date=date)
+        hours = self.working_hours.for_date(date=date)
         if hours is None:
             return None
-        return self.__all_free_slots(hours.start, hours.end, period)
+
+        if hours.end > timezone.make_aware(minute_till_midnight(date)):
+            hours.end = timezone.make_aware(minute_after_midnight(date))
+
+        auto_schedule = AutoSchedule(teacher=self)
+        return auto_schedule.slots(hours.start, hours.end, period)
+
+    def free_slots_for_dates(self, dates):
+        """
+        Get an iterable of by-day auto schedule
+        """
+        for date in dates:
+            yield {
+                'date': date,
+                'slots': self.find_free_slots(date)
+            }
 
     def available_lessons(self, lesson_type):
         """
@@ -226,6 +233,12 @@ class Teacher(models.Model):
 
         return result
 
+    def get_absolute_url(self):
+        """
+        Teacher detail page
+        """
+        return reverse('teachers:detail', kwargs={'username': self.user.username})
+
     def timeline_url(self):
         """
         Get teacher's timeline URL
@@ -242,46 +255,8 @@ class Teacher(models.Model):
         TimelineEntry = apps.get_model('timeline.entry')
         slots = SlotList()
         for entry in TimelineEntry.objects.filter(teacher=self, start__range=day_range(date), **kwargs):
-            slots.append(entry.start)
+            slots.add(entry.start)
         return slots
-
-    def __all_free_slots(self, start, end, period):
-        """
-        Get all existing time slots, not checking an event type — by teacher's
-        working hours.
-
-        Returns an iterable of slots as datetime objects.
-        """
-        slots = SlotList()
-        slot = _planning_ofsset(start)
-        while slot + period <= end:
-            if self.__check_availability(slot, period):
-                slots.append(slot)
-
-            slot += period
-
-        return slots
-
-    def __check_availability(self, start, period):
-        """
-        Create a test timeline entry and check if teacher is available.
-        """
-        TimelineEntry = apps.get_model('timeline.Entry')
-        entry = TimelineEntry(
-            teacher=self,
-            start=start,
-            end=start + period,
-            allow_overlap=False,
-            allow_besides_working_hours=False,
-            allow_when_teacher_is_busy=False,
-            allow_when_teacher_has_external_events=False,
-        )
-        try:
-            entry.clean()
-        except ValidationError:
-            return False
-
-        return True
 
     def __delete_lesson_types_that_dont_require_a_timeline_entry(self, kwargs):
         """
@@ -302,7 +277,7 @@ class Teacher(models.Model):
 
 
 class WorkingHoursManager(models.Manager):
-    def for_date(self, date, teacher):
+    def for_date(self, date):
         """
         Return working hours object for the date.
 
@@ -313,7 +288,7 @@ class WorkingHoursManager(models.Manager):
         date = timezone.localtime(date)
 
         try:
-            hours = self.get(teacher=teacher, weekday=date.weekday())
+            hours = self.get(weekday=date.weekday())
         except ObjectDoesNotExist:
             return None
 
@@ -341,14 +316,6 @@ class WorkingHours(models.Model):
     weekday = models.IntegerField('Weekday', choices=WEEKDAYS)
     start = models.TimeField('Start hour (EDT)')
     end = models.TimeField('End hour (EDT)')
-
-    def as_dict(self):
-        return {
-            'id': self.pk,
-            'weekday': self.weekday,
-            'start': str(self.start),
-            'end': str(self.end)
-        }
 
     def does_fit(self, time):
         """

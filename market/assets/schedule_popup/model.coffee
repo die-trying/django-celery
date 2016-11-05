@@ -34,14 +34,14 @@ class Model extends MicroEvent
           record = new Record(
             name = event.name
             photo = event.profile_photo
-            author = if event.host? then event.host.name
+            author = if event.host? then event.host
             description = event.announce
           )
           for time in event.slots
             time_for_id = time['server'].replace ':', '_'
             slot = {
               id: "teacher_#{ event.id }_time_#{ time_for_id }"
-              teacher: if event.host? then event.host.id else event.id
+              teacher_id: if event.host_id? then event.host_id
               server_time: time['server']
               user_time: time['user']
             }
@@ -52,6 +52,7 @@ class Model extends MicroEvent
       , @timeout
 
   submit_url: (data) ->
-    "/market/schedule/step2/teacher/#{ data.teacher }/#{ data.lesson }/#{ data.date }/#{ data.time }/"
+    console.log data
+    "/market/schedule/step2/teacher/#{ data.teacherId }/#{ data.lesson }/#{ data.date }/#{ data.time }/"
 
 Project.models.SchedulePopupModel = Model

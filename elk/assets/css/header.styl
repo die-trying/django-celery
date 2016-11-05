@@ -5,31 +5,39 @@
     border: none
     border-radius: 0
 
-.navbar__profile
-    margin-top: 5px
-    margin-bottom: 5px
-
-    &-picture, &-username
+.navbar-profile
+    &__photo
+        position: relative
         display: inline-block
-
-    &-username
-        max-width: 250px
-        margin-left: 5px
         margin-right: 10px
-
-    &-picture>img
-        max-height: 40px
-
-    .logout
         color: #262262
-        &:hover
-            color: #0000FF
+        img
+            margin-right: 5px
+
+        &.active
+            color: #333  // bootstrap body color
+            pointer-events: none
+            .profile-needs-updating
+                display: none
+
+        .profile-needs-updating
+            absolute: left 50px top 2px
+            background-color: red
+            min-height: 8px
+            min-width: 8px
+            border-radius: 8px
+
+     a:hover
             text-decoration: none
 
-    p
-        margin-bottom: 8px
+
 .elk-logo
     padding: 4px
     margin-right: 30px
     img
         height: 100%
+
+.profile-needs-updating
+    position: relative
+    min-height: 10px
+    min-width: 10px

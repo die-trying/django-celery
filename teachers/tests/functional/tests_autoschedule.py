@@ -1,14 +1,15 @@
-from datetime import datetime, timedelta
-from unittest.mock import patch
+from datetime import timedelta
+from unittest.mock import MagicMock, patch
 
 from django.contrib.contenttypes.models import ContentType
+from django.test import override_settings
+from freezegun import freeze_time
 from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_teacher
-from extevents.models import ExternalEvent
 from lessons import models as lessons
 from teachers import models
-from teachers.models import Absence, Teacher, WorkingHours
+from teachers.models import Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
@@ -47,61 +48,15 @@ class TestTeacherManager(TestCase):
         slots = self.teacher.find_free_slots(date=self.tzdatetime(2032, 5, 5))
         self.assertIsNone(slots)  # should not throw DoesNotExist
 
-    def test_get_free_slots_event_bypass(self):
-        """
-        Add an event and check that get_free_slots should not return any slot,
-        overlapping with it
-        """
-        entry = TimelineEntry(teacher=self.teacher,
-                              lesson=mixer.blend(lessons.OrdinaryLesson),
-                              start=datetime(2032, 5, 3, 14, 0),
-                              end=datetime(2032, 5, 3, 14, 30),
-                              )
-        entry.save()
-        slots = self.teacher.find_free_slots(date=self.tzdatetime(2032, 5, 3))
-        self.assertEquals(len(slots), 3)
-
-    def test_get_free_slots_offset_event_bypass(self):
-        """
-        Add event with an offset, overlapping two time slots. Should return
-        two timeslots less, then normal test_get_free_slots().
-        """
-        entry = TimelineEntry(teacher=self.teacher,
-                              lesson=mixer.blend(lessons.OrdinaryLesson),
-                              start=datetime(2032, 5, 3, 14, 10),
-                              end=datetime(2032, 5, 3, 14, 40)
-                              )
-        entry.save()
-        slots = self.teacher.find_free_slots(date=self.tzdatetime(2032, 5, 3))
-        self.assertEquals(len(slots), 2)
-
-    def test_get_free_slots_absence_bypass(self):
-        """
-        Create an absence record and check if find_free_slots does not return
-        a timeslot that is is overriding
-        """
-        absence = Absence(
-            teacher=self.teacher,
-            start=datetime(2032, 5, 3, 14, 10),
-            end=datetime(2032, 5, 3, 14, 30),
+    def test_get_free_slots_for_dates(self):
+        dates = (
+            self.tzdatetime(2032, 5, 3),
+            self.tzdatetime(2032, 5, 5),
         )
-        absence.save()
-        slots = self.teacher.find_free_slots(date=self.tzdatetime(2032, 5, 3))
-        self.assertEqual(len(slots), 3)
 
-    def test_get_free_slots_external_event_bypass(self):
-        """
-        Create an external event and check if find_free_slots does not return
-        a timleslot that it is overriding.
-        """
-        mixer.blend(
-            ExternalEvent,
-            teacher=self.teacher,
-            start=datetime(2032, 5, 3, 14, 10),
-            end=datetime(2032, 5, 3, 14, 30),
-        )
-        slots = self.teacher.find_free_slots(date=self.tzdatetime(2032, 5, 3))
-        self.assertEqual(len(slots), 3)
+        res = list(self.teacher.free_slots_for_dates(dates))
+        self.assertEqual(len(res), 2)
+        self.assertEqual(len(res[0]['slots']), 4)
 
     def test_get_free_slots_from_past(self):
         """
@@ -110,15 +65,24 @@ class TestTeacherManager(TestCase):
         slots = self.teacher.find_free_slots(self.tzdatetime(2012, 2, 6))  # monday, but 12 years ago
         self.assertEquals(len(slots), 0)  # should not return any
 
-    @patch('teachers.models.timezone.now')
-    def test_get_free_slots_today(self, now):
+    @freeze_time('2016-07-25 14:30')
+    @override_settings(TIME_ZONE='UTC')
+    def test_get_free_slots_today(self):
         """
         Set the clock to the middle of teacher working interval — available
         slots count should be reduced.
         """
-        now.return_value = self.tzdatetime(2016, 7, 25, 12, 30)
         slots = self.teacher.find_free_slots(date=self.tzdatetime(2016, 7, 25))
-        self.assertEquals(len(slots), 1)  # should return 1 slot instead of 4, because current time is 12:30, so search will start from 14:30
+        self.assertEquals(len(slots), 1)  # should return 1 slot instead of 4
+
+    def test_autoschedule_ends_this_day(self):
+        afternight_working_hours = MagicMock()
+        afternight_working_hours.start = self.tzdatetime(2032, 12, 5, 23, 30)
+        afternight_working_hours.end = self.tzdatetime(2032, 12, 6, 4, 30)
+
+        with patch('teachers.models.WorkingHoursManager.for_date', return_value=afternight_working_hours):
+            res = self.teacher.find_free_slots(date=self.tzdatetime(2032, 12, 5))
+            self.assertEqual(len(res), 1)
 
     def test_free_slots_for_lesson_type(self):
         """
@@ -127,8 +91,8 @@ class TestTeacherManager(TestCase):
         master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
         entry = TimelineEntry(teacher=self.teacher,
                               lesson=master_class,
-                              start=datetime(2032, 5, 3, 14, 10),
-                              end=datetime(2032, 5, 3, 14, 40)
+                              start=self.tzdatetime(2032, 5, 3, 14, 10),
+                              end=self.tzdatetime(2032, 5, 3, 14, 40)
                               )
         entry.save()
         lesson_type = ContentType.objects.get_for_model(master_class)
@@ -151,14 +115,14 @@ class TestTeacherManager(TestCase):
 
         entry = TimelineEntry(teacher=self.teacher,
                               lesson=master_class,
-                              start=datetime(2032, 5, 3, 14, 10),
-                              end=datetime(2032, 5, 3, 14, 40)
+                              start=self.tzdatetime(2032, 5, 3, 14, 10),
+                              end=self.tzdatetime(2032, 5, 3, 14, 40)
                               )
         entry.save()
         other_entry = TimelineEntry(teacher=other_teacher,
                                     lesson=other_master_class,
-                                    start=datetime(2032, 5, 3, 14, 10),
-                                    end=datetime(2032, 5, 3, 14, 40)
+                                    start=self.tzdatetime(2032, 5, 3, 14, 10),
+                                    end=self.tzdatetime(2032, 5, 3, 14, 40)
                                     )
         other_entry.save()
         slots = self.teacher.find_free_slots(self.tzdatetime(2032, 5, 3), lesson_id=master_class.pk)
@@ -178,8 +142,8 @@ class TestTeacherManager(TestCase):
         master_class = mixer.blend(lessons.MasterClass, host=other_teacher)
         entry = TimelineEntry(teacher=other_teacher,
                               lesson=master_class,
-                              start=datetime(2032, 5, 3, 14, 10),
-                              end=datetime(2032, 5, 3, 14, 40)
+                              start=self.tzdatetime(2032, 5, 3, 14, 10),
+                              end=self.tzdatetime(2032, 5, 3, 14, 40)
                               )
         entry.save()
         lesson_type = ContentType.objects.get_for_model(master_class)
@@ -208,15 +172,15 @@ class TestTeacherManager(TestCase):
 
         first_entry = TimelineEntry(teacher=self.teacher,
                                     lesson=first_master_class,
-                                    start=datetime(2032, 5, 3, 14, 10),
-                                    end=datetime(2032, 5, 3, 14, 40)
+                                    start=self.tzdatetime(2032, 5, 3, 14, 10),
+                                    end=self.tzdatetime(2032, 5, 3, 14, 40)
                                     )
         first_entry.save()
 
         second_entry = TimelineEntry(teacher=second_teacher,
                                      lesson=second_master_class,
-                                     start=datetime(2032, 5, 3, 14, 10),
-                                     end=datetime(2032, 5, 3, 14, 40)
+                                     start=self.tzdatetime(2032, 5, 3, 14, 10),
+                                     end=self.tzdatetime(2032, 5, 3, 14, 40)
                                      )
         second_entry.save()
         lesson_type = ContentType.objects.get_for_model(first_master_class)
@@ -234,14 +198,14 @@ class TestTeacherManager(TestCase):
         second_master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
         first_entry = TimelineEntry(teacher=self.teacher,
                                     lesson=first_master_class,
-                                    start=datetime(2032, 5, 3, 14, 10),
-                                    end=datetime(2032, 5, 3, 14, 40)
+                                    start=self.tzdatetime(2032, 5, 3, 14, 10),
+                                    end=self.tzdatetime(2032, 5, 3, 14, 40)
                                     )
         first_entry.save()
         second_entry = TimelineEntry(teacher=self.teacher,
                                      lesson=second_master_class,
-                                     start=datetime(2032, 5, 3, 14, 10),
-                                     end=datetime(2032, 5, 3, 14, 40)
+                                     start=self.tzdatetime(2032, 5, 3, 14, 10),
+                                     end=self.tzdatetime(2032, 5, 3, 14, 40)
                                      )
         second_entry.save()
         free_teachers = Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 3), lesson_id=first_master_class.pk)
@@ -253,15 +217,15 @@ class TestTeacherManager(TestCase):
         ordinary_lesson_type = lessons.OrdinaryLesson.get_contenttype()
         teachers = Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 3), lesson_type=ordinary_lesson_type.pk)
         self.assertEquals(len(teachers), 1)
+        print(teachers[0].free_slots)
         self.assertEquals(len(teachers[0].free_slots), 4)  # should find all timeline entries because ordinary lesson does not require a timeline entry
 
     def test_find_lessons_return_nothing(self):
         res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3))
         self.assertEqual(len(res), 0)  # should not throw anything
 
-    @patch('teachers.models.timezone.now')
-    def test_find_lessons_return_a_lesson(self, now):
-        now.return_value = self.tzdatetime(2032, 5, 2)
+    @freeze_time('2032-05-02')
+    def test_find_lessons_return_a_lesson(self):
         master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
         mixer.blend(
             TimelineEntry,
@@ -272,9 +236,9 @@ class TestTeacherManager(TestCase):
         res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3))
         self.assertEqual(len(res), 1)
 
-    @patch('teachers.models.timezone.now')
-    def test_find_lessons_ignore_passed_lessons(self, now):
-        now.return_value = self.tzdatetime(2032, 5, 3, 15, 31)
+    @freeze_time('2032-05-03 15:31')
+    @override_settings(TIME_ZONE='UTC')
+    def test_find_lessons_ignore_passed_lessons(self):
         master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
         mixer.blend(
             TimelineEntry,
@@ -285,9 +249,8 @@ class TestTeacherManager(TestCase):
         res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3))
         self.assertEqual(len(res), 0)
 
-    @patch('teachers.models.timezone.now')
-    def test_find_lessons_traverses_filter_args(self, now):
-        now.return_value = self.tzdatetime(2032, 5, 2)
+    @freeze_time('2032-05-02')
+    def test_find_lessons_traverses_filter_args(self):
         master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
         paired_lesson = mixer.blend(lessons.PairedLesson, host=self.teacher)
         mixer.blend(
@@ -309,9 +272,8 @@ class TestTeacherManager(TestCase):
         res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3), lesson_type=master_class.get_contenttype())
         self.assertEqual(len(res), 1)
 
-    @patch('teachers.models.timezone.now')
-    def test_find_lessons_ignores_non_free_entries(self, now):
-        now.return_value = self.tzdatetime(2032, 5, 2)
+    @freeze_time('2032-05-02')
+    def test_find_lessons_ignores_non_free_entries(self):
         master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
         mixer.blend(
             TimelineEntry,

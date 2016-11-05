@@ -12,7 +12,7 @@ class TestEventOriginatorProperties(TestCase):
     fixtures = ('lessons',)
 
     def setUp(self):
-        self.host = create_teacher()
+        self.host = create_teacher(works_24x7=True)
         self.customer = create_customer()
         self.lesson = lessons.OrdinaryLesson.get_default()
 

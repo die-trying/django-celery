@@ -11,7 +11,7 @@ from timeline.models import Entry as TimelineEntry
 
 class EntryCardTest(ClientTestCase):
     def setUp(self):
-        self.teacher = create_teacher()
+        self.teacher = create_teacher(works_24x7=True)
         self.customer = create_customer()
         self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher, duration=timedelta(minutes=33), slots=8)
 
@@ -38,7 +38,7 @@ class EntryCardTest(ClientTestCase):
         c.assign_entry(self.entry)
         c.save()
 
-        response = self.c.get(self.entry.admin_url)
+        response = self.c.get(self.entry.get_absolute_url())
 
         with self.assertHTML(response, 'dd') as inf:
             self.assertEquals(inf[0].text, self.teacher.user.crm.full_name)
@@ -76,7 +76,7 @@ class EntryCardTest(ClientTestCase):
         c1.save()
 
         c2.save()
-        response = self.c.get(self.entry.admin_url)
+        response = self.c.get(self.entry.get_absolute_url())
         with self.assertHTML(response, 'select.add-a-student__selector>option') as options:
             self.assertEqual(len(options), 2)  # the first one is 'zero-option'
             self.assertEqual(options[1].attrib.get('value'), reverse('timeline:add_customer', kwargs={
@@ -111,6 +111,7 @@ class EntryCardTest(ClientTestCase):
             'pk': self.entry.pk,
             'customer': self.customer.pk,
         })
+        print(url)
         response = self.c.get(url)
         self.assertEqual(response.status_code, 302)
 

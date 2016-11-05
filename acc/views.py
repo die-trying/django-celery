@@ -1,10 +1,16 @@
-from django.views.generic.base import TemplateView
+from datetime import timedelta
 
+from django.core.urlresolvers import reverse
+from django.utils import timezone
+
+from crm.forms import CustomerProfileForm
+from crm.models import Customer
+from elk.views import LoginRequiredTemplateView, LoginRequiredUpdateView
 from products.models import Product1, SimpleSubscription
 from teachers.models import Teacher
 
 
-class Homepage(TemplateView):
+class Homepage(LoginRequiredTemplateView):
     template_name = 'acc/index.html'
 
     def get_context_data(self, **kwargs):
@@ -22,6 +28,7 @@ class Homepage(TemplateView):
             'simple_subscription_tier': simple_subscription.get_tier(country=self.request.user.crm.country),
 
             'faces': self._teacher_faces('Fedor', 'Amanda', 'Andrew'),
+            'active_teachers': Teacher.objects.find_free(timezone.now() + timedelta(days=1))
         }
 
     def _teacher_faces(self, *faces):
@@ -30,3 +37,15 @@ class Homepage(TemplateView):
         """
         for i in faces:
             yield Teacher.objects.filter(user__username=i).first()
+
+
+class CustomerProfile(LoginRequiredUpdateView):
+    form_class = CustomerProfileForm
+    model = Customer
+    success_message = 'Your profile is updated'
+
+    def get_object(self, queryset=None):
+        return self.request.user.crm
+
+    def get_success_url(self):
+        return reverse('acc:profile')

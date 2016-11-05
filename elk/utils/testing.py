@@ -16,6 +16,7 @@ from django.test import TestCase as StockTestCase
 from django.test import Client, RequestFactory
 from django.utils import timezone
 from mixer.backend.django import mixer
+from rest_framework.test import APIClient
 from with_asserts.mixin import AssertHTMLMixin
 
 from lessons import models as lessons
@@ -27,6 +28,15 @@ from timeline.models import Entry as TimelineEntry
 def __add_all_lessons(teacher):
     for lesson in ContentType.objects.filter(app_label='lessons'):
         teacher.allowed_lessons.add(lesson)
+
+
+def __add_working_hours_24x7(teacher):
+    for weekday in range(0, 7):
+        teacher.working_hours.create(
+            weekday=weekday,
+            start='00:00',
+            end='23:59',
+        )
 
 
 def create_user(**kwargs):
@@ -60,17 +70,20 @@ def create_customer(user=None, **kwargs):
     return user.crm
 
 
-def create_teacher(accepts_all_lessons=True):
+def create_teacher(accepts_all_lessons=True, works_24x7=False):
     """
     Generate a simple teacher object.
     """
     customer = create_customer()
-    teacher = mixer.blend('teachers.teacher', user=customer.user)  # second level relations — that is wy i've created this helper
+    teacher = mixer.blend('teachers.teacher', user=customer.user, teacher_photo=mixer.RANDOM)  # second level relations — that is wy i've created this helper
     teacher.user.is_staff = True
     teacher.user.save()
 
     if accepts_all_lessons:
         __add_all_lessons(teacher)
+
+    if works_24x7:
+        __add_working_hours_24x7(teacher)
 
     return teacher
 
@@ -146,7 +159,20 @@ class TestCase(StockTestCase):
         )
 
 
-class ClientTestCase(TestCase, AssertHTMLMixin):
+class SuperUserTestCaseMixin():
+    @classmethod
+    def _generate_superuser(cls):
+        cls.superuser = User.objects.create_superuser('root', 'root@wheel.com', 'ohGh7jai4Cee')
+        create_customer(user=cls.superuser)
+        cls.superuser_login = 'root'
+        cls.superuser_password = 'ohGh7jai4Cee'  # store, if children will need it
+
+    @classmethod
+    def _login(cls):
+        cls.c.login(username=cls.superuser_login, password=cls.superuser_password)
+
+
+class ClientTestCase(TestCase, SuperUserTestCaseMixin, AssertHTMLMixin):
     """
     Generic test case with automatic login process and all required assets.
 
@@ -165,16 +191,21 @@ class ClientTestCase(TestCase, AssertHTMLMixin):
         cls.c = Client()
         cls.factory = RequestFactory()
 
-        cls.__generate_superuser()
+        cls._generate_superuser()
+        cls._login()
 
+
+class APITestCase(TestCase, SuperUserTestCaseMixin):
+    """
+    Generic Test Case for API, using Django REST Framework test harness
+    """
     @classmethod
-    def __generate_superuser(cls):
-        cls.superuser = User.objects.create_superuser('root', 'root@wheel.com', 'ohGh7jai4Cee')
-        create_customer(user=cls.superuser)
-        cls.c.login(username='root', password='ohGh7jai4Cee')
+    def setUpClass(cls):
+        super().setUpClass()
 
-        cls.superuser_login = 'root'
-        cls.superuser_password = 'ohGh7jai4Cee'  # store, if children will need it
+        cls.c = APIClient()
+        cls._generate_superuser()
+        cls._login()
 
 
 class ClassIntegrationTestCase(ClientTestCase):
@@ -193,11 +224,12 @@ class ClassIntegrationTestCase(ClientTestCase):
     """
 
     def setUp(self):
-        self.host = create_teacher()
+        self.host = create_teacher(accepts_all_lessons=True, works_24x7=True)
         self.customer = create_customer()
         self.lesson = lessons.OrdinaryLesson.get_default()
 
-    def _create_entry(self):
+    @patch('timeline.models.Entry.clean')
+    def _create_entry(self, clean):
         entry = TimelineEntry(
             slots=1,
             lesson=self.lesson,

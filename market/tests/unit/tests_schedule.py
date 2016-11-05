@@ -8,9 +8,7 @@ from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_customer, create_teacher
 from lessons import models as lessons
-from market.exceptions import CannotBeScheduled
 from market.models import Class
-from teachers.models import WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
@@ -20,9 +18,8 @@ class TestScheduleLowLevel(TestCase):
 
     def setUp(self):
         self.customer = create_customer()
-        self.teacher = create_teacher()
+        self.teacher = create_teacher(works_24x7=True)
         self.lesson = lessons.OrdinaryLesson.get_default()
-        mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
 
     def _buy_a_lesson(self):
         c = Class(
@@ -53,15 +50,6 @@ class TestScheduleLowLevel(TestCase):
         self.assertIsNone(c.timeline.pk)
         c.timeline.save = MagicMock(return_value=None)
         c.timeline.save.assert_not_called()
-
-    def test_schedule_auto_entry_only_within_working_hours(self):
-        c = self._buy_a_lesson()
-        with self.assertRaises(CannotBeScheduled):
-            c.schedule(
-                teacher=self.teacher,
-                date=self.tzdatetime(2016, 12, 1, 7, 27)  # wednesday
-            )
-            c.save()
 
     def test_deletion_of_a_scheduled_class(self):
         """

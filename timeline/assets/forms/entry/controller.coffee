@@ -7,6 +7,8 @@ class Controller
   open: (type='create', x, y, pk=null, date=null) ->
     @model = new Project.models.TimelineEntryModel(
       username = @popup.attr 'data-username'
+      userid = @popup.attr 'data-userid'
+
       pk = pk
       date = date
     )
@@ -92,7 +94,12 @@ class Controller
 $('.user-calendar').each () ->
   c = new Controller
   $(this).fullCalendar
-    events: $(this).attr 'data-calendar' # from JSON
+    timezone: 'local'
+    eventSources: [
+      url: $(this).attr 'data-calendar' # from JSON
+      startParam: 'start_0'
+      endParam: 'start_1'
+    ]
     dayClick: (date, jsEvent, view) ->
       c.open 'create', jsEvent.pageX, jsEvent.pageY, null, date=date.format('YYYY-MM-DD')
     eventClick: (calEvent, jsEvent, view) ->

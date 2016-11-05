@@ -20,15 +20,23 @@
             transition: ease-out .1s
 
 .timeline-entry-form
+    .form-group
+        margin-bottom: 5px
+
+    &__lesson
+        #id_lesson_id, #id_lesson_type
+            max-width: 260px
+
     &__time
-        .form-group:first-child
-            margin-left: 32px
+        margin-top: 20px
+
 
         label[for=id_start_0] + input
             margin-left: 5px
 
-        .form-group:first-child
-            margin-bottom 5px
+        &__start
+            margin-left: 32px
+            margin-bottom: 10px !important
 
         #id_start_0
             display: inline
@@ -36,7 +44,8 @@
 
         #id_start_1
             display: inline
-            margin-left: 5px
+            margin-left: 10px
+            padding-left: 12px
             width: 80px
 
         #id_duration
@@ -48,36 +57,41 @@
             display: inline
             margin-left: 8px
 
-    &__lesson
-        margin-bottom: 25px
+    &__controls
+        margin-top: 15px
+        display: table
+        width: 100%
 
-        .form-group:first-child
-            margin-bottom 5px
+        &__wrapper
+            display: table-row
 
-        #id_lesson_id, #id_lesson_type
-            max-width: 260px
+        &__left, &__right
+            display: table-cell
 
-    &__slots
-        display: inline
-        a
-            padding 10px 10px 10px 5px
-            color black
-            &:hover
-                color: #337ab7
-            &:not(:hover)
-                transition color .5s ease
+        &__left
+            width: 60%
 
-    &__submit
-        relative: left -3px
-        display: inline
-        margin-right: 2px
-
-    &__delete, &__add-a-student
-        display: inline
+        &__right
+            width: 40%
+            text-align: right
 
     &__err
         display: inline
         margin-left: 5px
+
+        .TeacherHasOtherLessons, .TeacherIsAbsent, .TeacherHasEvents  // these are exception names defined in market/auto_schedule.py
+            display: inline-block
+            text-rendering: auto
+            font-family: FontAwesome
+
+        .TeacherHasOtherLessons:before
+            content: "\f071"  // fa-exclamation-triangle
+
+        .TeacherIsAbsent:before
+            content: "\f185"  // fa-sun
+
+        .TeacherHasEvents:before
+            content: "\f273"  // fa-calendar-times
 
     .ui-timepicker-wrapper
         z-index: 200

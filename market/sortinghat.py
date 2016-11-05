@@ -48,7 +48,6 @@ class SortingHat():
         'E_CLASS_NOT_FOUND': _("You don't have available lessons"),
         'E_ENTRY_NOT_FOUND': _("Your choice is not found in the curriculum"),
         'E_CANT_SCHEDULE': _("Your choice does not fit teachers timeline"),
-        'E_UNKNOWN': "Unknown scheduling error"
     }
 
     def do_the_thing(self):
@@ -74,11 +73,9 @@ class SortingHat():
         """
         Set error code
         """
-        if err not in self.errs.keys():
-            err = 'E_UNKNOWN'
 
         if msg is None:
-            msg = self.errs.get(err)
+            msg = self.errs.get(err, 'Internal scheduling error, please contact us')
 
         self.err = err
         self.msg = msg
@@ -172,6 +169,10 @@ class SortingHat():
             any find the reason.
             """
             self.__set_err('E_CANT_SCHEDULE')
+            return
+
+        except Exception as e:
+            self.__set_err(e.__class__.__name__)
             return
 
         self.__set_err('E_NONE')

@@ -1,0 +1,65 @@
+{% load i18n %} {% load format_entry_date %}
+
+<div class="panel panel-default timeline-entry-form">
+    <div class="panel-heading">
+        <h3 class="panel-title">
+            {% if object.pk %}
+                <a href="{{ object.get_absolute_url }}">{% trans 'Timeline event' %}</a>
+            {% else %}
+                {% trans 'Timeline event' %}
+            {% endif %}
+            <button type="button" class="close user-calendar__close_popup"><span>&times;</span></button>
+        </h3>
+    </div>
+    <div class="panel-body">
+        {% for field, errors in form.errors.items %} {% for error in errors %} {{ field }} — {{ error }} {% endfor %} {% endfor %}
+
+        <form method="POST" class="form" action="{{ request.get_full_path }}">
+            <input type="hidden" id="teacher" name="teacher" value="{{ teacher.pk }}">
+            <input type="hidden" id="initial_lesson" value="{{ form.lesson_id.value }}"> {% if object %}
+            <input type="hidden" name="pk" value="{{ object.pk }}"> {% endif %} {% csrf_token %}
+            <div class="timeline-entry-form__lesson">
+                <div class="form-group">
+                    <select name="lesson_type" id="{{ form.lesson_type.id_for_label }}" class="form-control" title="Event type">
+                    {% for lesson_type in teacher.available_lesson_types %}
+                        {% if lesson_type.pk == form.lesson_type.value %}
+                            <option value = "{{ lesson_type.pk }}" selected >{{ lesson_type.name }}</option>
+                        {% else %}
+                            <option value = "{{ lesson_type.pk }}">{{ lesson_type.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select name="lesson_id" id="{{ form.lesson_id.id_for_label }}" class="form-control" title="Choose a lesson">
+                        <option rv-each-lesson="model.lessons" rv-value="lesson.id" rv-text="lesson.name" rv-selected="lesson.selected"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="timeline-entry-form__time">
+                <div class="form-group timeline-entry-form__time__start" rv-class-has-error="model.has_err">
+                    <label for="id_start_0">{% trans 'Start:' %}</label> {{ form.start | format_entry_date}}
+                </div>
+                <div class="form-group">
+                    <label for="id_duration">{% trans 'Duration:' %}</label>
+                    <input readonly maxlength=5 placeholder='HH:MM' type="text" class="form-control" , id="id_duration" name="duration" rv-value="model.lesson.duration">
+                    <p class="timeline-entry-form__err text-danger" rv-if="model.has_err">
+                        <span class="err" rv-class="model.err"></span>
+                    </p>
+                </div>
+            </div>
+            <div class="timeline-entry-form__controls">
+                <div class="timeline-entry-form__controls__wrapper">
+                    <div class="timeline-entry-form__controls__left">
+                        <button type="submit" rv-disabled="model.submit_disabled" class="btn btn-primary timeline-entry-form__submit">{% if object %}Update{% else %}Add{% endif %}</button>
+                    </div>
+                    <div class="timeline-entry-form__controls__right">
+                        {% if object %}
+                            <a class="btn btn-default timeline-entry-form__manage" href="{{ object.get_absolute_url }}"><i class="fa fa-pencil" aria-hidden="true"></i> Manage</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

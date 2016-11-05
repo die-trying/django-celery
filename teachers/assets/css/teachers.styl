@@ -1,7 +1,41 @@
+@import 'nib'
+
 $size = 250px
-.teacher-face
-    max-width: $size
-    max-height: $size
-    img
-        width: $size
-        height: $size
+$hover = 270px
+
+img.teacher-face
+    width: $size
+    height: $size
+
+.teacher-grid
+    .teacher
+        display: inline-block
+        text-align: center
+        vertical-align: top
+        margin-right: 80px
+
+        @media(min-width: 768px)
+            &:nth-child(n+5)
+                margin-top: 40px
+
+        @media(max-width: 768px)
+            &:nth-child(n+1)
+                margin-top: 40px
+
+        img
+            display: block
+            margin-bottom: 10px
+
+        &-announce
+            display: block
+            width: 250px
+            font-size: 12px
+
+        a
+
+            &:not(:hover) img
+                transition: all .1s ease-in-out
+
+            &:hover img
+                // border: 1px solid #337ab7  // bootstrap hover color
+                transform: scale(1.05)

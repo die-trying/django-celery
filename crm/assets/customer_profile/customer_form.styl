@@ -1,0 +1,45 @@
+.customer-profile
+    max-width: 320px
+
+    &__intro
+        margin-bottom: 30px
+        display: table
+        border-spacing: 0 5px
+
+        .field
+            display: table-row
+
+        label, span
+            display: table-cell
+
+        span
+            padding-left: 15px
+
+        label:after
+            content: ': '
+
+    &__birthday
+        font-style: inherit
+        margin-right: 5px
+
+    &__form
+        margin-bottom: 30px
+        height: 100px
+        min-height: 100px
+
+        display: table
+        border-spacing: 0 10px
+        width: 100%
+
+        .form-group
+            display: table-row
+            height: 40px
+
+        label, .form-control
+            display: table-cell
+            vertical-align: middle
+
+        .need-skype
+            position: absolute
+            margin-left: 15px
+            padding-top: 5px

@@ -1,14 +1,17 @@
 from django.contrib.admin.views.decorators import staff_member_required
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.http import Http404, JsonResponse
-from django.shortcuts import get_list_or_404, get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateformat import format
 from django.utils.dateparse import parse_datetime
+from django.utils.decorators import method_decorator
 from django.views.generic.edit import CreateView, UpdateView
 
 from crm.models import Customer
-from elk.utils import date
+from elk.views import DeleteWithoutConfirmationView
+from market.auto_schedule import AutoSchedule
 from market.models import Class
 from market.sortinghat import SortingHat
 from teachers.models import Teacher
@@ -24,37 +27,37 @@ def calendar(request, username):
     })
 
 
-class TeacherCtxMixin():
+class TimelineEntryBaseView():
+    model = TimelineEntry
+    form_class = TimelineEntryForm
+    template_name = 'timeline/entry_form.html'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['teacher'] = get_object_or_404(Teacher, user__username=self.kwargs['username'])
         return context
 
-
-class calendar_create(TeacherCtxMixin, CreateView):
-    template_name = 'timeline/forms/entry/create.html'
-    form_class = TimelineEntryForm
-
     def get_success_url(self):
-        return reverse('timeline:timeline', kwargs=self.kwargs)
+        return reverse(
+            'timeline:timeline',
+            kwargs={'username': self.kwargs['username']}
+        )
+
+    @method_decorator(staff_member_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
 
-class calendar_update(TeacherCtxMixin, UpdateView):
-    template_name = 'timeline/forms/entry/update.html'
-    form_class = TimelineEntryForm
-    model = TimelineEntry
-
-    def get_success_url(self):
-        return reverse('timeline:timeline',
-                       kwargs={'username': self.kwargs['username']},
-                       )
+class EntryCreate(TimelineEntryBaseView, CreateView):
+    pass
 
 
-@staff_member_required
-def calendar_delete(request, username, pk):
-    entry = get_object_or_404(TimelineEntry, teacher__user__username=username, pk=pk)
-    entry.delete()
-    return redirect(reverse('timeline:timeline', kwargs={'username': username}))
+class EntryUpdate(TimelineEntryBaseView, UpdateView):
+    pass
+
+
+class EntryDelete(TimelineEntryBaseView, DeleteWithoutConfirmationView):
+    pass
 
 
 @staff_member_required
@@ -92,9 +95,6 @@ def add_customer(request, username, pk, customer):
     """
     entry = get_object_or_404(TimelineEntry, teacher__user__username=username, pk=pk)
 
-    # By now, SortingHat waits for time in the user timezone, so we pretent, that we have
-    # localized it.
-    # TODO: FIX IT!
     start = timezone.localtime(entry.start)
 
     hat = SortingHat(
@@ -106,7 +106,6 @@ def add_customer(request, username, pk, customer):
     )
 
     if not hat.do_the_thing():
-        print(hat.err)
         raise Http404('%s: %s' % (hat.err, hat.msg))
 
     hat.c.save()
@@ -114,31 +113,21 @@ def add_customer(request, username, pk, customer):
 
 
 @staff_member_required
-def calendar_json(request, username):
-    teacher = get_object_or_404(Teacher, user__username=username)
-    entries = []
-    start = request.GET.get('start', date.ago(days=16))
-    end = request.GET.get('end', date.fwd(days=16))
-
-    for entry in get_list_or_404(TimelineEntry,
-                                 start__range=(start, end),
-                                 teacher=teacher,
-                                 ):
-        entries.append(entry.as_dict())
-
-    return JsonResponse(entries, safe=False)
-
-
-@staff_member_required
 def check_entry(request, username, start, end):
-    entry = TimelineEntry(
-        start=timezone.make_aware(parse_datetime(start)),
-        end=timezone.make_aware(parse_datetime(end)),
-        teacher=get_object_or_404(Teacher, user__username=username),
+    """
+    TODO: move it to the API
+    """
+    start = timezone.make_aware(parse_datetime(start))
+    end = timezone.make_aware(parse_datetime(end))
+
+    s = AutoSchedule(
+        teacher=get_object_or_404(Teacher, user__username=username)
     )
-    return JsonResponse({
-        'is_overlapping': entry.is_overlapping(),
-        'is_fitting_hours': entry.is_fitting_working_hours(),
-        'teacher_is_present': entry.teacher_is_present(),
-        'teacher_has_no_events': entry.teacher_has_no_events(),
-    }, safe=False)
+
+    try:
+        s.clean(start, end)
+
+    except ValidationError as e:
+        return JsonResponse({'result': e.__class__.__name__})
+
+    return JsonResponse({'result': 'ok'})

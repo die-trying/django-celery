@@ -11,8 +11,8 @@
         {% endfor %}
     </select></h1>
 </div>
-<div class="user-calendar" data-calendar="{% url 'timeline:timeline.json' username=object.user.username%}"></div>
-<div class="user-calendar__add-popup hidden" data-username="{{ object.user.username }}"></div>
+<div class="user-calendar" data-calendar="/api/timeline/?teacher={{ object.pk }}"></div>
+<div class="user-calendar__add-popup hidden" data-username="{{ object.user.username }}" data-userid="{{ object.pk }}"></div>
 {% endblock %}
 
 {% block css %}

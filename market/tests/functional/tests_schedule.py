@@ -18,7 +18,7 @@ class ScheduleTestCase(TestCase):
     fixtures = ('crm', 'lessons')
 
     def setUp(self):
-        self.host = create_teacher()
+        self.host = create_teacher(works_24x7=True)
         self.customer = create_customer()
 
     def _buy_a_lesson(self, lesson):

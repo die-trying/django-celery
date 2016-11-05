@@ -32,6 +32,11 @@ class CustomerSource(models.Model):
         return self.name
 
 
+class CustomerManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related('user')
+
+
 class Customer(models.Model):
     """
     A model for a base customer.
@@ -100,15 +105,15 @@ class Customer(models.Model):
 
     @property
     def email(self):
-        return self._get_user_property('email')
+        return self.user.email
 
     @property
     def first_name(self):
-        return self._get_user_property('first_name')
+        return self.user.first_name
 
     @property
     def last_name(self):
-        return self._get_user_property('last_name')
+        return self.user.last_name
 
     @classmethod
     def _greeting(cls, status):
@@ -163,6 +168,15 @@ class Customer(models.Model):
         )
         trial_lesson_added.send(sender=self)
 
+    def profile_needs_updating(self):
+        """
+        Check if we should advise a customer to change his profile
+        """
+        if len(self.skype) == 0:
+            return True
+
+        return False
+
     def is_trial_user(self):
         """
         Returns true if the only lesson off this user is trial. And it is not used.
@@ -188,19 +202,6 @@ class Customer(models.Model):
         c = self.classes.first()
 
         return c.is_scheduled
-
-    def _get_user_property(self, property):
-        """
-        Some properties are stored in the stock Django user model. This method
-        fetches a property from the user model if user is composited,
-        and fetches a customer field if not.
-
-        Please don't forget to exclude this fields from admin form defined in
-        `crm.admin`
-        """
-        if self.user:
-            return getattr(self.user, property)
-        return getattr(self, 'customer_' + property)
 
     def __str__(self):
         return self.full_name

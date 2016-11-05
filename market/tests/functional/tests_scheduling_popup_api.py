@@ -73,11 +73,12 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
         self.assertIsTime(records[0]['slots'][0]['server'])  # assert that returned slots carry some time (we dont care about timezones here)
         self.assertIsTime(records[1]['slots'][0]['server'])
 
+        print(records[0])
         self.assertEquals(records[0]['name'], first_master_class.name)
         self.assertEquals(records[1]['name'], second_master_class.name)
 
-        self.assertEquals(records[0]['host']['name'], self.first_teacher.user.crm.full_name)
-        self.assertEquals(records[1]['host']['name'], self.second_teacher.user.crm.full_name)
+        self.assertEquals(records[0]['host'], self.first_teacher.user.crm.full_name)
+        self.assertEquals(records[1]['host'], self.second_teacher.user.crm.full_name)
 
     @patch('teachers.models.timezone.now')
     def test_filter_by_lesson_type_timezone(self, now):
@@ -96,7 +97,6 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
                 end=start + timedelta(hours=1)
             )
             start += timedelta(hours=1)
-            print(start)
 
         self.c.login(username=self.superuser_login, password=self.superuser_password)  # need to login once again due to timezone change
         response = self.c.get('/market/2032-05-03/type/%d/lessons.json' % lessons.MasterClass.get_contenttype().pk)

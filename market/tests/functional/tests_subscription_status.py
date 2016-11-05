@@ -9,7 +9,7 @@ class TestSubscriptionStatus(TestCase):
 
     def setUp(self):
         self.customer = create_customer()
-        self.teacher = create_teacher()
+        self.teacher = create_teacher(works_24x7=True)
         self.subscription = Subscription(
             customer=self.customer,
             product=Product1.objects.get(pk=1),

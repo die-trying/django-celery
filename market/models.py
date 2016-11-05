@@ -1,6 +1,7 @@
 from abc import abstractproperty
 from datetime import timedelta
 
+from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -8,12 +9,10 @@ from django.db import models
 from django.utils import timezone
 from djmoney.models.fields import MoneyField
 
-from crm.models import Customer
 from elk.logging import logger
 from market.exceptions import CannotBeScheduled
 from market.signals import class_cancelled, class_scheduled
 from teachers.models import PLANNING_DELTA
-from timeline.models import Entry as TimelineEntry
 
 MARK_CLASSES_AS_USED_AFTER = timedelta(hours=1)
 
@@ -88,7 +87,7 @@ class Subscription(ProductContainer):
     The property is accessed later in the history.signals module.
     """
     objects = SubscriptionManager()
-    customer = models.ForeignKey(Customer, related_name='subscriptions', db_index=True)
+    customer = models.ForeignKey('crm.Customer', related_name='subscriptions', db_index=True)
 
     product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'products'})
     product_id = models.PositiveIntegerField(default=1)  # flex scope — always add the first product
@@ -298,14 +297,14 @@ class Class(ProductContainer):
     """
     objects = ClassesManager()
 
-    customer = models.ForeignKey(Customer, related_name='classes', db_index=True)
+    customer = models.ForeignKey('crm.Customer', related_name='classes', db_index=True)
     is_scheduled = models.BooleanField(default=False)
 
     buy_source = models.CharField(max_length=12, default='single')
 
     lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
 
-    timeline = models.ForeignKey(TimelineEntry, null=True, blank=True, on_delete=models.SET_NULL, related_name='classes')
+    timeline = models.ForeignKey('timeline.Entry', null=True, blank=True, on_delete=models.SET_NULL, related_name='classes')
 
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, null=True, blank=True, related_name='classes')
 
@@ -452,6 +451,7 @@ class Class(ProductContainer):
         Find existing timeline entry or create a new one for lessons, that don't require
         a particular timeline entry.
         """
+        TimelineEntry = apps.get_model('timeline.Entry')
         try:
             return TimelineEntry.objects.get(
                 teacher=teacher,
@@ -463,8 +463,7 @@ class Class(ProductContainer):
                 teacher=teacher,
                 lesson=self.lesson_type.model_class().get_default(),
                 start=date,
-                allow_besides_working_hours=allow_besides_working_hours,
-                allow_overlap=allow_overlap,
+                allow_besides_working_hours=False,
             )
 
     def cancel(self, src='teacher', request=None):
@@ -502,22 +501,6 @@ class Class(ProductContainer):
             return False
 
         if self.lesson_type != entry.lesson_type:
-            return False
-
-        try:
-            entry.clean()
-        except ValidationError:
-            """
-            If you can see this error, please investigate the way timenetry was crated by.
-            Possibly there is a place in the system, that generates unschedulable timeline entries.
-            """
-            logger.error("Timeline entry can't be scheduled")
-            return False
-
-        return True
-
-    def can_be_unscheduled(self):
-        if self.timeline.is_in_past():
             return False
 
         return True
