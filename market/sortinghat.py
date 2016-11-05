@@ -5,7 +5,8 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.translation import ugettext as _
 
-from market.exceptions import CannotBeScheduled
+from market.exceptions import AutoScheduleExpcetion, CannotBeScheduled
+from timeline.exceptions import DoesNotFitWorkingHours
 
 
 class SortingHat():
@@ -171,7 +172,7 @@ class SortingHat():
             self.__set_err('E_CANT_SCHEDULE')
             return
 
-        except Exception as e:
+        except (AutoScheduleExpcetion, DoesNotFitWorkingHours) as e:
             self.__set_err(e.__class__.__name__)
             return
 

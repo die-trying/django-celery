@@ -4,22 +4,23 @@ from datetime import timedelta
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
+from market.exceptions import AutoScheduleExpcetion
 from teachers.slot_list import SlotList
 
 
-class TeacherHasEvents(ValidationError):
+class TeacherHasEvents(AutoScheduleExpcetion):
     pass
 
 
-class TeacherIsAbsent(ValidationError):
+class TeacherIsAbsent(AutoScheduleExpcetion):
     pass
 
 
-class TeacherHasOtherLessons(ValidationError):
+class TeacherHasOtherLessons(AutoScheduleExpcetion):
     pass
 
 
-class EntryIsInPast(ValidationError):
+class EntryIsInPast(AutoScheduleExpcetion):
     pass
 
 
