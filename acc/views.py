@@ -42,6 +42,7 @@ class Homepage(LoginRequiredTemplateView):
 class CustomerProfile(LoginRequiredUpdateView):
     form_class = CustomerProfileForm
     model = Customer
+    success_message = 'Your profile is updated'
 
     def get_object(self, queryset=None):
         return self.request.user.crm

@@ -4,20 +4,28 @@
 <div class="customer-profile">
     <form class="form" method="POST">
         {% csrf_token %}
+        {{ form.errors }}
         <div class="customer-profile__intro">
             <div class="field">
                 <label for="customer-profile__name">Name</label>
-                <span id="customer-profile__name">{{ request.user.crm.full_name }}</span>
+                <span id="customer-profile__name">{{ object.full_name }}</span>
             </div>
             <div class="field">
                 <label for="customer-profile__email">Email</label>
-                <span id="customer-profile__email"><a href="mailto:{{ request.user.email }}">{{ request.user.email }}</a></span>
+                <span id="customer-profile__email"><a href="mailto:{{ object.user.email }}">{{ request.user.email }}</a></span>
             </div>
             <div class="field">
                 <label for="{{ form.birthday.id_for_label }}">Birthday</label>
-                <input type="hidden" name="birthday">
-                <span class="customer-profile__birthday">{{ form.birthday.value }}
-                (<a href="#" class="pseudo change-birthday">Change</a>)</span>
+                <input type="hidden" name="birthday" value="{{ form.birthday.value|date:'c' }}">
+                <span>
+                    {% if form.birthday.value %}
+                        <em class="customer-profile__birthday">{{ object.birthday }}</em>
+                        <a href="#" class="pseudo change-birthday">change</a>
+                    {% else %}
+                        <em class="customer-profile__birthday">Unkonwn, </em>
+                        <a href="#" class="pseudo change-birthday">set</a>
+                    {% endif %}
+                </span>
             </div>
         </div>
 

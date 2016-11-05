@@ -18,4 +18,3 @@ class CustomerProfileForm(forms.ModelForm):
     class Meta:
         model = Customer
         fields = ('timezone', 'birthday', 'skype')
-        localized_fields = ('birthday',)
