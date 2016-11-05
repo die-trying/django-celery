@@ -41,7 +41,7 @@ class Model extends MicroEvent
             time_for_id = time['server'].replace ':', '_'
             slot = {
               id: "teacher_#{ event.id }_time_#{ time_for_id }"
-              teacher_id: if event.host_id? then event.host_id
+              teacher_id: if event.host_id? then event.host_id else event.id
               server_time: time['server']
               user_time: time['user']
             }
@@ -52,7 +52,6 @@ class Model extends MicroEvent
       , @timeout
 
   submit_url: (data) ->
-    console.log data
     "/market/schedule/step2/teacher/#{ data.teacherId }/#{ data.lesson }/#{ data.date }/#{ data.time }/"
 
 Project.models.SchedulePopupModel = Model
