@@ -14,6 +14,14 @@ class TestNaturalTime(TestCase):
             self.assertEqual(result, 'some staff')
 
 
+class TestSimpleTags(TestCase):
+    def test_flash_message(self):
+        tpl = Template("{% load flash_message %} {% flash_message 'Good!' %}")
+        html = tpl.render(Context({}))
+        self.assertIn('Good!', html)
+        self.assertIn('alert-info', html)
+
+
 class TestSkypeLink(TestCase):
     def setUp(self):
         self.customer = create_customer()

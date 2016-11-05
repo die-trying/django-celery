@@ -65,6 +65,9 @@ dl.inline
         &:after
             content: ':'
 
+.progress .progress-bar
+    min-width 30px
+    
 .table-no-border
     td
         border-top: none !important
@@ -80,3 +83,10 @@ dl.inline
     small
         display: block
         margin-top: 5px
+
+.fadein
+    @keyframes fadein
+        from { opacity: 0 }
+        to   { opacity: 1 }
+
+    animation: fadein .3s

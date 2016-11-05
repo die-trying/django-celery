@@ -1,0 +1,6 @@
+{% load flash_message %}
+{% if messages %}
+    {% for msg in messages %}
+        {% flash_message msg msg.tags %}
+    {% endfor %}
+{% endif %}

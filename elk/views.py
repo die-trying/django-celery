@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.messages.views import SuccessMessageMixin
 from django.utils.decorators import method_decorator
 from django.views.generic import DeleteView, DetailView, ListView, TemplateView
 from django.views.generic.edit import UpdateView
@@ -27,5 +28,5 @@ class LoginRequiredTemplateView(_LoginRequiredViewMixin, TemplateView):
     pass
 
 
-class LoginRequiredUpdateView(_LoginRequiredViewMixin, UpdateView):
+class LoginRequiredUpdateView(_LoginRequiredViewMixin, SuccessMessageMixin, UpdateView):
     pass
