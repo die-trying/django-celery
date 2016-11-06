@@ -20,7 +20,8 @@ from market.auto_schedule import AutoSchedule
 from teachers.slot_list import SlotList
 
 TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
-PLANNING_DELTA = datetime.timedelta(hours=12)
+
+PLANNING_DELTA = datetime.timedelta(days=1)  # booking lag
 
 
 def _planning_ofsset(start):
