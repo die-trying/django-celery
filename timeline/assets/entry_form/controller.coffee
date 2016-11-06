@@ -61,6 +61,7 @@ class Controller
     if not $('#id_start_1').val()
       $('#id_start_1').val @_default_time()
 
+    $('#id_duration').focus().blur()  # suddenly safari does not clear the placeholder 'HH:MM' without that
 
     # apply selectpicker
     $('#id_lesson_type, #id_lesson_id').selectpicker()
