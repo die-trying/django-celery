@@ -18,7 +18,7 @@ class TestFormContext(ClientTestCase):
         Get create form and check for hidden field 'teacher',
         see template timeline/forms/entry_create.html
         """
-        response = self.c.get('/timeline/%s/create/' % self.teacher.user.username)
+        response = self.c.get('/timeline/%s/add/' % self.teacher.user.username)
 
         with self.assertHTML(response, 'form.form #teacher') as (input,):
             self.assertEquals(input.value, str(self.teacher.pk))
@@ -30,6 +30,6 @@ class TestFormContext(ClientTestCase):
         """
         entry = mixer.blend(TimelineEntry, teacher=self.teacher)
 
-        response = self.c.get('/timeline/%s/%d/update/' % (self.teacher.user.username, entry.pk))
+        response = self.c.get('/timeline/%s/%d/' % (self.teacher.user.username, entry.pk))
         with self.assertHTML(response, 'form.form #teacher') as (input,):
             self.assertEquals(input.value, str(self.teacher.pk))

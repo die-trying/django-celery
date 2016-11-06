@@ -18,7 +18,7 @@ class TestCancellation(TestCase):
     fixtures = ('lessons',)
 
     def setUp(self):
-        self.teacher = create_teacher()
+        self.teacher = create_teacher(works_24x7=True)
         self.customer = create_customer()
         self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher, slots=15)
 
@@ -69,7 +69,6 @@ class TestCancellation(TestCase):
         c.schedule(  # go through the simple scheduling process, without a special-crafted timeline entry
             teacher=self.teacher,
             date=self.tzdatetime(2032, 5, 3, 12, 30),
-            allow_besides_working_hours=True
         )
         c.save()
         entry = c.timeline

@@ -19,9 +19,10 @@ django-countries==3.4.1
 -e git+https://github.com/f213/django-suit-daterange-filter@a9d9c2e118f0006ca0fa842febbe0922fba75518#egg=django_date_range_filter
 django-debug-toolbar==1.4
 django-environ==0.4.0
+django-filter==0.15.3
 django-image-cropping==1.0.3
 django-mail-templated==2.6.2
-django-markdown==0.8.4
+django-markdown-app==0.8.6
 django-money==0.8
 django-nose==1.4.4
 django-picklefield==0.3.2
@@ -31,6 +32,7 @@ django-suit==0.2.21
 django-timezone-field==1.3
 django-user-agents==0.3.0
 django-with-asserts==0.0.1
+djangorestframework==3.5.1
 docutils==0.12
 easy-thumbnails==2.3
 fake-factory==0.5.7
@@ -79,6 +81,7 @@ selenium==2.53.5
 simplegeneric==0.8.1
 simplejson==3.8.2
 six==1.10.0
+sortedcontainers==1.5.4
 sqlparse==0.1.19
 stripe==1.41.0
 timezonefinder==1.5.7

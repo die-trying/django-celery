@@ -2,13 +2,9 @@ from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
-from django_markdown.utils import markdown
-
-from teachers.models import Teacher
 
 
 class Language(models.Model):
@@ -61,19 +57,19 @@ class Lesson(models.Model):
     def type_verbose_name(self):
         return _(self.__class__._meta.verbose_name.lower())
 
-    @property
-    def long_name(self):
-        if hasattr(self.__class__, '_long_name'):
-            return self.__class__._long_name
+    @classmethod
+    def long_name(cls):
+        if hasattr(cls, '_long_name'):
+            return cls._long_name
 
-        return _(self.__class__._meta.verbose_name)
+        return _(cls._meta.verbose_name)
 
-    @property
-    def long_name_plural(self):
-        if hasattr(self.__class__, '_long_name_plural'):
-            return self.__class__._long_name_plural
+    @classmethod
+    def long_name_plural(cls):
+        if hasattr(cls, '_long_name_plural'):
+            return cls._long_name_plural
 
-        return _(self.__class__._meta.verbose_name_plural)
+        return _(cls._meta.verbose_name_plural)
 
     @classmethod
     def get_contenttype(cls):
@@ -122,27 +118,6 @@ class Lesson(models.Model):
         """
         return None
 
-    def as_dict(self):
-        """Dicitionary representation of a lesson"""
-        d = {
-            'id': self.pk,
-            'name': self.name,
-            'required_slots': self.slots,
-            'announce': markdown(self.announce),
-            'description': markdown(self.description),
-            'duration': str(self.duration)
-        }
-
-        if hasattr(self, 'available_slots_count'):  # set externaly, i.e in Teachers.objects.find_lessons()
-            d['available_slots_count'] = self.available_slots_count
-            # TODO unittest it
-
-        return d
-
-    @property
-    def admin_url(self):
-        return reverse("admin:lessons_%s_change" % self.__class__.__name__.lower(), args=(self.pk,))
-
     class Meta:
         abstract = True
 
@@ -152,7 +127,7 @@ class HostedLesson(Lesson):
     Abstract class for generic lesson, that requires a host, i.e. Master class
     or ELK Happy hour
     """
-    host = models.ForeignKey(Teacher, related_name='+', null=True)
+    host = models.ForeignKey('teachers.Teacher', related_name='+', null=True)
 
     @classmethod
     def timeline_entry_required(cls):
@@ -174,15 +149,6 @@ class HostedLesson(Lesson):
 
             else:
                 super().save(*args, **kwargs)
-
-    def as_dict(self):
-        """
-        Add host information to dictionary representation.
-        """
-        result = super().as_dict()
-        if self.host:  # TODO: unittest it
-            result['host'] = self.host.as_dict()
-        return result
 
     class Meta:
         abstract = True

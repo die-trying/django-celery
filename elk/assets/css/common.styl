@@ -7,17 +7,21 @@
 body
     min-height: 640px
 
+.page-header
+    margin-bottom: 20px
+    margin-top: 30px
 
-@media (max-width:1025px)
-    .dropdown-backdrop
-        display: none
+    .dropdown-toggle
+        height: 35px
+
+a:not(:hover)
+    transition color .2s ease
 
 a.pseudo
     color black
     border-bottom: dotted 1px
     text-decoration: none
-    &:not(:hover)
-        transition color .5s ease
+
     &:hover
         color: #337ab7 // default bootstrap for '.text-primary'
         border-color: @color
@@ -69,6 +73,9 @@ dl.inline
         &:after
             content: ':'
 
+.progress .progress-bar
+    min-width 30px
+
 .table-no-border
     td
         border-top: none !important
@@ -85,5 +92,9 @@ dl.inline
         display: block
         margin-top: 5px
 
-.btn-primary, .btn-default
-    transition: opacity .1s ease-in  // for styling bootstrap 'enabled' and 'disabled' classes
+.fadein
+    @keyframes fadein
+        from { opacity: 0 }
+        to   { opacity: 1 }
+
+    animation: fadein .3s

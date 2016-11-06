@@ -1,0 +1,24 @@
+{% extends 'elk/base.html' %}
+
+{% load staticfiles %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Timeline for <select class="selectpicker calendar__teacher-selector fadein">
+        <option value = "{{ object.user.username }}">{{ object.user.crm.full_name }}</option>
+        {% for teacher in others %}
+            <option value = "{{ teacher.user.username }}"">{{ teacher.user.crm.full_name }}</option>
+        {% endfor %}
+    </select></h1>
+</div>
+<div class="user-calendar" data-calendar="/api/timeline/?teacher={{ object.pk }}"></div>
+<div class="user-calendar__add-popup hidden" data-username="{{ object.user.username }}" data-userid="{{ object.pk }}"></div>
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'vendor/fullcalendar/dist/fullcalendar.min.css' %}">
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript" src="{% static 'vendor/fullcalendar/dist/fullcalendar.min.js' %}"></script>
+{% endblock %}

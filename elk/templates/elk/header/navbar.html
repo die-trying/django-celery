@@ -1,4 +1,5 @@
 {% load navbar_tags %}
+{% load static %}
 <nav class="navbar navbar-default navbar-collapse">
     <div class="container-fluid">
         <div class="navbar-header">
@@ -7,11 +8,14 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/">ELK Dashboard</a>
+            <a class="navbar-brand elk-logo" href="/"><img src="{% static 'i/logo.svg' %}" alt="ELK Dashboard"></a>
         </div>
 
         <div class="collapse navbar-collapse" id="navbar">
             <ul class="nav navbar-nav">
+                <!-- li class="{% is_active request '^/teachers/' %}"><a href="{% url 'teachers:list' %}">Teachers</a></li -->
+                <li class="{% is_active request '^/market/mylessons/' %}"><a href="{% url 'market:customer_lessons'%}">
+                    Lessons</a></li>
                 {% if request.user.is_staff %}
                     <li class="{% is_active request '^/timeline/' %}"><a href="{% url 'timeline:timeline' username=request.user.username %}">Timeline</a></li>
                 {% endif %}

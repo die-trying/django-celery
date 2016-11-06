@@ -19,7 +19,7 @@ class TestScheduler(TestCase):
 
     def setUp(self):
         self.customer = create_customer()
-        self.host = create_teacher()
+        self.host = create_teacher(works_24x7=True)
         self.master_class = mixer.blend(lessons.MasterClass, host=self.host, slots=5)
 
     def get_the_hat(self, lesson_type=None, teacher=None, date='2016-01-01', time='13:37'):
@@ -63,8 +63,8 @@ class TestScheduler(TestCase):
 
         s._SortingHat__set_err('NON_EXISTENT_ERR_TEXT')
 
-        self.assertEquals(s.err, 'E_UNKNOWN')
-        self.assertEquals(s.msg, 'Unknown scheduling error')
+        self.assertEquals(s.err, 'NON_EXISTENT_ERR_TEXT')
+        self.assertIn('Internal', s.msg)
 
         self.assertFalse(s.result)
         s._SortingHat__set_err('E_NONE')

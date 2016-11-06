@@ -1,0 +1,10 @@
+{% if active_teachers %}
+    <section class="row active-teachers">
+        <div class="col-md-12 teacher-grid">
+        <h3>Available now</h3>
+            {% for teacher in active_teachers %}
+                {% include 'teachers/_partial/_teacher.html' %}
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

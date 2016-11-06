@@ -17,11 +17,3 @@
   pk: 1
   fields: {user: 1, source: 'internal',
     date_arrived: '2016-06-23T13:59:30+03:00', country: RU, starting_level: A1, current_level: A2}
-- model: crm.customer
-  pk: 2
-  fields: {
-      customer_first_name: 'Vasiliy',
-      customer_last_name: 'Poupkine',
-      source: 'internal',
-      'customer_email':  'f@f213.in',
-      date_arrived: '2016-06-23T13:59:30+03:00', country: RU, starting_level: A1, current_level: A2}

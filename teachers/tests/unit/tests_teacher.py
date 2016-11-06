@@ -19,6 +19,10 @@ class TestTeacherUnit(TestCase):
         teacher = create_teacher()
         self.assertEqual(teacher.timeline_url(), '/timeline/%s/' % teacher.user.username)
 
+    def test_absolute_url(self):
+        teacher = create_teacher()
+        self.assertEqual(teacher.get_absolute_url(), '/teachers/%s/' % teacher.user.username)
+
     @freeze_time('2032-05-03 13:00')
     def test_planning_offset(self):
         late_start = self.tzdatetime(2032, 5, 5, 13, 0)

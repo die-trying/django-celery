@@ -1,0 +1,14 @@
+{% extends 'elk/base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1>ELK Teachers</h1>
+</div>
+<section class="row teacher-grid">
+    <div class="col-md-12">
+        {% for teacher in object_list %}
+            {% include 'teachers/_partial/_teacher.html' %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

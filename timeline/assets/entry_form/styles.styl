@@ -1,0 +1,89 @@
+@import 'nib'
+
+.user-calendar
+    margin-bottom: 250px  // spare space for the popup
+    &__add-popup
+        position: absolute
+        z-index: 100
+        width: 300px
+
+    &__close_popup
+        relative: top -2px
+
+    a.fc-event
+        cursor: pointer
+        &:hover
+            color: #333
+            background-color: #dff0d8 // like bg-success
+            border-color: #dff0d8
+        &:not(:hover)
+            transition: ease-out .1s
+
+.timeline-entry-form
+    .form-group
+        margin-bottom: 5px
+
+    &__lesson
+        #id_lesson_id, #id_lesson_type
+            max-width: 260px
+
+    &__time
+        margin-top: 20px
+
+        &__start
+            margin-left: 32px
+            margin-bottom: 10px !important
+
+        #id_start_0
+            display: inline
+            width: 110px
+
+        #id_start_1
+            display: inline
+            margin-left: 10px
+            padding-left: 12px
+            width: 70px
+
+        #id_duration
+            display: inline
+            margin-left: 5px
+            width: 80px
+
+    &__controls
+        margin-top: 15px
+        display: table
+        width: 100%
+
+        &__wrapper
+            display: table-row
+
+        &__left, &__right
+            display: table-cell
+
+        &__left
+            width: 60%
+
+        &__right
+            width: 40%
+            text-align: right
+
+    &__err
+        display: inline
+        margin-left: 5px
+
+        .TeacherHasOtherLessons, .TeacherIsAbsent, .TeacherHasEvents  // these are exception names defined in market/auto_schedule.py
+            display: inline-block
+            text-rendering: auto
+            font-family: FontAwesome
+
+        .TeacherHasOtherLessons:before
+            content: "\f071"  // fa-exclamation-triangle
+
+        .TeacherIsAbsent:before
+            content: "\f185"  // fa-sun
+
+        .TeacherHasEvents:before
+            content: "\f273"  // fa-calendar-times
+
+    .ui-timepicker-wrapper
+        z-index: 200

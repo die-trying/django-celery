@@ -1,6 +1,7 @@
 import json
 
 from django.test import override_settings
+from freezegun import freeze_time
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
@@ -9,6 +10,8 @@ from teachers.models import Absence, WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
+@freeze_time('2015-01-01 10:00')
+@override_settings(TIME_ZONE='Europe/Moscow')
 class TestCheckEntry(ClientTestCase):
     """
     :view:`timeline.check_entry` is a helper for the timeline creating form
@@ -22,7 +25,6 @@ class TestCheckEntry(ClientTestCase):
             lesson=self.lesson,
             start=self.tzdatetime('Europe/Moscow', 2016, 1, 18, 14, 10),
             end=self.tzdatetime('Europe/Moscow', 2016, 1, 18, 14, 40),
-            allow_overlap=False,
         )
 
         self.entry.save()
@@ -42,48 +44,19 @@ class TestCheckEntry(ClientTestCase):
             start='2016-01-18 14:30',
             end='2016-01-18 15:00',
         )
-        self.assertTrue(res['is_overlapping'])
-
-    def test_check_overlap_false(self):
-        res = self.__check_entry(
-            start='2016-01-18 14:45',
-            end='2016-01-18 15:15'
-        )
-        self.assertFalse(res['is_overlapping'])
-
-    def test_check_hours_true(self):
-        res = self.__check_entry(
-            start='2032-05-03 14:00',  # monday
-            end='2032-05-03 14:30',
-        )
-        self.assertTrue(res['is_fitting_hours'])
-
-    def test_check_hours_false(self):
-        res = self.__check_entry(
-            start='2032-05-03 14:00',  # monday
-            end='2032-05-03 15:30',  # half-hour late
-        )
-        self.assertFalse(res['is_fitting_hours'])
-
-    def test_teacher_is_present_true(self):
-        res = self.__check_entry(
-            start='2032-05-01 14:00',
-            end='2032-05-01 14:30',
-        )
-        self.assertTrue(res['teacher_is_present'])
+        self.assertEqual(res, 'TeacherHasOtherLessons')
 
     def test_teacher_is_present_false(self):
         res = self.__check_entry(
             start='2032-05-03 14:00',  # this day teacher is on vacation
             end='2032-05-03 14:30',
         )
-        self.assertFalse(res['teacher_is_present'])
+        self.assertEqual(res, 'TeacherIsAbsent')
 
-    @override_settings(TIME_ZONE='Europe/Moscow')
     def __check_entry(self, start, end):
         response = self.c.get(
             '/timeline/%s/check_entry/%s/%s/' % (self.teacher.user.username, start, end)
         )
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content.decode('utf-8'))
-        return result
+        return result['result']

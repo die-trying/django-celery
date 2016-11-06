@@ -1,17 +1,21 @@
-from django.contrib.admin.views.decorators import staff_member_required
-from django.http import JsonResponse
-from django.shortcuts import get_list_or_404, get_object_or_404
-
-from teachers.models import Teacher, WorkingHours
+from elk.views import LoginRequiredDetailView, LoginRequiredListView
+from teachers.models import Teacher
 
 
-@staff_member_required
-def hours(request, username):
-    teacher = get_object_or_404(Teacher, user__username=username)
+class TeacherDetail(LoginRequiredDetailView):
+    model = Teacher
+    slug_url_kwarg = 'username'
+    slug_field = 'user__username'
 
-    hours_list = []
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['timeslots'] = list(
+            ctx['object'].free_slots_for_dates(self.request.user.crm.classes.dates_for_planning())
+        )
 
-    for hours in get_list_or_404(WorkingHours, teacher=teacher):
-        hours_list.append(hours.as_dict())
+        return ctx
 
-    return JsonResponse(hours_list, safe=False)
+
+class TeacherList(LoginRequiredListView):
+    model = Teacher
+    queryset = Teacher.objects.with_photos()

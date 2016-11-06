@@ -11,7 +11,7 @@
         overflow-x: hidden  // disable horizontal scrollbar in firefox
 
     &__content-loading
-        width: 768px
+        width: 95%
         height: 360px
         position: absolute
         background-color: white
@@ -36,6 +36,10 @@
             margin: 0
         &-photo
             max-width: 40px
+            relative: top 4px
+
+        .col-md-1
+          text-align: right
 
     &__date-selector
         display: inline
@@ -61,8 +65,6 @@
         margin-right: 30px
 
     @media (min-width: 767px)
-        width: 800px
-
         .modal-body
             min-height: 480px
             max-height: 480px

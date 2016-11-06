@@ -1,13 +1,12 @@
 from datetime import timedelta
-from unittest.mock import MagicMock, patch
 
 from django.contrib.contenttypes.models import ContentType
+from django.test import override_settings
 from django.utils import timezone
 from freezegun import freeze_time
 
 from elk.utils.testing import TestCase, create_customer, create_teacher
 from lessons import models as lessons
-# from market.models import Class, Subscription
 from market import models
 from products import models as products
 
@@ -39,7 +38,7 @@ class TestClassManager(TestCase):
         replace the above lines with the SortingHat invocation
         """
         c.schedule(
-            teacher=create_teacher(),
+            teacher=create_teacher(works_24x7=True),
             date=date,
             allow_besides_working_hours=True,
         )
@@ -69,10 +68,10 @@ class TestClassManager(TestCase):
 
         self.assertIsNone(self.customer.classes.nearest_scheduled())  # should not throw anything
 
+    @override_settings(TIME_ZONE='UTC')
     def test_starting_soon(self):
         self._schedule()
-        with patch('market.models.ClassesManager._ClassesManager__now') as mocked_date:
-            mocked_date.return_value = self.tzdatetime(2032, 12, 1, 10, 0)
+        with freeze_time('2032-12-01 10:00'):
             self.assertEquals(self.customer.classes.starting_soon(timedelta(minutes=89)).count(), 0)
             self.assertEquals(self.customer.classes.starting_soon(timedelta(minutes=91)).count(), 1)
 
@@ -131,7 +130,8 @@ class TestClassManager(TestCase):
         dates = list(self.customer.classes.dates_for_planning())
         self.assertEquals(len(dates), 14)  # should return next two weeks
 
-        self.assertEquals(dates[0], self.tzdatetime('UTC', 2032, 12, 5, 1, 0))  # the first day should be today
+        self.assertEquals(dates[0], self.tzdatetime('UTC', 2032, 12, 6, 1, 0))  # the first day should be today
+        # fill free to modify this if you've changed the booking lag
 
     @freeze_time('2032-12-05 02:00')
     def test_dates_for_planning_tomorrow(self):
@@ -142,11 +142,6 @@ class TestClassManager(TestCase):
 
         self.assertEquals(len(dates), 14)
         self.assertEquals(dates[0], self.tzdatetime('UTC', 2032, 12, 6, 2, 0))  # the first day should be tomorrow, because no lessons can by planned today after 02:00
-
-    def test_cant_unschedule_in_past(self):
-        c = self._schedule(date=self.tzdatetime(2020, 12, 1, 11, 30))
-        c.timeline.is_in_past = MagicMock(return_value=True)
-        self.assertFalse(c.can_be_unscheduled())
 
     def test_mark_as_fully_used(self):
         c = self._schedule()

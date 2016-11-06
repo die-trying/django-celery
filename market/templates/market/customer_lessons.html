@@ -1,0 +1,32 @@
+{% extends 'elk/base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Your classes</h1>
+</div>
+<section class="row">
+    <div class="col-md-8">
+        {% if object_list %}
+            <p class="lead">Lessons logged from Oct 1, 2016</p>
+            <table class="table table-striped customer-lessons">
+                <thead>
+                    <th>Date</th>
+                    <th>Lesson</th>
+                    <th>Teacher</th>
+                    <th>Finished</th>
+                </thead>
+                <tbody>
+                    {% for class in object_list %}
+                        <tr>
+                            <td class="start_time">{{ class.timeline.start }}</td>
+                            <td class="lesson_name">{{ class.name_for_user }}</td>
+                            <td class="teacher_name">{{ class.timeline.teacher.user.crm }}</th>
+                            <td class="is_fully_used">{% if class.is_fully_used %}Yes{% else %}&nbsp;{% endif %}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

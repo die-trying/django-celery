@@ -19,12 +19,12 @@ class TestWorkingHours(TestCase):
         """
         Get datetime.datetime objects for start and end working hours
         """
-        working_hours_monday = WorkingHours.objects.for_date(teacher=self.teacher, date=self.tzdatetime(2032, 5, 3))
+        working_hours_monday = self.teacher.working_hours.for_date(date=self.tzdatetime(2032, 5, 3))
         self.assertIsNotNone(working_hours_monday)
         self.assertEqual(working_hours_monday.start.strftime('%Y-%m-%d %H:%M'), '2032-05-03 13:00')
         self.assertEqual(working_hours_monday.end.strftime('%Y-%m-%d %H:%M'), '2032-05-03 15:00')
 
-        working_hours_wed = WorkingHours.objects.for_date(teacher=self.teacher, date=self.tzdatetime(2016, 5, 5))
+        working_hours_wed = self.teacher.working_hours.for_date(date=self.tzdatetime(2016, 5, 5))
         self.assertIsNone(working_hours_wed)  # should not throw DoesNotExist
 
     @override_settings(TIME_ZONE='US/Eastern')
@@ -35,13 +35,13 @@ class TestWorkingHours(TestCase):
         timezone.activate('Europe/Moscow')
         tuesday = self.tzdatetime('Europe/Moscow', 2032, 5, 3, 2, 0)
 
-        with patch('teachers.models.WorkingHours.objects.get') as get:
+        with patch('teachers.models.WorkingHoursManager.get') as get:
             try:
-                WorkingHours.objects.for_date(teacher=self.teacher, date=tuesday)
+                self.teacher.working_hours.for_date(date=tuesday)
             except:
                 pass
 
-            get.assert_called_once_with(teacher=self.teacher, weekday=0)
+            get.assert_called_once_with(weekday=0)
 
     def test_working_hours_fits_ok(self):
         self.assertTrue(self._does_fit('13:00'))

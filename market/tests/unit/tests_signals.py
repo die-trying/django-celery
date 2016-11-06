@@ -1,12 +1,9 @@
 from unittest.mock import MagicMock
 
-from mixer.backend.django import mixer
-
 from elk.utils.testing import TestCase, create_customer, create_teacher
 from lessons import models as lessons
 from market import signals
 from market.models import Class
-from teachers.models import WorkingHours
 
 
 class TestClassSignals(TestCase):
@@ -14,9 +11,8 @@ class TestClassSignals(TestCase):
 
     def setUp(self):
         self.customer = create_customer()
-        self.teacher = create_teacher()
+        self.teacher = create_teacher(works_24x7=True)
         self.lesson = lessons.OrdinaryLesson.get_contenttype()
-        mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
 
     def _buy_a_lesson(self):
         c = Class(
