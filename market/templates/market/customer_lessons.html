@@ -26,6 +26,8 @@
                     {% endfor %}
                 </tbody>
             </table>
+        {% else %}
+            <p class="lead">You have no lessons yet. Come up and <a class="load_schedule_popup pseudo" data-toggle="modal" data-target=".schedule-popup-container" href="#">book</a> a first one!</p>    
         {% endif %}
     </div>
 </section>
