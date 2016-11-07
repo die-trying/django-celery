@@ -10,11 +10,14 @@ register = template.Library()
 
 
 @register.simple_tag(takes_context=True)
-def stripe_form(context, *args, **kwargs):
+def stripe_form(context, caption, classes, *args, **kwargs):
     tpl = get_template('payments/_partial/stripe.html')
 
     ctx = _ctx(*args, **kwargs)
     ctx['csrf_token'] = context.get('csrf_token')
+
+    ctx['caption'] = caption
+    ctx['classes'] = classes
 
     return tpl.render(Context(ctx))
 

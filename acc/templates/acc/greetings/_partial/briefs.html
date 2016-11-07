@@ -16,7 +16,7 @@
         </div>
         {% if product1_tier %}
             <div class="subscription-brief__payment">
-                {% stripe_form product1 product1_tier.cost request.user.crm %}
+                {% stripe_form 'Pay by card' 'btn-primary' product1 product1_tier.cost request.user.crm %}
             </div>
         {% endif %}
     </div>
@@ -34,7 +34,7 @@
         </div>
         {% if simple_subscription_tier %}
             <div class="subscription-brief__payment">
-                {% stripe_form simple_subscription simple_subscription_tier.cost request.user.crm %}
+                {% stripe_form 'Pay by card' 'btn-primary' simple_subscription simple_subscription_tier.cost request.user.crm %}
             </div>
         {% endif %}
     </div>
@@ -44,5 +44,14 @@
         <p>We will activate your subscription immediately</p>
     </div>
 </div>
+
+{% if single_lesson_tier %}
+    <div class="row subscription__alternative">
+        {% with 'Buy a single lesson for '|add:single_lesson_tier.name as caption %}
+            <div class="col-md-12">Alternatively {% stripe_form caption 'btn-default' single_lesson single_lesson_tier.cost request.user.crm %}</div>
+        {% endwith %}
+    </div>
+{% endif %}
+
 
 {% stripe_processing_popup %}

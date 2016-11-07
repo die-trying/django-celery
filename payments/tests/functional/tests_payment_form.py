@@ -20,7 +20,7 @@ class TestPaymentFormTag(TestCase):
         cls.customer = create_customer()
         cls.cost = Money(31.5, RUB)
 
-        cls.tpl = Template("{% load stripe_form from stripe %} {% stripe_form product cost customer %}")
+        cls.tpl = Template("{% load stripe_form from stripe %} {% stripe_form 'Pay by card' 'btn-primary' product cost customer %}")
 
     @override_settings(STRIPE_PK='test_100500_pk')
     def test_context(self):
