@@ -67,6 +67,12 @@ class SingleLessonProduct(Product):
         )
         c.save()
 
+    def get_success_template_name(self):
+        return 'payments/single_lesson_success.html'
+
+    class Meta:
+        verbose_name = 'Single lesson'
+
 
 class ProductWithLessons(Product):
     """

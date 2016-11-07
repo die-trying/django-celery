@@ -1,0 +1,13 @@
+{% extends 'payments/result_base.html' %}
+{% load contact_us %}
+
+{% block title %}Thank you!{% endblock %}
+
+{% block lead %}
+<p class="lead">Your lesson is now activated.</p>
+{% endblock %}
+
+{% block msg %}
+<p>Go to the <a href="/">home page</a> and find your lesson. Don't hesitate to {% contact_us 'drop us a line' 'pseudo'%}
+    if you have any questions.</p>
+{% endblock %}
