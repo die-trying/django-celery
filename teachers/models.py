@@ -17,7 +17,9 @@ from image_cropping.templatetags.cropping import cropped_thumbnail
 
 from elk.utils.date import day_range, minute_after_midnight, minute_till_midnight
 from market.auto_schedule import AutoSchedule
+from market.exceptions import AutoScheduleExpcetion
 from teachers.slot_list import SlotList
+from timeline.exceptions import DoesNotFitWorkingHours
 
 TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
 
@@ -78,7 +80,7 @@ class TeacherManager(models.Manager):
 
         lessons = []
         for lesson in self.__lessons_for_date(start, end, **kwargs):
-            lesson.free_slots = SlotList(self.__timeslots(lesson, start, end))
+            lesson.free_slots = SlotList(self.__timeslots_by_lesson(lesson, start, end))
             if len(lesson.free_slots):
                 lessons.append(lesson)
 
@@ -94,13 +96,17 @@ class TeacherManager(models.Manager):
         for timeline_entry in TimelineEntry.objects.filter(start__range=(start, end)).filter(**kwargs).distinct('lesson_id'):
             yield timeline_entry.lesson
 
-    def __timeslots(self, lesson, start, end):
+    def __timeslots_by_lesson(self, lesson, start, end):
         """
         Generate timeslots for lesson
         """
         TimelineEntry = apps.get_model('timeline.entry')
         for entry in TimelineEntry.objects.by_lesson(lesson).filter(start__range=(start, end)):
             if entry.is_free:
+                try:
+                    entry.clean()
+                except (AutoScheduleExpcetion, DoesNotFitWorkingHours):
+                    continue
                 yield entry.start
 
     def can_finish_classes(self):
@@ -176,7 +182,7 @@ class Teacher(models.Model):
 
         # if there are any filters left — find timeline entries
         if len(kwargs.keys()):
-            return self.__find_timeline_entries(date=date, **kwargs)
+            return SlotList(self.__find_timeline_entries(date=date, **kwargs))
 
         # otherwise — return all available time based on working hours
         hours = self.working_hours.for_date(date=date)
@@ -228,11 +234,8 @@ class Teacher(models.Model):
 
             lesson_types[Model.sort_order()] = i
 
-        result = []  # sort by sort_order defined in the lessons
         for i in sorted(list(lesson_types.keys())):
-            result.append(lesson_types[i])
-
-        return result
+            yield lesson_types[i]
 
     def get_absolute_url(self):
         """
@@ -254,10 +257,14 @@ class Teacher(models.Model):
         Returns an iterable of slots as datetime objects.
         """
         TimelineEntry = apps.get_model('timeline.entry')
-        slots = SlotList()
         for entry in TimelineEntry.objects.filter(teacher=self, start__range=day_range(date), **kwargs):
-            slots.add(entry.start)
-        return slots
+            if entry.is_free:
+                try:
+                    entry.clean()
+                except (AutoScheduleExpcetion, DoesNotFitWorkingHours) as e:
+                    continue
+
+                yield entry.start
 
     def __delete_lesson_types_that_dont_require_a_timeline_entry(self, kwargs):
         """
