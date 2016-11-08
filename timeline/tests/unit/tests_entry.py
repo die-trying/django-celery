@@ -98,12 +98,23 @@ class EntryTestCase(TestCase):
         """
         lesson = mixer.blend(lessons.MasterClass, host=self.teacher1)
         entry = mixer.blend(TimelineEntry, lesson=lesson, teacher=self.teacher1)
-        ical = icalendar.Calendar.from_ical(entry.as_ical('test title'))
+        ical = icalendar.Calendar.from_ical(entry.as_ical())
 
         ev = ical.walk('VEVENT')[0]
 
         self.assertEqual(ev['dtstart'].dt, entry.start)
         self.assertEqual(ev['dtend'].dt, entry.end)
+
+    def test_is_ical_title(self):
+        """
+        Ensure that calendar event has title from TimelineEntry.event_title()
+        """
+        entry = mixer.blend(TimelineEntry, teacher=self.teacher1)
+        entry.event_title = MagicMock(return_value='tstttl')
+        ical = icalendar.Calendar.from_ical(entry.as_ical())
+        ev = ical.walk('VEVENT')[0]
+
+        self.assertEqual(str(ev['summary']), 'tstttl')
 
     def test_assign_entry_to_a_different_teacher(self):
         """
@@ -181,13 +192,12 @@ class TestEntryTitle(ClassIntegrationTestCase):
         entry = self._create_entry()
         self._schedule(c, entry)
 
-        title = c.timeline.event_title(for_whom='teacher')  # we use `c.timeline` instead of `entry` because scheduling has created another timeline entry and our entry is invalid now
+        title = str(c.timeline)  # we use `c.timeline` instead of `entry` because scheduling has created another timeline entry and our entry is invalid now
 
-        self.assertIn('Single lesson', title)
-        self.assertIn('with %s' % self.customer.first_name, title)
+        self.assertEqual(title, self.customer.full_name)
 
     def test_teacher_hosted_Lesson(self):
-        self.lesson = mixer.blend(lessons.MasterClass, name='Test Lesson Name', host=self.host, slots=5)
+        self.lesson = mixer.blend(lessons.MasterClass, internal_name='Test Lesson Name', host=self.host, slots=5)
 
         entry = self._create_entry()
         entry.slots = 5
@@ -195,6 +205,20 @@ class TestEntryTitle(ClassIntegrationTestCase):
         c = self._buy_a_lesson()
         self._schedule(c, entry)
 
-        title = entry.event_title(for_whom='teacher')
+        self.customer = create_customer()  # create another customer
+        c = self._buy_a_lesson()
+        self._schedule(c, entry)
+
+        entry.refresh_from_db()  # entry should update slot count from the database
+
+        title = str(entry)
+
+        self.assertEqual(title, 'Test Lesson Name 2/5')
+
+    def test_teacher_hosted_lesson_without_customers(self):
+        self.lesson = mixer.blend(lessons.MasterClass, internal_name='Test Lesson Name', host=self.host, slots=5)
+        entry = self._create_entry()
+
+        title = str(entry)
 
         self.assertEqual(title, 'Test Lesson Name')
