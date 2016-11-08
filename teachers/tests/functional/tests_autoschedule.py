@@ -8,6 +8,7 @@ from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_teacher
 from lessons import models as lessons
+from market.exceptions import AutoScheduleExpcetion
 from teachers import models
 from teachers.models import Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry
@@ -103,6 +104,21 @@ class TestTeacherManager(TestCase):
         slots = self.teacher.find_free_slots(date=self.tzdatetime(2032, 5, 5), lesson_type=lesson_type.pk)
         self.assertEquals(len(slots), 0)  # there is no master classes, planned on 2032-05-05
 
+    def test_free_slots_for_lesson_type_validates_with_auto_schedule(self):
+        master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
+        entry = TimelineEntry(teacher=self.teacher,
+                              lesson=master_class,
+                              start=self.tzdatetime(2032, 5, 3, 14, 10),
+                              end=self.tzdatetime(2032, 5, 3, 14, 40)
+                              )
+        entry.save()
+        lesson_type = ContentType.objects.get_for_model(master_class)
+        with patch('timeline.models.Entry.clean') as clean:
+            clean.side_effect = AutoScheduleExpcetion(message='testing')
+
+            slots = self.teacher.find_free_slots(date=self.tzdatetime(2032, 5, 3), lesson_type=lesson_type.pk)
+            self.assertEqual(len(slots), 0)
+
     def test_free_slots_for_lesson(self):
         """
         Test for getting free time slots for a particular teacher with particular
@@ -195,23 +211,14 @@ class TestTeacherManager(TestCase):
         Find teachers for a particular lesson
         """
         first_master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
-        second_master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
         first_entry = TimelineEntry(teacher=self.teacher,
                                     lesson=first_master_class,
                                     start=self.tzdatetime(2032, 5, 3, 14, 10),
                                     end=self.tzdatetime(2032, 5, 3, 14, 40)
                                     )
         first_entry.save()
-        second_entry = TimelineEntry(teacher=self.teacher,
-                                     lesson=second_master_class,
-                                     start=self.tzdatetime(2032, 5, 3, 14, 10),
-                                     end=self.tzdatetime(2032, 5, 3, 14, 40)
-                                     )
-        second_entry.save()
         free_teachers = Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 3), lesson_id=first_master_class.pk)
         self.assertEquals(len(free_teachers), 1)
-        free_teachers = Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 5), lesson_id=first_master_class.pk)
-        self.assertEquals(len(free_teachers), 0)
 
     def test_get_teachers_by_lesson_that_does_not_require_a_timeline_entry(self):
         ordinary_lesson_type = lessons.OrdinaryLesson.get_contenttype()

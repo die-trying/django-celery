@@ -290,14 +290,13 @@ class Entry(models.Model):
         )
         return ical.as_string()
 
-
-    def clean(self):  # NOQA
+    def clean(self):
         """
         TODO: merge it with market.AutoSchedule
         """
-
         self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
 
+        print('cleaning')
         auto_schedule = AutoSchedule(self.teacher, exclude_timeline_entries=[self.pk])
         auto_schedule.clean(self.start, self.end)
 

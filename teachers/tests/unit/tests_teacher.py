@@ -95,7 +95,7 @@ class TestTeacherAvailableLessonTypes(TestCase):
         self.teacher = create_teacher(accepts_all_lessons=False)
 
     def test_allowed_lesson_types_empty(self):
-        res = self.teacher.available_lesson_types()
+        res = list(self.teacher.available_lesson_types())
         self.assertEquals(len(res), 0)  # should not throw anything
 
     def test_allowed_lesson_types_non_lessons_bypass(self):
@@ -104,7 +104,7 @@ class TestTeacherAvailableLessonTypes(TestCase):
         """
         self.teacher.allowed_lessons.add(ContentType.objects.get_for_model(lessons.Language))
 
-        res = self.teacher.available_lesson_types()
+        res = list(self.teacher.available_lesson_types())
         self.assertEquals(len(res), 0)  # should not throw anything
 
     def test_allowed_lessons_types_non_hosted(self):
@@ -113,7 +113,7 @@ class TestTeacherAvailableLessonTypes(TestCase):
         """
         self.teacher.allowed_lessons.add(lessons.OrdinaryLesson.get_contenttype())
 
-        res = self.teacher.available_lesson_types()
+        res = list(self.teacher.available_lesson_types())
         self.assertEqual(len(res), 1)
 
     def test_allowed_lessons_types_non_hosted_fail_due_to_no_lessons(self):
@@ -123,14 +123,14 @@ class TestTeacherAvailableLessonTypes(TestCase):
         """
         self.teacher.allowed_lessons.add(lessons.MasterClass.get_contenttype())
 
-        res = self.teacher.available_lesson_types()
+        res = list(self.teacher.available_lesson_types())
         self.assertEqual(len(res), 0)
 
     def test_allowed_lesson_types_non_hosted_ok(self):
         self.teacher.allowed_lessons.add(lessons.MasterClass.get_contenttype())
 
         mixer.blend(lessons.MasterClass, host=self.teacher)
-        res = self.teacher.available_lesson_types()
+        res = list(self.teacher.available_lesson_types())
         self.assertEqual(len(res), 1)
 
     def test_allowed_lesson_sort_order(self):
@@ -141,7 +141,7 @@ class TestTeacherAvailableLessonTypes(TestCase):
         self.teacher.allowed_lessons.add(lessons.OrdinaryLesson.get_contenttype())
 
         mixer.blend(lessons.MasterClass, host=self.teacher)
-        res = self.teacher.available_lesson_types()
+        res = list(self.teacher.available_lesson_types())
 
         self.assertEqual(len(res), 2)
 
