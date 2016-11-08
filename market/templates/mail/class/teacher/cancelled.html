@@ -2,13 +2,14 @@
 {% load humanize %}
 
 {% block subject %}
-CANCELLED: {{ c.timeline.lesson.type_verbose_name }} with {{ c.customer.full_name | capfirst}}
+CANCELLED: {{ c.customer.full_name }}
 {% endblock %}
 
 {% block body %}
 Hi, {{ c.timeline.teacher.user.crm.first_name | capfirst }}!
 
-Your {{ c.timeline.lesson.type_verbose_name }} with {{ c.customer.full_name | capfirst}} planned for {{ c.timeline.start | naturalday:'SHORT_DATE_FORMAT' }}, {{ c.timeline.start | time:'TIME_FORMAT'}} is cancelled :(
+
+{{ c.customer.full_name }} has cancelled his lesson planned for {{ c.timeline.start | naturalday:'SHORT_DATE_FORMAT' }}, {{ c.timeline.start | time:'TIME_FORMAT'}} :(
 
 Cancellation source: {{ src }}.
 

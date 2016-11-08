@@ -2,13 +2,13 @@
 {% load humanize %}
 
 {% block subject %}
-{{ c.customer.first_name | capfirst }}, your class is scheduled for {{ c.timeline.start | naturalday:'SHORT_DATE_FORMAT' }}, {{ c.timeline.start | time:'TIME_FORMAT'}}
+{{ c.customer.first_name | capfirst }}, {{ c.timeline.event_title }} is scheduled for {{ c.timeline.start | naturalday:'SHORT_DATE_FORMAT' }}, {{ c.timeline.start | time:'TIME_FORMAT'}}
 {% endblock %}
 
 {% block body %}
 Dear {{ c.customer.first_name | capfirst }},
 
-Just for you, we've scheduled a {{ c.timeline.lesson.type_verbose_name }} with {{ c.timeline.teacher.user.first_name }} for {{ c.timeline.start | naturalday:'SHORT_DATE_FORMAT'}}, {{ c.timeline.start | time:'TIME_FORMAT'}}
+Just for you, we've scheduled {{ c.timeline.event_title }} for {{ c.timeline.start | naturalday:'SHORT_DATE_FORMAT'}}, {{ c.timeline.start | time:'TIME_FORMAT'}}
 
 {% include 'mailer/_signature.html' %}
 {% endblock %}

@@ -189,7 +189,7 @@ class Entry(models.Model):
         teacher = self.teacher.user.crm.first_name
 
         if hasattr(self.lesson, 'host'):
-            return "{lesson_name} with {teacher}".format(
+            return "«{lesson_name}» with {teacher}".format(
                 lesson_name=self.lesson.name,
                 teacher=teacher,
             )
