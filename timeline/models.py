@@ -296,7 +296,6 @@ class Entry(models.Model):
         """
         self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
 
-        print('cleaning')
         auto_schedule = AutoSchedule(self.teacher, exclude_timeline_entries=[self.pk])
         auto_schedule.clean(self.start, self.end)
 
