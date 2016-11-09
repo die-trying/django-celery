@@ -23,7 +23,7 @@ from timeline.exceptions import DoesNotFitWorkingHours
 
 TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
 
-PLANNING_DELTA = datetime.timedelta(days=1)  # booking lag
+PLANNING_DELTA = datetime.timedelta(hours=18)  # booking lag
 
 
 def _planning_ofsset(start):
