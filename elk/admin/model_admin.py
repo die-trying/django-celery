@@ -9,6 +9,8 @@ from django_markdown.widgets import AdminMarkdownWidget
 from image_cropping import ImageCroppingMixin
 from suit.widgets import SuitSplitDateTimeWidget
 
+from elk.admin.widgets import ForeignKeyWidget
+
 
 class AdminHelpersMixin():
     def _email(self, email):
@@ -32,6 +34,7 @@ class ModelAdmin(ImageCroppingMixin, admin.ModelAdmin, AdminHelpersMixin):
     formfield_overrides = {
         MarkdownField: {'widget': AdminMarkdownWidget},
         models.DateTimeField: {'widget': SuitSplitDateTimeWidget},
+        models.ForeignKey: {'widget': ForeignKeyWidget},
     }
 
     class Media:
