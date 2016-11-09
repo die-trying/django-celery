@@ -226,6 +226,12 @@ class Entry(models.Model):
         if self.pk:  # if the entry has not autodeleted
             super().delete()
 
+    def has_started(self):
+        """
+        Did entry start
+        """
+        return self.start <= timezone.now()
+
     def is_overlapping(self):
         """
         Check if timeline entry overlapes other entries of the same teacher.

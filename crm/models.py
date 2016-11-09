@@ -52,7 +52,8 @@ class Customer(models.Model):
     GREETINGS = (
         ('empty', 'A user without a single class, even the trial one'),
         ('trial', "User has a single trial class and didn't schedule it yet"),
-        ('trial-scheduled', 'User has scheduled hist trial class'),
+        ('trial-scheduled', 'User has scheduled his trial class'),
+        ('trial-started', 'Users trial class has started'),
         ('out-of-classes', 'User has no classes (completed his trial, or purchased some other lessons without a subscription'),
         ('classes-without-subscription', "User has come classes, but hasn't purchase a subscription"),
         ('subscription-active', "User is in process of active subscription"),
@@ -116,7 +117,7 @@ class Customer(models.Model):
         return self.user.last_name
 
     @classmethod
-    def _greeting(cls, status):
+    def clean_greeting(cls, status):
         """
         Check if greeting status is allowed, raise ValueError otherwise
         """
@@ -128,27 +129,30 @@ class Customer(models.Model):
 
     def get_greeting_type(self):  # NOQA:C901
         """
-        Get greeting type. For available greeting types see GREETINGS defined in this clas
+        Get greeting type. For available greeting types see GREETINGS defined in this class
         """
         classes = self.classes.all()
         if not classes.count():
-            return self._greeting('empty')
+            return self.clean_greeting('empty')
 
         if self.is_trial_user():
                 if self.trial_lesson_is_scheduled():
-                    return self._greeting('trial-scheduled')
-                return self._greeting('trial')
+                    if self.trial_lesson_has_started():
+                        return self.clean_greeting('trial-started')
+
+                    return self.clean_greeting('trial-scheduled')
+                return self.clean_greeting('trial')
 
         if self.can_schedule_classes():
             if self.subscriptions.count():
                 if self.subscriptions.filter(is_fully_used=False):
-                    return self._greeting('subscription-active')
+                    return self.clean_greeting('subscription-active')
                 else:
-                    return self._greeting('subscription-finished')
+                    return self.clean_greeting('subscription-finished')
             else:
-                return self._greeting('classes-without-subscription')
+                return self.clean_greeting('classes-without-subscription')
 
-        return self._greeting('out-of-classes')
+        return self.clean_greeting('out-of-classes')
 
     def get_profile_photo(self):
         """
@@ -179,7 +183,7 @@ class Customer(models.Model):
 
     def is_trial_user(self):
         """
-        Returns true if the only lesson off this user is trial. And it is not used.
+        Returns true if the only lesson off this user is trial and it is not used.
 
         Will return True when the trial lesson is just finished, because it will be
         marked as finished after an hour. Let it be so.
@@ -202,6 +206,18 @@ class Customer(models.Model):
         c = self.classes.first()
 
         return c.is_scheduled
+
+    def trial_lesson_has_started(self):
+        """
+        Check if trial lesson has started
+        """
+
+        if not self.is_trial_user():
+            return False
+
+        c = self.classes.first()
+
+        return c.has_started()
 
     def __str__(self):
         return self.full_name

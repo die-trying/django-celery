@@ -1,8 +1,10 @@
+from unittest.mock import patch
+
 from django.core import mail
 from django.test import override_settings
 from mixer.backend.django import mixer
 
-from elk.utils.testing import TestCase, create_customer
+from elk.utils.testing import TestCase, create_customer, create_teacher
 
 
 class TestTrial(TestCase):
@@ -64,3 +66,17 @@ class TestTrial(TestCase):
         Test for method abuse, i.e. on a fresh-created customer
         """
         self.assertFalse(self.customer.trial_lesson_is_scheduled())
+
+    def test_trial_lesson_has_started(self):
+        self.assertFalse(self.customer.trial_lesson_has_started())
+
+        self.customer.add_trial_lesson()
+        self.assertFalse(self.customer.trial_lesson_has_started())
+
+        trial_class = self.customer.classes.first()
+        trial_class.timeline = mixer.blend('timeline.Entry', teacher=create_teacher())
+
+        with patch('market.models.Class.has_started') as has_started:
+            has_started.return_value = True
+            self.assertTrue(self.customer.trial_lesson_has_started())
+            self.assertEqual(has_started.call_count, 1)

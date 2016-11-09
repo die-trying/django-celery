@@ -9,11 +9,11 @@ from products.models import Product1
 
 class TestGreetingTuple(TestCase):
     def test_good_greeting(self):
-        self.assertEqual(Customer._greeting('trial'), 'trial')
+        self.assertEqual(Customer.clean_greeting('trial'), 'trial')
 
     def test_bad_greeting(self):
         with self.assertRaises(ValueError):
-            Customer._greeting('nonexistant greeting')
+            Customer.clean_greeting('nonexistant greeting')
 
 
 class TestGreetingType(TestCase):
@@ -41,6 +41,18 @@ class TestGreetingType(TestCase):
             lesson_type=self.trial_lesson.get_contenttype(),
         )
         self.assertEqual(self.customer.get_greeting_type(), 'trial-scheduled')
+
+    @patch('crm.models.Customer.trial_lesson_is_scheduled')
+    def test_greeting_trial_started(self, trial_lesson_is_scheduled):
+        trial_lesson_is_scheduled.return_value = True
+
+        self.customer.classes.create(
+            lesson_type=self.trial_lesson.get_contenttype(),
+        )
+
+        with patch('market.models.Class.has_started') as has_started:
+            has_started.return_value = True
+            self.assertEqual(self.customer.get_greeting_type(), 'trial-started')
 
     def test_greeting_trial_used(self):
         self.customer.classes.create(

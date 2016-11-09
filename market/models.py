@@ -513,3 +513,13 @@ class Class(ProductContainer):
             return False
 
         return True
+
+    def has_started(self):
+        """
+        Has the class been started
+        """
+        entry = self.timeline
+        if entry is None:
+            return False
+
+        return entry.has_started()
