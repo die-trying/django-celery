@@ -130,7 +130,7 @@ class TestClassManager(TestCase):
         dates = list(self.customer.classes.dates_for_planning())
         self.assertEquals(len(dates), 14)  # should return next two weeks
 
-        self.assertEquals(dates[0], self.tzdatetime('UTC', 2032, 12, 6, 1, 0))  # the first day should be today
+        self.assertEquals(dates[0], self.tzdatetime('UTC', 2032, 12, 5, 1, 0))  # the first day should be today
         # fill free to modify this if you've changed the booking lag
 
     @freeze_time('2032-12-05 02:00')

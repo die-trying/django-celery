@@ -17,7 +17,7 @@ class HasClassesFilter(BooleanFilter):
     def t(self, request, queryset):
         return queryset.filter(classes__isnull=False).distinct('pk')
 
-    def n(self, request, queryset):
+    def f(self, request, queryset):
         return queryset.filter(classes__isnull=True)
 
 
@@ -28,7 +28,7 @@ class HasSubscriptionsFilter(BooleanFilter):
     def t(self, request, queryset):
         return queryset.filter(subscriptions__isnull=False).distinct('pk')
 
-    def n(self, request, queryset):
+    def f(self, request, queryset):
         return queryset.filter(subscriptions__isnull=True)
 
 
