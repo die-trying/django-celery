@@ -23,55 +23,6 @@ class EntryValidationTestCase(TestCase):
 
 
 class TestOverlapValidation(EntryValidationTestCase):
-    def test_overlap(self):
-        """
-        Create two entries — one overlapping with the big_entry, and one — not
-        """
-        overlapping_entry = TimelineEntry(
-            teacher=self.teacher,
-            start=self.tzdatetime(2016, 1, 3, 4, 0),
-            end=self.tzdatetime(2016, 1, 3, 4, 30),
-        )
-        self.assertTrue(overlapping_entry.is_overlapping())
-
-        non_overlapping_entry = TimelineEntry(
-            teacher=self.teacher,
-            start=self.tzdatetime(2016, 1, 3, 12, 0),
-            end=self.tzdatetime(2016, 1, 3, 12, 30),
-        )
-        self.assertFalse(non_overlapping_entry.is_overlapping())
-
-        def test_overlapping_with_different_teacher(self):
-            """
-            Check, if it's pohuy, that an entry overlapes entry of the other teacher
-            """
-            other_teacher = create_teacher()
-            test_entry = TimelineEntry(
-                teacher=other_teacher,
-                start=self.tzdatetime(2016, 1, 3, 4, 0),
-                end=self.tzdatetime(2016, 1, 3, 4, 30),
-            )
-            self.assertFalse(test_entry.is_overlapping())
-
-        def test_two_equal_entries(self):
-            """
-            Two equal entries should overlap each other
-            """
-            first_entry = mixer.blend(
-                TimelineEntry,
-                teacher=self.teacher,
-                start=self.tzdatetime(2016, 1, 3, 4, 0),
-                end=self.tzdatetime(2016, 1, 3, 4, 30),
-            )
-            first_entry.save()
-
-            second_entry = TimelineEntry(
-                teacher=self.teacher,
-                start=self.tzdatetime(2016, 1, 3, 4, 0),
-                end=self.tzdatetime(2016, 1, 3, 4, 30),
-            )
-            self.assertTrue(second_entry.is_overlapping())
-
         def test_cant_save_due_to_overlap(self):
             """
             We should not have posibillity to save a timeline entry, that can not
@@ -82,29 +33,9 @@ class TestOverlapValidation(EntryValidationTestCase):
                 lesson=self.lesson,
                 start=self.tzdatetime(2016, 1, 3, 4, 0),
                 end=self.tzdatetime(2016, 1, 3, 4, 30),
-                allow_overlap=False,  # excplicitly say, that entry can't overlap other ones
             )
             with self.assertRaises(ValidationError):
                 overlapping_entry.clean()
-
-        def test_double_save_an_entry_that_does_not_allow_overlapping(self):
-            """
-            Create an entry that does not allow overlapping and the save it again
-            """
-            entry = TimelineEntry(
-                teacher=self.teacher,
-                lesson=self.lesson,
-                start=self.tzdatetime(2016, 1, 10, 4, 0),
-                end=self.tzdatetime(2016, 1, 10, 4, 30),
-                allow_overlap=False
-            )
-            entry.clean()
-            entry.save()
-
-            entry.start = self.tzdatetime(2016, 1, 10, 4, 1)  # change random parameter
-            entry.clean()
-            entry.save()
-            self.assertIsNotNone(entry)  # should not throw anything
 
 
 @override_settings(TIME_ZONE='UTC')
@@ -189,50 +120,6 @@ class TestTeacherPresenceValidation(EntryValidationTestCase):
             start=self.tzdatetime(2032, 5, 3, 13, 30),
             end=self.tzdatetime(2032, 5, 3, 14, 0),
         )
-
-    def test_teacher_available_true(self):
-        self.assertTrue(self.entry.teacher_is_present())
-
-    def test_teacher_available_true_becuase_of_vacation_is_for_another_teacher(self):
-        vacation = Absence(
-            type='vacation',
-            teacher=create_teacher(),  # some other teacher, not the one owning self.entry
-            start=self.tzdatetime(2032, 5, 2, 0, 0),
-            end=self.tzdatetime(2032, 2, 5, 23, 59),
-        )
-        vacation.save()
-
-        self.assertTrue(self.entry.teacher_is_present())
-
-    def test_teacher_available_false(self):
-        vacation = Absence(
-            type='vacation',
-            teacher=self.teacher,
-            start=self.tzdatetime(2032, 5, 2, 00, 00),
-            end=self.tzdatetime(2032, 5, 5, 23, 59),
-        )
-        vacation.save()
-        self.assertFalse(self.entry.teacher_is_present())
-
-    def test_teacher_available_false_due_to_vacation_starts_inside_of_period(self):
-        vacation = Absence(
-            type='vacation',
-            teacher=self.teacher,
-            start=self.tzdatetime(2032, 5, 3, 13, 45),
-            end=self.tzdatetime(2032, 5, 5, 23, 59),
-        )
-        vacation.save()
-        self.assertFalse(self.entry.teacher_is_present())
-
-    def test_teacher_available_false_due_to_vacation_ends_inside_of_period(self):
-        vacation = Absence(
-            type='vacation',
-            teacher=self.teacher,
-            start=self.tzdatetime(2032, 5, 2, 0, 0),
-            end=self.tzdatetime(2032, 5, 3, 13, 45),
-        )
-        vacation.save()
-        self.assertFalse(self.entry.teacher_is_present())
 
     def test_cant_save_due_to_teacher_absence(self):
         entry = TimelineEntry(

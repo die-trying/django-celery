@@ -131,12 +131,12 @@ class EntryTestCase(TestCase):
     def test_entry_in_past(self):
         lesson = mixer.blend(lessons.MasterClass, host=self.teacher1)
         entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson, start=self.tzdatetime(2002, 1, 2, 3, 0))
-        self.assertTrue(entry.is_in_past())
+        self.assertTrue(entry.has_finished())
 
         entry.start = self.tzdatetime(2032, 12, 1)
         entry.end = entry.start + timedelta(minutes=30)
         entry.save()
-        self.assertFalse(entry.is_in_past())
+        self.assertFalse(entry.has_finished())
 
     def test_to_be_marked_as_finished_queryset(self):
         lesson = mixer.blend(lessons.MasterClass, host=self.teacher1, duration='01:00:00')
