@@ -2,9 +2,13 @@
 {% load admin_static %}
 
 {% block extrastyle %}
+<link rel="stylesheet" href="{% static 'vendor/select2/dist/css/select2.min.css' %}">
+
 <link rel="stylesheet" href="{% static 'css/admin.css' %}?rev={{ REVISION }}">
 {% endblock %}
 
 {% block extrajs %}
+<script src="{% static 'vendor/select2/dist/js/select2.min.js' %}"></script>
+
 <script src="{% static 'js/admin.js' %}?rev={{ REVISION }}"></script>
 {% endblock %}

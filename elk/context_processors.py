@@ -25,9 +25,9 @@ def greeting(request):
     Customer = apps.get_model('crm.Customer')
 
     try:
-        greeting = Customer._greeting(greeting)
+        greeting = Customer.clean_greeting(greeting)
     except ValueError:
-        greeting = Customer._greeting('empty')
+        greeting = Customer.clean_greeting('empty')
 
     return {
         'GREETING': greeting

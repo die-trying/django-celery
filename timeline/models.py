@@ -12,7 +12,6 @@ from django.utils.translation import ugettext as _
 from accounting.models import Event as AccEvent
 from mailer.ical import Ical
 from market.auto_schedule import AutoSchedule
-from teachers.models import Absence
 from timeline.exceptions import DoesNotFitWorkingHours
 
 CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)
@@ -226,18 +225,17 @@ class Entry(models.Model):
         if self.pk:  # if the entry has not autodeleted
             super().delete()
 
-    def is_overlapping(self):
+    def has_started(self):
         """
-        Check if timeline entry overlapes other entries of the same teacher.
+        Did entry start
         """
-        if self.lesson:
-            self.__get_data_from_lesson()   # When the entry is not saved, we can run into situation when we know the lesson, but don't know the end of entry.
-        concurent_entries = Entry.objects.filter(end__gt=self.start,
-                                                 start__lt=self.end,
-                                                 teacher=self.teacher,
-                                                 ).exclude(pk=self.pk)
+        return self.start <= timezone.now()
 
-        if concurent_entries.count():
+    def has_finished(self):
+        """
+        Check, if timeline entry is in past
+        """
+        if self.end < (timezone.now() + CLASS_IS_FINISHED_AFTER):
             return True
         return False
 
@@ -258,23 +256,6 @@ class Entry(models.Model):
             return False
 
         return True
-
-    def teacher_is_present(self):
-        """
-        Check if teacher has no vacations for the entry period
-        """
-        if Absence.objects.approved().filter(teacher=self.teacher, start__lt=self.end, end__gt=self.start):
-            return False
-
-        return True
-
-    def is_in_past(self):
-        """
-        Check, if timeline entry is in past
-        """
-        if self.end < (timezone.now() + CLASS_IS_FINISHED_AFTER):
-            return True
-        return False
 
     def as_ical(self, for_whom='customer'):
         if for_whom == 'customer':
