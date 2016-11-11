@@ -1,9 +1,9 @@
 import json
 from datetime import datetime, timedelta
-from unittest.mock import patch
 
 from django.contrib.contenttypes.models import ContentType
 from django.test import override_settings
+from freezegun import freeze_time
 from mixer.backend.django import mixer
 
 from elk.utils.testing import ClientTestCase, create_teacher
@@ -13,6 +13,7 @@ from teachers.models import WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
+@freeze_time('2032-05-01 12:30')
 class SchdulingPopupSlotsTestCase(ClientTestCase):
     """
     Simple test suit for testing JSON api, required for scheduling
@@ -80,12 +81,10 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
         self.assertEquals(records[0]['host'], self.first_teacher.user.crm.full_name)
         self.assertEquals(records[1]['host'], self.second_teacher.user.crm.full_name)
 
-    @patch('teachers.models.timezone.now')
-    def test_filter_by_lesson_type_timezone(self, now):
+    def test_filter_by_lesson_type_timezone(self):
         """
         Create 24 master classes and make sure they are accessible in the same timezone
         """
-        now.return_value = self.tzdatetime(2032, 5, 1)
         master_class = mixer.blend(lessons.MasterClass, host=self.first_teacher)
         start = self.tzdatetime('Europe/Moscow', 2032, 5, 3, 0, 0)
         for i in range(0, 24):
