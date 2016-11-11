@@ -3,6 +3,9 @@ Tiny fixture helper to generate `mixer<https://github.com/klen/mixer>`_-based
 fixtures with correct relations.
 
 Every new call returnes a new fixture.
+
+
+TODO: move create_* functions to separate factory class
 """
 import random
 from datetime import datetime

@@ -167,40 +167,21 @@ class TestTeacherManager(TestCase):
         """
         Find a teacher that can work for distinct date without a specific event
         """
-        free_teachers = Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 3))
+        free_teachers = list(Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 3)))
         self.assertEquals(free_teachers[0], self.teacher)
 
-        free_teachers = Teacher.objects.find_free(date=self.tzdatetime(2017, 7, 20))
+        free_teachers = list(Teacher.objects.find_free(date=self.tzdatetime(2017, 7, 20)))
         self.assertEquals(len(free_teachers), 0)  # no one works on wednesdays
 
     def test_get_teachers_by_lesson_type(self):
         """
-        Add two timeline entries for two teachers and find their slots by
-        lesson_type
+        Test that TeacherManager.find_free() ignores teachers that can't host this lesson types.
         """
-        second_teacher = create_teacher()
-        first_master_class = mixer.blend(lessons.MasterClass, host=self.teacher)
-        second_master_class = mixer.blend(lessons.MasterClass, host=second_teacher)
+        create_teacher(accepts_all_lessons=False, works_24x7=True)  # create teacher that cant host ordinary lessons
+        lesson_type = lessons.OrdinaryLesson.get_contenttype().pk
+        free_treachers = list(Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 3), lesson_type=lesson_type))
 
-        first_entry = TimelineEntry(teacher=self.teacher,
-                                    lesson=first_master_class,
-                                    start=self.tzdatetime(2032, 5, 3, 14, 10),
-                                    end=self.tzdatetime(2032, 5, 3, 14, 40)
-                                    )
-        first_entry.save()
-
-        second_entry = TimelineEntry(teacher=second_teacher,
-                                     lesson=second_master_class,
-                                     start=self.tzdatetime(2032, 5, 3, 14, 10),
-                                     end=self.tzdatetime(2032, 5, 3, 14, 40)
-                                     )
-        second_entry.save()
-        lesson_type = ContentType.objects.get_for_model(first_master_class)
-        free_teachers = Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 3), lesson_type=lesson_type.pk)
-        self.assertEquals(len(free_teachers), 2)
-
-        free_teachers = Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 5), lesson_type=lesson_type.pk)
-        self.assertEquals(len(free_teachers), 0)  # there is no master classes. planned on 2032-05-05
+        self.assertEqual(len(free_treachers), 1)  # because only one teacher can host ordinary lessons
 
     def test_get_teachers_by_lesson(self):
         """
@@ -213,12 +194,12 @@ class TestTeacherManager(TestCase):
                                     end=self.tzdatetime(2032, 5, 3, 14, 40)
                                     )
         first_entry.save()
-        free_teachers = Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 3), lesson_id=first_master_class.pk)
+        free_teachers = list(Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 3), lesson_id=first_master_class.pk))
         self.assertEquals(len(free_teachers), 1)
 
     def test_get_teachers_by_lesson_that_does_not_require_a_timeline_entry(self):
         ordinary_lesson_type = lessons.OrdinaryLesson.get_contenttype()
-        teachers = Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 3), lesson_type=ordinary_lesson_type.pk)
+        teachers = list(Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 3), lesson_type=ordinary_lesson_type.pk))
         self.assertEquals(len(teachers), 1)
         print(teachers[0].free_slots)
         self.assertEquals(len(teachers[0].free_slots), 4)  # should find all timeline entries because ordinary lesson does not require a timeline entry

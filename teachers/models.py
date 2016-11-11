@@ -46,12 +46,18 @@ def _planning_ofsset(start):
 
 class TeacherManager(models.Manager):
     def with_photos(self):
-        return super().get_queryset() \
+        """
+        Active teachers that can be shown because they have foto
+        """
+        return self.get_queryset() \
             .filter(active=1) \
             .exclude(teacher_photo='') \
             .exclude(teacher_photo__isnull=True)
 
-    def find_free(self, date, **kwargs):
+    def by_lesson_type(self, lesson_type):
+        return self.get_queryset().filter(allowed_lessons=lesson_type)
+
+    def find_free(self, date, lesson_type=None, **kwargs):
         """
         Find teachers, that can host a specific event or work with no assigned
         events (by working hours). Accepts kwargs for filtering output of
@@ -60,13 +66,15 @@ class TeacherManager(models.Manager):
         Returns an iterable of teachers with assigned attribute free_slots — 
         iterable of available slots as datetime.
         """
-        teachers = []
-        for teacher in self.with_photos().filter(active=1):
+        queryset = self.with_photos()
+        if lesson_type is not None:
+            queryset = queryset.filter(allowed_lessons=lesson_type)
+
+        for teacher in queryset:
             free_slots = teacher.find_free_slots(date, **kwargs)
             if free_slots:
                 teacher.free_slots = free_slots
-                teachers.append(teacher)
-        return teachers
+                yield teacher
 
     def find_lessons(self, date, **kwargs):
         """
@@ -276,11 +284,11 @@ class Teacher(models.Model):
             return
 
         try:
-            Lesson_model = ContentType.objects.get(pk=lesson_type).model_class()
+            Lesson = ContentType.objects.get(pk=lesson_type).model_class()
         except ContentType.DoesNotExist:
             return
 
-        if not Lesson_model.timeline_entry_required():
+        if not Lesson.timeline_entry_required():
             del kwargs['lesson_type']
 
 
@@ -334,7 +342,7 @@ class WorkingHours(models.Model):
         return False
 
     def __str__(self):
-        return '%s: day %d %s—%s' % (self.teacher.user.username, self.weekday, self.start, self.end)
+        return 'Working hours of %s for day %d' % (self.teacher, self.weekday)
 
     class Meta:
         unique_together = ('teacher', 'weekday')
