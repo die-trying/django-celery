@@ -7,9 +7,6 @@ from market.models import Class, Subscription
 class ProductContainerAdmin(ModelAdmin):
     ordering = ['-buy_date']
 
-    def get_queryset(self, request):
-        return super().get_queryset(request).filter(active=1)
-
     def purchase_date(self, instance):
         return self._datetime(instance.buy_date)
 

@@ -65,14 +65,14 @@ class BuySubscriptionTestCase(TestCase):
         )
         s.save()
 
-        for lesson in s.classes.all():
-            self.assertEqual(lesson.active, 1)
+        for c in s.classes.all():
+            self.assertFalse(c.is_fully_used)
 
         # now, disable the subscription for any reason
-        s.active = 0
+        s.deactivate()
         s.save()
-        for lesson in s.classes.all():
-            self.assertEqual(lesson.active, 0, 'Every lesson in subscription should become inactive now')
+        for c in s.classes.all():
+            self.assertTrue(c.is_fully_used, 'Every class in subscription should become inactive now')
 
     def test_mark_as_fully_used(self):
         """

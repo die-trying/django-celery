@@ -18,9 +18,6 @@ MARK_CLASSES_AS_USED_AFTER = timedelta(hours=1)
 
 
 class ProductContainerManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(active=1)
-
     def active(self):
         return self.get_queryset() \
             .filter(is_fully_used=False) \
@@ -31,15 +28,10 @@ class ProductContainer(models.Model):
     """
     Base class for product container — object, that represents a customer perchase
     """
-    ENABLED = (
-        (0, 'Inactive'),
-        (1, 'Active'),
-    )
 
     buy_date = models.DateTimeField(auto_now_add=True)
     buy_price = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
     is_fully_used = models.BooleanField(default=False, db_index=True)
-    active = models.SmallIntegerField(choices=ENABLED, default=1, db_index=True)
 
     @abstractproperty
     def name_for_user(self):
@@ -49,8 +41,13 @@ class ProductContainer(models.Model):
         """
         Disable deletion for any buyable thing
         """
-        self.active = 0
-        self.save()
+        self.deactivate()
+
+    def deactivate(self):
+        """
+        Make self inactive, used instead of deletion
+        """
+        self.mark_as_fully_used()
 
     def mark_as_fully_used(self):
         """
@@ -71,11 +68,6 @@ class ProductContainer(models.Model):
         ordering = ('buy_date',)
 
 
-class SubscriptionManager(ProductContainerManager):
-    use_for_related_fields = True
-    pass
-
-
 class Subscription(ProductContainer):
     """
     Represents a single purchased subscription.
@@ -86,7 +78,7 @@ class Subscription(ProductContainer):
 
     The property is accessed later in the history.signals module.
     """
-    objects = SubscriptionManager()
+    objects = ProductContainerManager()
     customer = models.ForeignKey('crm.Customer', related_name='subscriptions', db_index=True)
 
     product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'products'})
@@ -104,9 +96,6 @@ class Subscription(ProductContainer):
         is_new = True
         if self.pk:
             is_new = False
-
-        if not is_new:  # check, if we should enable\disable lessons
-            self.__update_classes()
 
         super().save(*args, **kwargs)
 
@@ -131,16 +120,13 @@ class Subscription(ProductContainer):
                     c.request = self.request  # bypass request object for later analysis
                 c.save()
 
-    def __update_classes(self):
+    def deactivate(self):
         """
         When the subscription is disabled for any reasons, all lessons
         assosciated to it, should be disabled too.
         """
-        orig = Subscription.objects.get(pk=self.pk)
-        if orig.active != self.active:
-            for lesson in self.classes.all():
-                lesson.active = self.active
-                lesson.save()
+        for c in self.classes.filter(is_fully_used=False):
+            c.deactivate()
 
     def check_is_fully_finished(self):
         """

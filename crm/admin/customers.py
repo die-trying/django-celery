@@ -69,7 +69,7 @@ def export_to_mailchimp(modeladmin, request, queryset):
 
 
 @admin.register(Customer)
-class ExistingCustomerAdmin(ModelAdmin):
+class CustomerAdmin(ModelAdmin):
     """
     The admin module for manager current customers without managing users
     """
@@ -127,15 +127,13 @@ class ExistingCustomerAdmin(ModelAdmin):
         return '%d/%d' % (finished, total)
 
     def subscriptions(self, instance):
-        if not instance.classes.count():
-            return '—'
+        subscriptions = instance.subscriptions
 
-        total = instance.subscriptions.count()
-
+        total = subscriptions.count()
         if not total:
             return '—'
 
-        finished = instance.subscriptions.filter(is_fully_used=True).count()
+        finished = subscriptions.filter(is_fully_used=True).count() + subscriptions.filter(active=0).count()
         return '%d/%d' % (finished, total)
 
     def save_formset(self, request, form, formset, change):

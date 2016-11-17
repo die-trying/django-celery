@@ -42,7 +42,7 @@ class testBuyable(TestCase):
             buy_price=150
         )
         s.save()
-        self.assertEqual(s.active, 1)
+        self.assertFalse(s.is_fully_used)
         s.delete()
-        with self.assertRaises(Subscription.DoesNotExist):
-            s.refresh_from_db()
+        s.refresh_from_db()
+        self.assertTrue(s.is_fully_used)

@@ -71,15 +71,15 @@ class TestScheduleLowLevel(TestCase):
     def test_deletion_of_an_unscheduled_class(self):
         """
         Deletion of an unscheduled class should be like any other
-        :model:`market.Buyable`.
+        :model:`market.ProductContainer`.
         """
         c = self._buy_a_lesson()
         unschedule = MagicMock(return_value=True)
         c.unschedule = unschedule
 
         c.delete()
-        with self.assertRaises(Class.DoesNotExist):
-            c.refresh_from_db()
+        c.refresh_from_db()
+        self.assertTrue(c.is_fully_used)
 
         unschedule.assert_not_called()
 
