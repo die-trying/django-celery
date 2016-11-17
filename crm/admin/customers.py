@@ -133,7 +133,7 @@ class CustomerAdmin(ModelAdmin):
         if not total:
             return '—'
 
-        finished = subscriptions.filter(is_fully_used=True).count() + subscriptions.filter(active=0).count()
+        finished = subscriptions.filter(is_fully_used=True).count()
         return '%d/%d' % (finished, total)
 
     def save_formset(self, request, form, formset, change):
