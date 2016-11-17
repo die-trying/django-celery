@@ -1,9 +1,8 @@
 from django import forms
-from django.contrib import admin
 from django.contrib.admin.helpers import ActionForm
-from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
 
+from elk.logging import write_admin_log_entry
 from manual_class_logging.signals import class_marked_as_used, class_renewed
 from teachers.models import Teacher
 
@@ -18,18 +17,6 @@ class MarkAsUsedForm(ActionForm):
     Form for actions that is required to make following actions working
     """
     teacher = forms.ChoiceField(initial=-1, choices=Teacher.objects.can_finish_classes)
-
-
-def write_log_entry(request, object, action_flag=admin.models.CHANGE, change_message='Changed'):
-    entry = admin.models.LogEntry(
-        user=request.user,
-        object_id=object.pk,
-        content_type=ContentType.objects.get_for_model(object),  # move it away from this function if you experience problems
-        object_repr=str(object),
-        action_flag=action_flag,
-        change_message=change_message,
-    )
-    entry.save()
 
 
 def mark_as_used(modeladmin, request, queryset):
@@ -47,10 +34,10 @@ def mark_as_used(modeladmin, request, queryset):
     for c in queryset.all():
         if not c.is_fully_used:
             c.mark_as_fully_used()
-            write_log_entry(
-                request=request,
+            write_admin_log_entry(
+                user=request.user,
                 object=c,
-                change_message='Marked as used',
+                msg='Marked as used',
             )
             class_marked_as_used.send(sender=mark_as_used, instance=c, teacher=teacher)
 
@@ -70,9 +57,9 @@ def renew(modeladmin, request, queryset):
     for c in queryset.all():
         if c.is_fully_used:
             c.renew()
-            write_log_entry(
-                request=request,
+            write_admin_log_entry(
+                user=request.user,
                 object=c,
-                change_message='Renewed',
+                msg='Renewed',
             )
             class_renewed.send(sender=renew, instance=c, teacher=teacher)
