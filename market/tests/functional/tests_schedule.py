@@ -118,7 +118,7 @@ class ScheduleTestCase(TestCase):
     def test_cancellation_email(self):
         lesson = products.OrdinaryLesson.get_default()
         c = self._buy_a_lesson(lesson)
-        with patch('market.models.class_scheduled') as scheduled_signal:
+        with patch('market.models.signals.class_scheduled') as scheduled_signal:
             scheduled_signal.send = MagicMock()
             c.schedule(
                 teacher=self.host,

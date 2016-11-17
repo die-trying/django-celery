@@ -1,10 +1,25 @@
 from django.dispatch import Signal, receiver
 
+from elk.logging import write_admin_log_entry
 from mailer.owl import Owl
 
 
 class_scheduled = Signal(providing_args=['instance'])  # class is just scheduled
 class_cancelled = Signal(providing_args=['instance', 'src'])  # class is just cancelled
+subscription_deactivated = Signal(providing_args=['user', 'instance'])
+
+
+@receiver(subscription_deactivated, dispatch_uid='write_log_entry')
+def write_log_entry_about_subscription_deactivation(sender, **kwargs):
+    if kwargs['user'] is not None:
+        """
+        Anonymous user meens that someone has called :model:`market.Subscription`
+        deactivate() method without a refernce to user.
+
+        In most cases this is emitted by :model:`market.Subscription` delete(),
+        method called from django-admin, so we can safely ignore it.
+        """
+        write_admin_log_entry(kwargs['user'], kwargs['instance'], msg='Subscription deactivated')
 
 
 @receiver(class_scheduled, dispatch_uid='notify_student_class_scheduled')

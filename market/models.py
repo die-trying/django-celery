@@ -10,8 +10,7 @@ from django.utils import timezone
 from djmoney.models.fields import MoneyField
 
 from elk.logging import logger
-from market.exceptions import CannotBeScheduled
-from market.signals import class_cancelled, class_scheduled
+from market import exceptions, signals
 from teachers.models import PLANNING_DELTA
 
 MARK_CLASSES_AS_USED_AFTER = timedelta(hours=1)
@@ -120,13 +119,14 @@ class Subscription(ProductContainer):
                     c.request = self.request  # bypass request object for later analysis
                 c.save()
 
-    def deactivate(self):
+    def deactivate(self, user=None):
         """
         When the subscription is disabled for any reasons, all lessons
         assosciated to it, should be disabled too.
         """
         for c in self.classes.filter(is_fully_used=False):
             c.deactivate()
+        signals.subscription_deactivated.send(sender=self.__class__, user=user, instance=self)
 
     def check_is_fully_finished(self):
         """
@@ -375,7 +375,7 @@ class Class(ProductContainer):
 
         """ If the class was scheduled for the first time — send a signal """
         if not was_scheduled:
-            class_scheduled.send(sender=self.__class__, instance=self)
+            signals.class_scheduled.send(sender=self.__class__, instance=self)
 
         """ Nullify customer cancellation_streak """
         # self.customer.cancellation_streak = 0
@@ -424,7 +424,7 @@ class Class(ProductContainer):
         Assign a timeline entry.
         """
         if not self.can_be_scheduled(entry):
-            raise CannotBeScheduled('%s %s' % (self, entry))
+            raise exceptions.CannotBeScheduled('%s %s' % (self, entry))
         self.timeline = entry
         self.timeline.clean()
 
@@ -436,7 +436,7 @@ class Class(ProductContainer):
         Lesson = self.lesson_type.model_class()
 
         if Lesson.timeline_entry_required():  # every lesson model should define if it requires a timeline entry or not. For details, see :model:`lessons.Lesson`
-            raise CannotBeScheduled("Lesson '%s' requieres a teachers timeline entry" % self.lesson_type)
+            raise exceptions.CannotBeScheduled("Lesson '%s' requieres a teachers timeline entry" % self.lesson_type)
 
         entry = self.__get_entry(**kwargs)
         self.assign_entry(entry)
@@ -474,7 +474,7 @@ class Class(ProductContainer):
         if src != 'dangerous-cancellation' and (self.timeline.start + MARK_CLASSES_AS_USED_AFTER) < timezone.now():  # teachers can cancel classes even after they started
             raise ValidationError('Past classes cannot be cancelled')
 
-        class_cancelled.send(sender=self.__class__, instance=self, src=src)
+        signals.class_cancelled.send(sender=self.__class__, instance=self, src=src)
 
         entry = self.timeline
         entry.classes.remove(self, bulk=True)  # expcitly disable running of self.save()

@@ -1,13 +1,42 @@
 from unittest.mock import MagicMock
 
-from elk.utils.testing import TestCase, create_customer, create_teacher
+from django.contrib.admin.models import LogEntry
+
+from elk.utils.testing import TestCase, create_customer, create_teacher, create_user
 from lessons import models as lessons
 from market import signals
-from market.models import Class
+from market.models import Class, Subscription
+from products.models import Product1
+
+
+class TestSubscriptionSignals(TestCase):
+    fixtures = ('lessons', 'products')
+
+    def setUp(self):
+        self.customer = create_customer()
+        self.subscription = Subscription(
+            customer=self.customer,
+            product=Product1.objects.get(pk=1),
+            buy_price=150,
+        )
+        self.deactivator = create_user()
+
+    def test_deactivation_signal_is_beeing_sent(self):
+        handler = MagicMock()
+        signals.subscription_deactivated.connect(handler)
+        self.subscription.deactivate()
+        self.assertEqual(handler.call_count, 1)
+
+    def test_log_entry_creation(self):
+        self.subscription.deactivate(user=self.deactivator)
+
+        log_entry = LogEntry.objects.first()
+        self.assertEqual(log_entry.user, self.deactivator)
+        self.assertIn('deactivated', log_entry.change_message)
 
 
 class TestClassSignals(TestCase):
-    fixtures = ('lessons',)
+    fixtures = ['lessons']
 
     def setUp(self):
         self.customer = create_customer()
@@ -33,7 +62,7 @@ class TestClassSignals(TestCase):
         self.assertTrue(c.is_scheduled)
         return c
 
-    def test_scheduled_signal(self):
+    def test_scheduled_signal_is_beeing_sent(self):
         handler = MagicMock()
         c = self._buy_a_lesson()
         signals.class_scheduled.connect(handler)
@@ -52,7 +81,7 @@ class TestClassSignals(TestCase):
 
         self.assertEqual(handler.call_count, 1)  # signal should be saved only once
 
-    def test_cancellation_signal(self):
+    def test_cancellation_signal_is_beeing_sent(self):
         c = self._buy_a_lesson()
         self._schedule(c)
         handler = MagicMock()
