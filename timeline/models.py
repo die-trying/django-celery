@@ -262,6 +262,9 @@ class Entry(models.Model):
     def clean(self):
         self.__get_data_from_lesson()  # update some data (i.e. available slots) from an assigned lesson
 
+        if self.taken_slots >= 1:  # there is no need to validate timeline entries when they have students
+            return
+
         auto_schedule = AutoSchedule(self.teacher, exclude_timeline_entries=[self.pk])
         auto_schedule.clean(self.start, self.end)
 

@@ -37,6 +37,20 @@ class TestOverlapValidation(TestCase):
         with self.assertRaises(AutoScheduleExpcetion):  # should conflict with self.big_entry
             overlapping_entry.clean()
 
+    def test_no_validation_when_more_then_one_student_has_signed(self):
+        """
+        There is no need to validate a timeline entry when it has students
+        """
+        overlapping_entry = TimelineEntry(
+            teacher=self.teacher,
+            lesson=self.lesson,
+            start=self.tzdatetime(2016, 1, 3, 4, 0),
+            end=self.tzdatetime(2016, 1, 3, 4, 30),
+            taken_slots=1,
+        )
+        overlapping_entry.clean()  # should not throw anything
+        self.assertTrue(True)
+
     def test_working_hours(self):
         mixer.blend(WorkingHours, teacher=self.teacher, start='12:00', end='13:00', weekday=0)
         entry_besides_hours = TimelineEntry(
