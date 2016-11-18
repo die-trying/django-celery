@@ -19,7 +19,7 @@ class TeacherSerializer(serializers.HyperlinkedModelSerializer):
         return obj.user.crm.full_name
 
     def get_profile_photo(self, obj):
-        return obj.user.crm.get_profile_photo()
+        return obj.get_teacher_avatar()
 
     def get_teacher_photo(self, obj):
         return obj.get_teacher_photo()

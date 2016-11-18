@@ -147,6 +147,7 @@ class Teacher(models.Model):
 
     teacher_photo = models.ImageField(upload_to='teachers/', null=True, blank=True)
     teacher_photo_cropping = ImageRatioField('teacher_photo', '500x500')
+    teacher_avatar_cropping = ImageRatioField('teacher_photo', '80x80')
 
     description = MarkdownField()
     announce = models.TextField(max_length=140)
@@ -178,6 +179,13 @@ class Teacher(models.Model):
         """
         if self.teacher_photo:
             return cropped_thumbnail(context={}, instance=self, ratiofieldname='teacher_photo_cropping')
+
+    def get_teacher_avatar(self):
+        """
+        Get, if exists, small teacher photo
+        """
+        if self.teacher_photo:
+            return cropped_thumbnail(context={}, instance=self, ratiofieldname='teacher_avatar_cropping')
 
     def find_free_slots(self, date, period=datetime.timedelta(minutes=30), **kwargs):
         """
