@@ -34,20 +34,6 @@ class EntryTestCase(TestCase):
         entry.refresh_from_db()
         self.assertIn(customer.full_name, str(entry))
 
-    def test_default_scope(self):
-        active_lesson = mixer.blend(lessons.OrdinaryLesson, name='Active_lesson')
-        inactive_lesson = mixer.blend(lessons.OrdinaryLesson, name='Inactive_lesson')
-
-        active_entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=active_lesson, active=1)
-        inactive_entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=inactive_lesson, active=0)
-
-        active_pk = active_entry.pk
-        inactive_pk = inactive_entry.pk
-
-        entries = TimelineEntry.objects.all().values_list('id', flat=True)
-        self.assertIn(active_pk, entries)
-        self.assertNotIn(inactive_pk, entries)
-
     def test_availabe_slot_count(self):
         event = mixer.blend(lessons.MasterClass, slots=10, host=self.teacher1)
         entry = mixer.blend(TimelineEntry, lesson=event, teacher=self.teacher1)
