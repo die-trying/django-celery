@@ -1,18 +1,24 @@
-from django.core.exceptions import ValidationError
 from django.test import override_settings
+from freezegun import freeze_time
 from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_teacher
 from extevents.models import ExternalEvent
 from lessons import models as lessons
+from market.exceptions import AutoScheduleExpcetion
 from teachers.models import Absence, WorkingHours
+from timeline.exceptions import DoesNotFitWorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
-class EntryValidationTestCase(TestCase):
+@override_settings(TIME_ZONE='UTC')
+@freeze_time('2005-02-12 12:22')
+class TestOverlapValidation(TestCase):
+    fixtures = ['lessons']
+
     def setUp(self):
         self.teacher = create_teacher()
-        self.lesson = mixer.blend(lessons.OrdinaryLesson, teacher=self.teacher)
+        self.lesson = lessons.OrdinaryLesson.get_default()
 
         self.big_entry = mixer.blend(
             TimelineEntry,
@@ -21,25 +27,16 @@ class EntryValidationTestCase(TestCase):
             end=self.tzdatetime(2016, 1, 3, 12, 0),
         )
 
+    def test_cant_save_due_to_overlap(self):
+        overlapping_entry = TimelineEntry(
+            teacher=self.teacher,
+            lesson=self.lesson,
+            start=self.tzdatetime(2016, 1, 3, 4, 0),
+            end=self.tzdatetime(2016, 1, 3, 4, 30),
+        )
+        with self.assertRaises(AutoScheduleExpcetion):  # should conflict with self.big_entry
+            overlapping_entry.clean()
 
-class TestOverlapValidation(EntryValidationTestCase):
-        def test_cant_save_due_to_overlap(self):
-            """
-            We should not have posibillity to save a timeline entry, that can not
-            be created
-            """
-            overlapping_entry = TimelineEntry(
-                teacher=self.teacher,
-                lesson=self.lesson,
-                start=self.tzdatetime(2016, 1, 3, 4, 0),
-                end=self.tzdatetime(2016, 1, 3, 4, 30),
-            )
-            with self.assertRaises(ValidationError):
-                overlapping_entry.clean()
-
-
-@override_settings(TIME_ZONE='UTC')
-class TestWorkingHoursValiation(EntryValidationTestCase):
     def test_working_hours(self):
         mixer.blend(WorkingHours, teacher=self.teacher, start='12:00', end='13:00', weekday=0)
         entry_besides_hours = TimelineEntry(
@@ -103,23 +100,8 @@ class TestWorkingHoursValiation(EntryValidationTestCase):
             end=self.tzdatetime(2032, 5, 3, 14, 0),
             allow_besides_working_hours=False
         )
-        with self.assertRaises(ValidationError, msg='Entry does not fit teachers working hours'):
+        with self.assertRaises(DoesNotFitWorkingHours, msg='Entry does not fit teachers working hours'):
             entry.clean()
-
-        mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
-        entry.save()
-        self.assertIsNotNone(entry.pk)  # should be saved now
-
-
-class TestTeacherPresenceValidation(EntryValidationTestCase):
-    def setUp(self):
-        super().setUp()
-        self.entry = TimelineEntry(
-            teacher=self.teacher,
-            lesson=self.lesson,
-            start=self.tzdatetime(2032, 5, 3, 13, 30),
-            end=self.tzdatetime(2032, 5, 3, 14, 0),
-        )
 
     def test_cant_save_due_to_teacher_absence(self):
         entry = TimelineEntry(
@@ -135,19 +117,8 @@ class TestTeacherPresenceValidation(EntryValidationTestCase):
             end=self.tzdatetime(2016, 5, 5, 23, 59),
         )
         vacation.save()
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(AutoScheduleExpcetion):
             entry.clean()
-
-
-class TestExternalEventValidation(EntryValidationTestCase):
-    def setUp(self):
-        super().setUp()
-        self.entry = TimelineEntry(
-            teacher=self.teacher,
-            lesson=self.lesson,
-            start=self.tzdatetime(2032, 5, 3, 13, 30),
-            end=self.tzdatetime(2032, 5, 3, 14, 00),
-        )
 
     def test_cant_save_due_to_teacher_has_events(self):
         entry = TimelineEntry(
@@ -162,5 +133,5 @@ class TestExternalEventValidation(EntryValidationTestCase):
             start=self.tzdatetime(2016, 5, 2, 00, 00),
             end=self.tzdatetime(2016, 5, 5, 23, 59),
         )
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(AutoScheduleExpcetion):
             entry.clean()

@@ -127,6 +127,18 @@ class TestAutoschedule(TestCase):
         s = AutoSchedule(self.teacher, exclude_timeline_entries=[entry.pk])
         self.assertEqual(len(s.busy_periods['other_entries']['src']), 0)
 
+    @freeze_time('2032-12-05 13:30')
+    def test_timeline_entry_exclusion_does_is_not_breaking_down_without_pk(self):
+        """
+        In my django there is a difference between exclude(pk__in=[]) and exclude(pk__in=[None])
+        The latter breaks the whole query.
+        """
+        start = self.tzdatetime(2032, 12, 5, 14, 0)
+        mixer.blend('timeline.Entry', teacher=self.teacher, start=start, end=start + timedelta(minutes=30))
+
+        s = AutoSchedule(self.teacher, exclude_timeline_entries=[None])
+        self.assertEqual(len(s.busy_periods['other_entries']['src']), 1)
+
     def test_slots(self):
         s = AutoSchedule(self.teacher)
 
