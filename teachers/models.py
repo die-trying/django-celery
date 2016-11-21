@@ -11,7 +11,6 @@ from django.db import models
 from django.utils import timezone
 from django.utils.dateformat import format
 from django.utils.translation import ugettext_lazy as _
-from django_markdown.models import MarkdownField
 from image_cropping import ImageRatioField
 from image_cropping.templatetags.cropping import cropped_thumbnail
 
@@ -149,7 +148,6 @@ class Teacher(models.Model):
     teacher_photo_cropping = ImageRatioField('teacher_photo', '500x500')
     teacher_avatar_cropping = ImageRatioField('teacher_photo', '80x80')
 
-    description = MarkdownField()
     announce = models.TextField(max_length=140)
     active = models.IntegerField(default=1, choices=ENABLED)
 

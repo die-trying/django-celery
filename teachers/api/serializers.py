@@ -12,7 +12,7 @@ class TeacherSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Teacher
-        fields = ('id', 'name', 'announce', 'description', 'profile_photo', 'teacher_photo')
+        fields = ('id', 'name', 'announce', 'profile_photo', 'teacher_photo')
         depth = 2
 
     def get_name(self, obj):
