@@ -104,7 +104,6 @@ class AutoSchedule():
         if start < timezone.now() or end < timezone.now():
             raise EntryIsInPast('Entry is in past!')
 
-        print(self.busy_periods)
         for period_type, busy_period in self.busy_periods.items():
             if not self.test(period_type, start, end):
                 raise busy_period['exception']('Autoschedule validation error: %s' % period_type)
