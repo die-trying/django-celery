@@ -17,21 +17,10 @@ class IsFinishedFilter(BooleanFilter):
         return queryset.filter(is_fully_used=False)
 
 
-class IsActiveFilter(BooleanFilter):
-    title = 'Is active'
-    parameter_name = 'is_active'
-
-    def t(self, request, queryset):
-        return queryset.filter(active=1)
-
-    def f(self, request, queryset):
-        return queryset.filter(active=0)
-
-
 @admin.register(Subscription)
 class SubscriptionAdmin(ProductContainerAdmin):
     list_display = ('customer', '__str__', 'lesson_usage', 'planned_lessons', 'purchase_date',)
-    list_filter = (IsActiveFilter, ('buy_date', DateRangeFilter), IsFinishedFilter)
+    list_filter = (IsFinishedFilter, ('buy_date', DateRangeFilter))
     readonly_fields = ('lesson_usage', 'purchase_date', 'planned_lessons')
     inlines = (ClassesLeftInline, ClassesPassedInline)
     search_fields = ('customer__user__first_name', 'customer__user__last_name')
