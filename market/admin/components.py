@@ -1,7 +1,19 @@
 from django.utils import timezone
 
 from elk.admin import ModelAdmin, TabularInline
+from elk.admin.filters import BooleanFilter
 from market.models import Class, Subscription
+
+
+class IsFinishedFilter(BooleanFilter):
+    title = 'Is fully used'
+    parameter_name = 'is_fully_used'
+
+    def t(self, request, queryset):
+        return queryset.filter(is_fully_used=True)
+
+    def f(self, request, queryset):
+        return queryset.filter(is_fully_used=False)
 
 
 class ProductContainerAdmin(ModelAdmin):
