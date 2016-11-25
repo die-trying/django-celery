@@ -7,12 +7,13 @@ from teachers.models import Teacher
 
 class TeacherSerializer(serializers.HyperlinkedModelSerializer):
     name = serializers.SerializerMethodField()
+    title = serializers.SerializerMethodField()
     profile_photo = serializers.SerializerMethodField()
     teacher_photo = serializers.SerializerMethodField()
 
     class Meta:
         model = Teacher
-        fields = ('id', 'name', 'announce', 'profile_photo', 'teacher_photo')
+        fields = ('id', 'name', 'title', 'announce', 'profile_photo', 'teacher_photo')
         depth = 2
 
     def get_name(self, obj):
@@ -23,6 +24,9 @@ class TeacherSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_teacher_photo(self, obj):
         return obj.get_teacher_photo()
+
+    def get_title(self, obj):
+        return obj.get_title()
 
 
 class TimeSlotSerializer(serializers.BaseSerializer):

@@ -13,7 +13,7 @@ class Model extends MicroEvent
     @timout = 1
 
   class Record
-    constructor: (@name, @photo, @author, @description) ->
+    constructor: (@name, @photo, @author, @title, @description) ->
       @slots = []
 
   from_json: () ->
@@ -35,6 +35,7 @@ class Model extends MicroEvent
             name = event.name
             photo = event.profile_photo
             author = if event.host? then event.host
+            title = if event.title? then event.title
             description = event.announce
           )
           for time in event.slots

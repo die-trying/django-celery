@@ -35,7 +35,9 @@
                         <img class="img-circle schedule-popup__record-photo" rv-unless="record.photo" src="{% static 'no-photo.jpg' %}">
                     </div>
                     <div class="col-md-5 record">
-                        <h5 class="schedule-popup__record-name" rv-text="record.name"></h5> <p rv-if="record.author" rv-text="record.author" class="text-muted schedule-popup__record-author"></p>
+                        <h5 class="schedule-popup__record-name" rv-text="record.name"></h5>
+                        <p rv-if="record.author" rv-text="record.author" class="text-muted schedule-popup__record-author"></p>
+                        <p rv-if="record.title" rv-text="record.title" class="text-muted schedule-popup__record-author"></p>
                         <p rv-html="record.description"></p>
                     </div>
                     <div class="col-md-6 slots">

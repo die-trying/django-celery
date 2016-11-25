@@ -1,3 +1,6 @@
+[*]
+    indent_size = 4
+    indent_style = space
 [*.coffee]
     indent_size = 2
 [*.yaml]

@@ -148,6 +148,7 @@ class Teacher(models.Model):
     teacher_photo_cropping = ImageRatioField('teacher_photo', '500x500')
     teacher_avatar_cropping = ImageRatioField('teacher_photo', '80x80')
 
+    title = models.TextField(max_length=32, blank=True)
     announce = models.TextField(max_length=140)
     active = models.IntegerField(default=1, choices=ENABLED)
 
@@ -184,6 +185,12 @@ class Teacher(models.Model):
         """
         if self.teacher_photo:
             return cropped_thumbnail(context={}, instance=self, ratiofieldname='teacher_avatar_cropping')
+
+    def get_title(self):
+        """
+        Get teacher title, currently — the value of the :model:`teachers.Teacher`.title property.
+        """
+        return self.title
 
     def find_free_slots(self, date, period=datetime.timedelta(minutes=30), **kwargs):
         """
