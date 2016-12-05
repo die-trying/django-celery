@@ -190,16 +190,16 @@ class LessonWithNative(Lesson):
 
 
 class MasterClass(HostedLesson):
-    _long_name = _('ELK Master class')
-    _long_name_plural = _('ELK Master classes')
+    _long_name = _('Round table')
+    _long_name_plural = _('Round table')
 
     @classmethod
     def sort_order(cls):
         return 400
 
     class Meta(HostedLesson.Meta):
-        verbose_name = _("Master Class")
-        verbose_name_plural = _("Master Classes")
+        verbose_name = _("Round table")
+        verbose_name_plural = _("Round table")
 
 
 class HappyHour(HostedLesson):

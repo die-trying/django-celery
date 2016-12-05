@@ -117,7 +117,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         )
         self.assertFalse(response['result'])
         self.assertEquals(response['error'], 'E_CLASS_NOT_FOUND')
-        self.assertIn('master class', response['text'])
+        self.assertIn('round table', response['text'])
 
     def test_schedule_by_type_no_slot(self):
         """

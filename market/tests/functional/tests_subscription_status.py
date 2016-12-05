@@ -41,7 +41,7 @@ class TestSubscriptionStatus(TestCase):
         self.assertEqual(ordinary_lessons_status['available'], 5)  # fill free to modify it when you've changed the subscription
 
         master_class_status = status[4]
-        self.assertIn('Master Class', master_class_status['name'])
+        self.assertIn('Round table', master_class_status['name'])
         self.assertEqual(master_class_status['used'], 0)
         self.assertEqual(master_class_status['available'], 1)
 

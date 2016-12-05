@@ -61,7 +61,6 @@ class TestCustomerLessonList(ClassIntegrationTestCase):
         entry.slots = 5
         entry.save()
 
-        print(entry.start)
         c = self._buy_a_lesson()
         self._schedule(c, entry)
 
@@ -73,5 +72,5 @@ class TestCustomerLessonList(ClassIntegrationTestCase):
 
         with self.assertHTML(response, '.customer-lessons td') as lesson_param:
             self.assertIn('2032', lesson_param[0].text.strip())
-            self.assertIn('Master class', lesson_param[1].text.strip())
+            self.assertIn('Round table', lesson_param[1].text.strip())
             self.assertEqual(lesson_param[2].text.strip(), self.host.user.crm.full_name)
