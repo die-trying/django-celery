@@ -32,5 +32,5 @@ createdb $DB
 finish
 
 start "Copying prodution database"
-ssh -C elk pg_dump -U dashboard --no-owner |psql -U elk -f - >/dev/null
+ssh -C dashboard pg_dump -U dashboard --no-owner |psql -U elk -f - >/dev/null
 finish
