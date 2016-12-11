@@ -92,6 +92,8 @@ class CustomerAdmin(ModelAdmin):
     )
     actions = [export_to_mailchimp, copmpleted_classes_list]
     action_form = CustomerActionForm
+    actions_on_top = False
+    actions_on_bottom = True
     readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions', 'corporate')
     search_fields = ('user__first_name', 'user__last_name', 'user__email')
     inlines = (CustomerNotesInline, SubscriptionsInline, ClassesLeftInline, ClassesPassedInline)
