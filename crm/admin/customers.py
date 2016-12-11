@@ -3,6 +3,7 @@ from django.shortcuts import redirect
 from django.utils.html import format_html
 from django.utils.translation import ugettext as _
 
+from crm.admin.forms import CustomerActionForm
 from crm.models import Customer, CustomerNote
 from elk.admin import ModelAdmin, StackedInline
 from elk.admin.filters import BooleanFilter
@@ -68,6 +69,13 @@ def export_to_mailchimp(modeladmin, request, queryset):
     return redirect('crm:mailchimp_csv', ids=','.join(selected))
 
 
+def copmpleted_classes_list(modeladmin, request, queryset):
+    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    start = request.POST.get('start')
+    end = request.POST.get('end')
+    return redirect('crm:export_last_lessons', customers=','.join(selected), start=start, end=end)
+
+
 @admin.register(Customer)
 class CustomerAdmin(ModelAdmin):
     """
@@ -82,7 +90,8 @@ class CustomerAdmin(ModelAdmin):
         HasClassesFilter,
         HasSubscriptionsFilter
     )
-    actions = [export_to_mailchimp]
+    actions = [export_to_mailchimp, copmpleted_classes_list]
+    action_form = CustomerActionForm
     readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions', 'corporate')
     search_fields = ('user__first_name', 'user__last_name', 'user__email')
     inlines = (CustomerNotesInline, SubscriptionsInline, ClassesLeftInline, ClassesPassedInline)

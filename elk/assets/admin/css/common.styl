@@ -16,3 +16,15 @@ a.skype
         transition: color .5s
         transition: border-color .5s
         transition: background-color .5s
+
+.actions
+    .datetimeshortcuts // hide the annoying 'today' link in action forms that use SuitDateWidget for date input
+        margin-left: 5px
+        a:first-of-type
+            display: none
+
+        a
+            padding: 5px 5px !important
+
+    .vDateField.input-small
+        width: 105px !important

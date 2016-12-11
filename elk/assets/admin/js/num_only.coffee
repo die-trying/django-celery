@@ -1,3 +1,6 @@
+# Simple plugin to allow input only of numbers.
+# Take a look at the last line — it's the usage example.
+
 $.fn.numonly = () ->
 
   blink = ($el) ->  # blink with error
