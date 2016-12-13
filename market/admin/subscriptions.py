@@ -7,7 +7,7 @@ from market.models import Subscription
 
 @admin.register(Subscription)
 class SubscriptionAdmin(ProductContainerAdmin):
-    list_display = ('customer', '__str__', 'lesson_usage', 'planned_lessons', 'purchase_date',)
+    list_display = ('customer', '__str__', 'lesson_usage', 'planned_lessons', 'purchase_date', 'not_due')
     list_filter = (IsFinishedFilter, ('buy_date', DateRangeFilter))
     readonly_fields = ('lesson_usage', 'purchase_date', 'planned_lessons')
     inlines = (ClassesLeftInline, ClassesPassedInline)
@@ -35,3 +35,8 @@ class SubscriptionAdmin(ProductContainerAdmin):
             return '—'
         else:
             return scheduled
+
+    def not_due(self, instance):
+        return not instance.is_due()  # it's better displayed when reverse
+
+    not_due.boolean = True

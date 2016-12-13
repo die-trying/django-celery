@@ -175,6 +175,14 @@ class Subscription(ProductContainer):
             return False
         return True
 
+    def is_due(self):
+        """
+        Returns true if subscription is due
+        """
+        if self.buy_date + self.duration <= timezone.now():
+            return True
+        return False
+
 
 class ClassesManager(ProductContainerManager):
     """
@@ -185,7 +193,7 @@ class ClassesManager(ProductContainerManager):
         """
         Return nearest scheduled class
         """
-        date = self.__now()
+        date = timezone.now()
         if 'date' in kwargs:
             date = kwargs['date']
             del kwargs['date']
@@ -211,11 +219,11 @@ class ClassesManager(ProductContainerManager):
 
         Delta is a python datetime.timedelta.
         """
-        print(self.__now() + delta)
+        print(timezone.now() + delta)
 
         return self.get_queryset() \
             .filter(is_scheduled=True) \
-            .filter(timeline__start__range=(self.__now(), self.__now() + delta))
+            .filter(timeline__start__range=(timezone.now(), timezone.now() + delta))
 
     def purchased_lesson_types(self):
         """
@@ -269,9 +277,6 @@ class ClassesManager(ProductContainerManager):
 
     def scheduled(self):
         return self.get_queryset().filter(is_fully_used=False, is_scheduled=True)
-
-    def __now(self):
-        return timezone.now()
 
 
 class Class(ProductContainer):
