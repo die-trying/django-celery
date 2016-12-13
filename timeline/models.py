@@ -25,15 +25,12 @@ class EntryManager(models.Manager):
         """
         return self.get_queryset() \
             .filter(is_finished=False) \
-            .filter(end__lte=self.__now() - CLASS_IS_FINISHED_AFTER)
+            .filter(end__lte=timezone.now() - CLASS_IS_FINISHED_AFTER)
 
     def by_lesson(self, lesson):
         return self.get_queryset() \
             .filter(lesson_id=lesson.id) \
             .filter(lesson_type=lesson.get_contenttype())
-
-    def __now(self):
-        return timezone.now()
 
 
 class Entry(models.Model):

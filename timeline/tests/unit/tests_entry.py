@@ -128,20 +128,20 @@ class EntryTestCase(TestCase):
         lesson = mixer.blend(lessons.MasterClass, host=self.teacher1, duration='01:00:00')
         mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson, start=self.tzdatetime(2016, 12, 15, 15, 14))
 
-        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=self.tzdatetime(2016, 12, 15, 17, 15))
-        self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 1)
+        with freeze_time('2016-12-20 17:15'):
+            self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 1)
 
-        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=self.tzdatetime(2016, 12, 15, 17, 13))
-        self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 0)  # two minutes in past this entry shoud not be marked as finished
+        with freeze_time('2016-12-15 15:13'):
+            self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 0)  # two minutes in past this entry shoud not be marked as finished
 
     def test_dont_automaticaly_mark_finished_entries_as_finished_one_more_time(self):
         lesson = mixer.blend(lessons.MasterClass, host=self.teacher1, duration='01:00:00')
         entry = mixer.blend(TimelineEntry, teacher=self.teacher1, lesson=lesson, start=self.tzdatetime(2016, 12, 15, 15, 14))
 
-        TimelineEntry.objects._EntryManager__now = MagicMock(return_value=self.tzdatetime(2016, 12, 15, 17, 15))
-        entry.is_finished = True
-        entry.save()
-        self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 0)
+        with freeze_time('2016-12-15 17:15'):
+            entry.is_finished = True
+            entry.save()
+            self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 0)
 
 
 class TestEntryTitle(ClassIntegrationTestCase):
