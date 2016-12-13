@@ -45,6 +45,7 @@ ipaddress==1.0.14
 ipython==4.2.0
 ipython-genutils==0.1.0
 isort==4.2.5
+jedi==0.9.0
 kombu==3.0.35
 lxml==3.6.0
 Markdown==2.6.6
