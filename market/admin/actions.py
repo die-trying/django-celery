@@ -1,7 +1,7 @@
 from django import forms
-from django.contrib.admin.helpers import ActionForm
 from django.shortcuts import get_object_or_404
 
+from elk.admin.forms import ActionFormWithParams
 from elk.logging import write_admin_log_entry
 from manual_class_logging.signals import class_marked_as_used, class_renewed
 from teachers.models import Teacher
@@ -12,7 +12,7 @@ Method to mark purcased classes and subscriptions as used
 """
 
 
-class MarkAsUsedForm(ActionForm):
+class MarkAsUsedForm(ActionFormWithParams):
     """
     Form for actions that is required to make following actions working
     """
