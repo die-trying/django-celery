@@ -84,6 +84,8 @@ class Subscription(ProductContainer):
     product_id = models.PositiveIntegerField(default=1)  # flex scope — always add the first product
     product = GenericForeignKey('product_type', 'product_id')
 
+    duration = models.DurationField(editable=False)  # every subscription cares a duration field, taken from its product
+
     def __str__(self):
         return self.name_for_user
 
@@ -95,6 +97,9 @@ class Subscription(ProductContainer):
         is_new = True
         if self.pk:
             is_new = False
+
+        if is_new:  # all new subscription should take their duration from the product
+            self.__store_duration()
 
         super().save(*args, **kwargs)
 
@@ -118,6 +123,12 @@ class Subscription(ProductContainer):
                 if hasattr(self, 'request'):
                     c.request = self.request  # bypass request object for later analysis
                 c.save()
+
+    def __store_duration(self):
+        """
+        Take duration from the product
+        """
+        self.duration = self.product.duration
 
     def deactivate(self, user=None):
         """
