@@ -6,6 +6,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import F
 from django.utils import timezone
 from djmoney.models.fields import MoneyField
 
@@ -67,6 +68,19 @@ class ProductContainer(models.Model):
         ordering = ('buy_date',)
 
 
+class SubscriptionManager(ProductContainerManager):
+    def due(self):
+        """
+        Find subscriptions that are due, e.g. purchased earlier, than now - their duration
+
+        Please don't forget to update admin method IsDueFilter, copy-pasted from this queryset, sorry
+        """
+        return self.get_queryset().filter(
+            is_fully_used=False,
+            buy_date__lte=timezone.now() - F('duration')
+        )
+
+
 class Subscription(ProductContainer):
     """
     Represents a single purchased subscription.
@@ -77,12 +91,14 @@ class Subscription(ProductContainer):
 
     The property is accessed later in the history.signals module.
     """
-    objects = ProductContainerManager()
+    objects = SubscriptionManager()
     customer = models.ForeignKey('crm.Customer', related_name='subscriptions', db_index=True)
 
     product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'products'})
     product_id = models.PositiveIntegerField(default=1)  # flex scope — always add the first product
     product = GenericForeignKey('product_type', 'product_id')
+
+    duration = models.DurationField(editable=False)  # every subscription cares a duration field, taken from its product
 
     def __str__(self):
         return self.name_for_user
@@ -95,6 +111,9 @@ class Subscription(ProductContainer):
         is_new = True
         if self.pk:
             is_new = False
+
+        if is_new:  # all new subscription should take their duration from the product
+            self.__store_duration()
 
         super().save(*args, **kwargs)
 
@@ -118,6 +137,12 @@ class Subscription(ProductContainer):
                 if hasattr(self, 'request'):
                     c.request = self.request  # bypass request object for later analysis
                 c.save()
+
+    def __store_duration(self):
+        """
+        Take duration from the product
+        """
+        self.duration = self.product.duration
 
     def deactivate(self, user=None):
         """
@@ -164,6 +189,14 @@ class Subscription(ProductContainer):
             return False
         return True
 
+    def is_due(self):
+        """
+        Returns true if subscription is due
+        """
+        if self.buy_date + self.duration <= timezone.now():
+            return True
+        return False
+
 
 class ClassesManager(ProductContainerManager):
     """
@@ -174,7 +207,7 @@ class ClassesManager(ProductContainerManager):
         """
         Return nearest scheduled class
         """
-        date = self.__now()
+        date = timezone.now()
         if 'date' in kwargs:
             date = kwargs['date']
             del kwargs['date']
@@ -200,11 +233,11 @@ class ClassesManager(ProductContainerManager):
 
         Delta is a python datetime.timedelta.
         """
-        print(self.__now() + delta)
+        print(timezone.now() + delta)
 
         return self.get_queryset() \
             .filter(is_scheduled=True) \
-            .filter(timeline__start__range=(self.__now(), self.__now() + delta))
+            .filter(timeline__start__range=(timezone.now(), timezone.now() + delta))
 
     def purchased_lesson_types(self):
         """
@@ -258,9 +291,6 @@ class ClassesManager(ProductContainerManager):
 
     def scheduled(self):
         return self.get_queryset().filter(is_fully_used=False, is_scheduled=True)
-
-    def __now(self):
-        return timezone.now()
 
 
 class Class(ProductContainer):

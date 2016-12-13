@@ -1,0 +1,21 @@
+{
+	"folders":
+	[
+		{
+			"file_exclude_patterns":
+			[
+				".*",
+				"manage.py"
+			],
+			"folder_exclude_patterns":
+			[
+				".deploy",
+				"build",
+				"static",
+				"media",
+				"geolite"
+			],
+			"path": "."
+		}
+	]
+}

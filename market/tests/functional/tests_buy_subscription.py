@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from elk.utils.testing import TestCase, create_customer
 from market.models import Class, Subscription
 from products import models as products
@@ -55,6 +57,23 @@ class BuySubscriptionTestCase(TestCase):
 
         for c in s.classes.all():
             self.assertEqual(c.buy_source, 'subscription')
+
+    def test_subbscription_stores_duration(self):
+        """
+        Every new subscription should take its duration from the purchaed product
+        """
+        product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
+        product.duration = timedelta(days=221)
+        product.save()
+
+        s = Subscription(
+            customer=self.customer,
+            product=product,
+            buy_price=150
+        )
+        s.save()
+
+        self.assertEqual(s.duration, timedelta(days=221))
 
     def test_disabling_subscription(self):
         product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)

@@ -11,16 +11,18 @@ from market import models
 from products import models as products
 
 
+@freeze_time('2032-11-01')
 class TestClassManager(TestCase):
     fixtures = ('lessons', 'products')
     TEST_PRODUCT_ID = 1
 
     def setUp(self):
         self.customer = create_customer()
-        product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
+        self.product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
+        self.product.duration = timedelta(days=5)
         self.subscription = models.Subscription(
             customer=self.customer,
-            product=product,
+            product=self.product,
             buy_price=150,
         )
         self.subscription.save()
@@ -52,8 +54,8 @@ class TestClassManager(TestCase):
         self.assertEqual(c1, c)
 
     def test_nearest_scheduled_ordering(self):
-        c2 = self._schedule(date=self.tzdatetime(2020, 12, 1, 11, 30))
-        self._schedule(date=self.tzdatetime(2032, 12, 1, 11, 30))
+        c2 = self._schedule(date=self.tzdatetime(2032, 12, 1, 11, 30))
+        self._schedule(date=self.tzdatetime(2032, 12, 5, 11, 30))
 
         c_found = self.customer.classes.nearest_scheduled()
         self.assertEquals(c_found, c2)
@@ -79,9 +81,9 @@ class TestClassManager(TestCase):
         """
         Test if clases.nearest_scheduled() does not return classes in the past
         """
-        self._schedule(date=self.tzdatetime(2020, 12, 1, 11, 30))
-        c2 = self._schedule(date=self.tzdatetime(2032, 12, 1, 11, 30))
-        c_found = self.customer.classes.nearest_scheduled(date=self.tzdatetime(2025, 12, 1, 11, 30))  # 5 years later, then the fist sccheduled class
+        self._schedule(date=self.tzdatetime(2032, 12, 1, 11, 30))
+        c2 = self._schedule(date=self.tzdatetime(2032, 12, 5, 11, 30))
+        c_found = self.customer.classes.nearest_scheduled(date=self.tzdatetime(2032, 12, 3, 11, 30))  # 2 days later, then the fist sccheduled class
         self.assertEquals(c_found, c2)
 
     def test_available_lesson_types(self):
@@ -161,3 +163,9 @@ class TestClassManager(TestCase):
 
         self.assertFalse(c.is_fully_used)
         self.assertIsNone(c.timeline)
+
+    def test_due_queryset(self):
+        self.assertEqual(models.Subscription.objects.due().count(), 0)
+
+        with freeze_time('2032-12-20'):
+            self.assertEqual(models.Subscription.objects.due().count(), 1)

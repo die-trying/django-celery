@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
 
+from freezegun import freeze_time
 from mixer.backend.django import mixer
 
 from accounting.models import Event as AccEvent
@@ -19,26 +20,20 @@ class TestBillTimelineEntries(TestCase):
             is_finished=False,
         )
 
-    @patch('timeline.models.EntryManager._EntryManager__now')
-    def test_timeline_entry_marking(self, now):
-        now.return_value = self.tzdatetime(2032, 5, 11)
+    @freeze_time('2032-05-11')
+    def test_timeline_entry_marking(self):
         bill_timeline_entries()
         self.entry.refresh_from_db()
 
         self.assertTrue(self.entry.is_finished)
 
-    @patch('timeline.models.EntryManager._EntryManager__now')
-    def test_event_creation(self, now):
-        now.return_value = self.tzdatetime(2032, 5, 11)
-
+    @freeze_time('2032-05-11')
+    def test_event_creation(self):
         self.assertEqual(AccEvent.objects.count(), 0)
         bill_timeline_entries()
         self.assertEqual(AccEvent.objects.count(), 1)
 
-    @patch('timeline.models.EntryManager._EntryManager__now')
-    def test_bypass_already_billed_originators(self, now):
-        now.return_value = self.tzdatetime(2032, 5, 11)
-
+    def test_bypass_already_billed_originators(self):
         bill_timeline_entries()
 
         self.entry.is_finished = False
@@ -49,13 +44,11 @@ class TestBillTimelineEntries(TestCase):
         ev = AccEvent.objects.all()[0]
         self.assertEqual(ev.event_type, 'class')
 
-    @patch('timeline.models.EntryManager._EntryManager__now')
-    def test_warn_logging(self, now):
+    @freeze_time('2032-05-11')
+    def test_warn_logging(self):
         """
         Try to double-bill the same timeline entry
         """
-        now.return_value = self.tzdatetime(2032, 5, 11)
-
         with patch('timeline.models.Entry._Entry__self_delete_if_needed') as self_delete:  # disable self-deletion (the entry is in past here!)
             self_delete.return_value = False
 
