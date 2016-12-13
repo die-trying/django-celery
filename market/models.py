@@ -6,6 +6,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import F
 from django.utils import timezone
 from djmoney.models.fields import MoneyField
 
@@ -67,6 +68,19 @@ class ProductContainer(models.Model):
         ordering = ('buy_date',)
 
 
+class SubscriptionManager(ProductContainerManager):
+    def due(self):
+        """
+        Find subscriptions that are due, e.g. purchased earlier, than now - their duration
+
+        Please don't forget to update admin method IsDueFilter, copy-pasted from this queryset, sorry
+        """
+        return self.get_queryset().filter(
+            is_fully_used=False,
+            buy_date__lte=timezone.now() - F('duration')
+        )
+
+
 class Subscription(ProductContainer):
     """
     Represents a single purchased subscription.
@@ -77,7 +91,7 @@ class Subscription(ProductContainer):
 
     The property is accessed later in the history.signals module.
     """
-    objects = ProductContainerManager()
+    objects = SubscriptionManager()
     customer = models.ForeignKey('crm.Customer', related_name='subscriptions', db_index=True)
 
     product_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'products'})

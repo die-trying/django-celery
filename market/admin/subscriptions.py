@@ -1,14 +1,28 @@
 from date_range_filter import DateRangeFilter
 from django.contrib import admin
+from django.db.models import F
+from django.utils import timezone
 
+from elk.admin.filters import BooleanFilter
 from market.admin.components import ClassesLeftInline, ClassesPassedInline, IsFinishedFilter, ProductContainerAdmin
 from market.models import Subscription
+
+
+class IsDueFilter(BooleanFilter):
+    title = 'Is due'
+    parameter_name = 'is_due'
+
+    def t(self, request, queryset):
+        return queryset.filter(buy_date__lte=timezone.now() - F('duration'))
+
+    def f(self, request, queryset):
+        return queryset.filter(buy_date__gt=timezone.now() - F('duration'))
 
 
 @admin.register(Subscription)
 class SubscriptionAdmin(ProductContainerAdmin):
     list_display = ('customer', '__str__', 'lesson_usage', 'planned_lessons', 'purchase_date', 'not_due')
-    list_filter = (IsFinishedFilter, ('buy_date', DateRangeFilter))
+    list_filter = (IsFinishedFilter, IsDueFilter, ('buy_date', DateRangeFilter))
     readonly_fields = ('lesson_usage', 'purchase_date', 'planned_lessons')
     inlines = (ClassesLeftInline, ClassesPassedInline)
     search_fields = ('customer__user__first_name', 'customer__user__last_name')
