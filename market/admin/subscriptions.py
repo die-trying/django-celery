@@ -4,6 +4,7 @@ from django.db.models import F
 from django.utils import timezone
 
 from elk.admin.filters import BooleanFilter
+from market.admin.actions import export_emails
 from market.admin.components import ClassesLeftInline, ClassesPassedInline, IsFinishedFilter, ProductContainerAdmin
 from market.models import Subscription
 
@@ -26,6 +27,9 @@ class SubscriptionAdmin(ProductContainerAdmin):
     readonly_fields = ('lesson_usage', 'purchase_date', 'planned_lessons')
     inlines = (ClassesLeftInline, ClassesPassedInline)
     search_fields = ('customer__user__first_name', 'customer__user__last_name')
+    actions = [export_emails]
+    actions_on_top = False
+    actions_on_bottom = True
     fieldsets = (
         (None, {
             'fields': ('purchase_date', 'lesson_usage', 'customer', 'buy_price', 'product_type',)

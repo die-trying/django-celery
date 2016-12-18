@@ -1,5 +1,6 @@
 from django import forms
-from django.shortcuts import get_object_or_404
+from django.contrib import admin
+from django.shortcuts import get_object_or_404, redirect
 
 from elk.admin.forms import ActionFormWithParams
 from elk.logging import write_admin_log_entry
@@ -63,3 +64,13 @@ def renew(modeladmin, request, queryset):
                 msg='Renewed',
             )
             class_renewed.send(sender=renew, instance=c, teacher=teacher)
+
+
+def export_emails(modeladmin, request, queryset):
+    """
+    Export emails of customers for selected subscriptions
+    """
+    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    customers = [str(customer) for customer in queryset.filter(pk__in=selected).values_list('customer__pk', flat=True)]
+
+    return redirect('crm:mailchimp_csv', ids=','.join(customers))
