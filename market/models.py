@@ -10,7 +10,6 @@ from django.db.models import F
 from django.utils import timezone
 from djmoney.models.fields import MoneyField
 
-from elk.logging import logger
 from market import exceptions, signals
 from teachers.models import PLANNING_DELTA
 
