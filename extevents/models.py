@@ -41,7 +41,7 @@ class ExternalEvent(models.Model):
 
     start = models.DateTimeField()
     end = models.DateTimeField()
-    description = models.CharField(max_length=140)
+    description = models.TextField()
     last_update = models.DateTimeField(auto_now=True)
 
 
