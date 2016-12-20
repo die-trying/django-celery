@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 from django.template import Context, Template
 
 import elk.templatetags.custom_humanize as humanize
+from elk.templatetags import flash_message
 from elk.utils.testing import TestCase, create_customer
 
 
@@ -20,6 +21,20 @@ class TestSimpleTags(TestCase):
         html = tpl.render(Context({}))
         self.assertIn('Good!', html)
         self.assertIn('alert-info', html)
+
+    def test_flash_message_tag_translation(self):
+        """
+        Check for  mapping django alert levels to bootstrap ones
+        """
+        flash_message.DJANGO_BOOTSTRAP_ALERT_LEVEL_MAPPING = {
+            'one': 'two',
+            'three': 'four',
+        }
+
+        tags = 'bypass one three one1'
+        translated_tags = flash_message.map_django_alert_level_to_bootstrap(tags)
+
+        self.assertEqual(translated_tags, 'alert-bypass alert-two alert-four alert-one1')
 
 
 class TestSkypeLink(TestCase):
