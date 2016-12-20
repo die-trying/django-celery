@@ -72,7 +72,7 @@ python-social-auth==0.2.19
 python3-openid==3.0.10
 pytz==2015.7
 PyYAML==3.11
-raven==5.27.1
+raven==5.32.0
 redis==2.10.5
 requests==2.11.1
 requests-oauthlib==0.6.1
