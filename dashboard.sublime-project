@@ -4,8 +4,11 @@
 		{
 			"file_exclude_patterns":
 			[
-				".*",
-				"manage.py"
+                ".*",
+                "manage.py",
+                "celerybeat-*",
+                "coffeelint.json",
+                "dashboard.sublime-*"
 			],
 			"folder_exclude_patterns":
 			[
