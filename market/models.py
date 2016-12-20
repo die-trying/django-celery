@@ -344,19 +344,6 @@ class Class(ProductContainer):
     def name_for_user(self):
         return self.lesson_type.model_class().long_name()
 
-    @property
-    def finish_time(self):
-        if not self.is_fully_used:
-            return None
-
-        if self.timeline is not None:
-            return self.timeline.start
-
-        if self.manualy_completed_classes.first() is not None:
-            return self.manualy_completed_classes.first().timestamp
-
-        logger.warning('Tried to check finished class without a finished date')
-
     def save(self, *args, **kwargs):
         if self.timeline is None:
             return self._save_unscheduled(*args, **kwargs)

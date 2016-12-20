@@ -22,7 +22,7 @@ class ClassAdmin(ProductContainerAdmin):
     verbose_name = 'Class'
     verbose_name_plural = 'Purchased lessons'
     model = Class
-    list_display = ('lesson_type', 'customer', 'available', 'purchase_date', 'finish_date')
+    list_display = ('lesson_type', 'customer', 'available', 'purchase_date')
     list_filter = (BuySubscriptionFilter, IsFinishedFilter)
     search_fields = ('customer__user__first_name', 'customer__user__last_name')
     actions = [mark_as_used, renew]
@@ -31,16 +31,10 @@ class ClassAdmin(ProductContainerAdmin):
     actions_on_bottom = True
     fieldsets = (
         (None, {
-            'fields': ('customer', 'buy_price', 'lesson_type', 'finish_date', 'teacher')
+            'fields': ('customer', 'buy_price', 'lesson_type', 'teacher')
         }),
     )
     list_select_related = True
-
-    def finish_date(self, instance):
-        if instance.finish_time:
-            return self._datetime(instance.finish_time)
-        else:
-            return '—'
 
     def teacher(self, instance):
         if not self.available(instance):
