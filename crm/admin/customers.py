@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.shortcuts import redirect
+from django.shortcuts import redirect, resolve_url
 from django.utils.html import format_html
 from django.utils.translation import ugettext as _
 
@@ -81,25 +81,52 @@ class CustomerAdmin(ModelAdmin):
     """
     The admin module for manager current customers without managing users
     """
-    list_display = ('full_name', 'country', 'Languages', 'curator', 'classes', 'subscriptions', '_skype', 'date_arrived')
-    list_filter = (
+    list_display = [
+        'full_name',
+        'country',
+        'Languages',
+        'curator',
+        'classes',
+        'subscriptions',
+        '_skype',
+        'date_arrived'
+    ]
+    list_filter = [
         CountryFilter,
         ('curator', admin.RelatedOnlyFieldListFilter),
         ('company', admin.RelatedOnlyFieldListFilter),
         ('languages', admin.RelatedOnlyFieldListFilter),
         HasClassesFilter,
         HasSubscriptionsFilter
-    )
+    ]
     actions = [export_to_mailchimp, copmpleted_classes_list]
     action_form = CustomerActionForm
     actions_on_top = False
     actions_on_bottom = True
-    readonly_fields = ('__str__', 'email', 'student', 'user', 'arrived', 'classes', 'subscriptions', 'corporate')
+    readonly_fields = [
+        '__str__',
+        'email',
+        'student',
+        'user',
+        'arrived',
+        'classes',
+        'subscriptions',
+        'corporate',
+        'associated_account'
+    ]
     search_fields = ('user__first_name', 'user__last_name', 'user__email')
     inlines = (CustomerNotesInline, SubscriptionsInline, ClassesLeftInline, ClassesPassedInline)
     fieldsets = (
         (None, {
-            'fields': ('student', 'email', 'arrived', 'classes', 'subscriptions', 'corporate')
+            'fields': (
+                'student',
+                'email',
+                'arrived',
+                'associated_account',
+                'classes',
+                'subscriptions',
+                'corporate'
+            )
         }),
         ('Attribution', {
             'fields': ('curator', 'company', 'languages'),
@@ -179,6 +206,15 @@ class CustomerAdmin(ModelAdmin):
 
     def student(self, instance):
         return "%s (%s)" % (instance.__str__(), instance.user.username)
+
+    def associated_account(self, instance):
+        """
+        A link to user details page
+        """
+        return format_html('<a class="foreign-key-link" href="{link}">{username}</a>'.format(
+            link=resolve_url('admin:auth_user_change', instance.user.pk),
+            username=str(instance.user)
+        ))
 
     def has_add_permission(self, request):
         return False

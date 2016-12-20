@@ -60,7 +60,7 @@ class Customer(models.Model):
         ('subscription-finished', "user's subscription has finished, but he has some non-subscription-lessons"),
     )
 
-    user = models.OneToOneField(User, on_delete=models.PROTECT, null=True, blank=True, related_name='crm')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, related_name='crm')
 
     curator = models.ForeignKey('teachers.Teacher', on_delete=models.SET_NULL, null=True, blank=True, related_name='patronized_customers')
     company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True, related_name='customers')
