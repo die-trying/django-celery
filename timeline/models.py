@@ -20,7 +20,7 @@ CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)
 class EntryManager(models.Manager):
     def to_be_marked_as_finished(self):
         """
-        Queryset for entries, that are unfinished, and should be automaticaly
+        Queryset for entries, non-finished timeline entries that should be
         marked as finished.
         """
         return self.get_queryset() \
@@ -31,6 +31,20 @@ class EntryManager(models.Manager):
         return self.get_queryset() \
             .filter(lesson_id=lesson.id) \
             .filter(lesson_type=lesson.get_contenttype())
+
+    def lessons_starting_soon(self, lesson_types):
+        """
+        Lessons that are starting soon, filtered by lesson_types
+        """
+        entries = self.get_queryset() \
+            .filter(lesson_type__in=lesson_types) \
+            .filter(start__gte=timezone.now()) \
+            .filter(taken_slots__lt=models.F('slots')) \
+            .distinct('lesson_type', 'lesson_id')
+
+        for entry in entries:
+            if entry.lesson.get_photo() is not None:
+                yield entry.lesson
 
 
 class Entry(models.Model):
