@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
+from elk.logging import logger
 from elk.views import LoginRequiredTemplateView
 from lessons.api.serializers import factory as lesson_serializer_factory
 from market.sortinghat import SortingHat
@@ -86,6 +87,7 @@ def step2(request, teacher, type_id, date, time):
         })
 
     if not hat.result:
+        logger.warning('Step 2 scheduling error')  # write a log entry to Sentry for future processing
         raise Http404('%s: %s' % (hat.err, hat.msg))
 
     hat.c.save()  # save a hat-generated class
