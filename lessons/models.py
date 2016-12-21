@@ -5,6 +5,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django_markdown.models import MarkdownField
+from image_cropping import ImageRatioField
+from image_cropping.templatetags.cropping import cropped_thumbnail
 
 
 class Language(models.Model):
@@ -127,7 +129,11 @@ class HostedLesson(Lesson):
     Abstract class for generic lesson, that requires a host, i.e. Master class
     or ELK Happy hour
     """
+
     host = models.ForeignKey('teachers.Teacher', related_name='+', null=True)
+
+    photo = models.ImageField(upload_to='lessons/', null=True, blank=True)
+    photo_cropping = ImageRatioField('photo', '500x500')
 
     @classmethod
     def timeline_entry_required(cls):
@@ -149,6 +155,13 @@ class HostedLesson(Lesson):
 
             else:
                 super().save(*args, **kwargs)
+
+    def get_photo(self):
+        """
+        Get lesson photo
+        """
+        if self.photo:
+            return cropped_thumbnail(context={}, instance=self, ratiofieldname='photo_cropping')
 
     class Meta:
         abstract = True
