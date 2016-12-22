@@ -33,9 +33,12 @@ class EntryManager(models.Manager):
             .filter(lesson_id=lesson.id) \
             .filter(lesson_type=lesson.get_contenttype())
 
-    def lessons_starting_soon(self, lesson_types):
+    def hosted_lessons_starting_soon(self, lesson_types):
         """
-        Lessons that are starting soon, filtered by lesson_types
+        Lessons that are starting soon, filtered by lesson_types.
+
+        Assuming no one will search for non-hosted lessons (all of them are already scheduled one-on-one),
+        returns only lessons that have a host.
         """
         entries = self.get_queryset() \
             .filter(lesson_type__in=lesson_types) \
@@ -45,7 +48,8 @@ class EntryManager(models.Manager):
 
         for entry in entries:
             if entry.lesson.get_photo() is not None:
-                yield entry.lesson
+                if entry.lesson.host is not None:
+                    yield entry.lesson
 
     def timeslots_by_lesson(self, lesson, start, end):
         """

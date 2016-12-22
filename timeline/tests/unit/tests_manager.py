@@ -23,17 +23,17 @@ class TestLessonsStartingSoon(TestCase):
         )
 
     def test_starting_soon_for_lesson_type_none(self):
-        starting_soon = TimelineEntry.objects.lessons_starting_soon(lesson_types=[lessons.PairedLesson.get_contenttype()])
+        starting_soon = TimelineEntry.objects.hosted_lessons_starting_soon(lesson_types=[lessons.PairedLesson.get_contenttype()])
         starting_soon = list(starting_soon)
         self.assertEqual(len(starting_soon), 0)
 
     def test_starting_soon_for_lesson_type_1(self):
-        starting_soon = TimelineEntry.objects.lessons_starting_soon(lesson_types=[lessons.MasterClass.get_contenttype()])
+        starting_soon = TimelineEntry.objects.hosted_lessons_starting_soon(lesson_types=[lessons.MasterClass.get_contenttype()])
         starting_soon = list(starting_soon)
         self.assertEqual(len(starting_soon), 1)
 
     def test_starting_soon_returns_lesosns(self):
-        starting_soon = TimelineEntry.objects.lessons_starting_soon(lesson_types=[lessons.MasterClass.get_contenttype()])
+        starting_soon = TimelineEntry.objects.hosted_lessons_starting_soon(lesson_types=[lessons.MasterClass.get_contenttype()])
 
         starting_soon = list(starting_soon)
 
@@ -43,7 +43,7 @@ class TestLessonsStartingSoon(TestCase):
         self.lesson.photo = None
         self.lesson.save()
 
-        starting_soon = TimelineEntry.objects.lessons_starting_soon(lesson_types=[lessons.PairedLesson.get_contenttype()])
+        starting_soon = TimelineEntry.objects.hosted_lessons_starting_soon(lesson_types=[lessons.PairedLesson.get_contenttype()])
         starting_soon = list(starting_soon)
         self.assertEqual(len(starting_soon), 0)
 
@@ -52,14 +52,14 @@ class TestLessonsStartingSoon(TestCase):
         """
         Move 5 days forward and check that lesson should disappear
         """
-        starting_soon = TimelineEntry.objects.lessons_starting_soon(lesson_types=[lessons.MasterClass.get_contenttype()])
+        starting_soon = TimelineEntry.objects.hosted_lessons_starting_soon(lesson_types=[lessons.MasterClass.get_contenttype()])
         starting_soon = list(starting_soon)
         self.assertEqual(len(starting_soon), 0)
 
     def test_starting_soon_returns_only_free_entries(self):
         """
         Reduce the number of available students slots to 0 and check
-        if lessons_starting_soon() does not return a lesson with that timeline
+        if hosted_lessons_starting_soon() does not return a lesson with that timeline
         entry.
         """
         self.lesson.slots = 0
@@ -68,13 +68,13 @@ class TestLessonsStartingSoon(TestCase):
         self.entry.slots = 0
         self.entry.save()
 
-        starting_soon = TimelineEntry.objects.lessons_starting_soon(lesson_types=[lessons.MasterClass.get_contenttype()])
+        starting_soon = TimelineEntry.objects.hosted_lessons_starting_soon(lesson_types=[lessons.MasterClass.get_contenttype()])
         starting_soon = list(starting_soon)
         self.assertEqual(len(starting_soon), 0)
 
     def test_starting_soon_returns_only_one_distinct_lesson(self):
         """
-        Create 5 timeline entries and check if lessons_starting_soon() returns
+        Create 5 timeline entries and check if hosted_lessons_starting_soon() returns
         only one of them.
         """
         for i in range(0, 5):
@@ -85,6 +85,11 @@ class TestLessonsStartingSoon(TestCase):
                 start=self.tzdatetime(2032, 12, 1, 13, 00) + timedelta(hours=i)
             )
 
-        starting_soon = TimelineEntry.objects.lessons_starting_soon(lesson_types=[lessons.MasterClass.get_contenttype()])
+        starting_soon = TimelineEntry.objects.hosted_lessons_starting_soon(lesson_types=[lessons.MasterClass.get_contenttype()])
         starting_soon = list(starting_soon)
         self.assertEqual(len(starting_soon), 1)  # should be only 1 lesson, because all lessons are equal
+
+    def test_starting_soon_does_not_fail_on_usual_lessons(self):
+        starting_soon = TimelineEntry.objects.hosted_lessons_starting_soon(lesson_types=[lessons.OrdinaryLesson.get_contenttype()])
+        starting_soon = list(starting_soon)
+        self.assertEqual(len(starting_soon), 0)  # should not throw anything, silently return []
