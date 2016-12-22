@@ -85,36 +85,12 @@ class TeacherManager(models.Manager):
         start = _planning_ofsset(date)
         end = start.replace(hour=23, minute=59)
 
-        lessons = []
-        for lesson in self.__lessons_for_date(start, end, **kwargs):
-            lesson.free_slots = SlotList(self.__timeslots_by_lesson(lesson, start, end))
+        TimelineEntry = apps.get_model('timeline.Entry')
+
+        for lesson in TimelineEntry.objects.lessons_for_date(start, end, **kwargs):
+            lesson.free_slots = SlotList(TimelineEntry.objects.timeslots_by_lesson(lesson, start, end))
             if len(lesson.free_slots):
-                lessons.append(lesson)
-
-        return lessons
-
-    def __lessons_for_date(self, start, end, **kwargs):
-        """
-        Get all lessons, that have timeline entries for the requested period.
-
-        Ignores timeslot availability
-        """
-        TimelineEntry = apps.get_model('timeline.entry')
-        for timeline_entry in TimelineEntry.objects.filter(start__range=(start, end)).filter(**kwargs).distinct('lesson_id'):
-            yield timeline_entry.lesson
-
-    def __timeslots_by_lesson(self, lesson, start, end):
-        """
-        Generate timeslots for lesson
-        """
-        TimelineEntry = apps.get_model('timeline.entry')
-        for entry in TimelineEntry.objects.by_lesson(lesson).filter(start__range=(start, end)):
-            if entry.is_free:
-                try:
-                    entry.clean()
-                except (AutoScheduleExpcetion, DoesNotFitWorkingHours):
-                    continue
-                yield entry.start
+                yield lesson
 
     def can_finish_classes(self):
         """

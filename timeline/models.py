@@ -12,6 +12,7 @@ from django.utils.translation import ugettext as _
 from accounting.models import Event as AccEvent
 from mailer.ical import Ical
 from market.auto_schedule import AutoSchedule
+from market.exceptions import AutoScheduleExpcetion
 from timeline import exceptions
 
 CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)
@@ -45,6 +46,32 @@ class EntryManager(models.Manager):
         for entry in entries:
             if entry.lesson.get_photo() is not None:
                 yield entry.lesson
+
+    def timeslots_by_lesson(self, lesson, start, end):
+        """
+        Generate timeslots for lesson
+        """
+        for entry in self.by_lesson(lesson).filter(start__range=(start, end)):
+            if entry.is_free:
+                try:
+                    entry.clean()
+                except (AutoScheduleExpcetion, exceptions.DoesNotFitWorkingHours):
+                    continue
+                yield entry.start
+
+    def lessons_for_date(self, start, end, **kwargs):
+        """
+        Get all lessons, that have timeline entries for the requested period.
+
+        Ignores timeslot availability
+        """
+        entries = self.get_queryset() \
+            .filter(start__range=(start, end)) \
+            .filter(**kwargs) \
+            .distinct('lesson_type', 'lesson_id')
+
+        for entry in entries:
+            yield entry.lesson
 
 
 class Entry(models.Model):

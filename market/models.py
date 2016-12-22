@@ -228,9 +228,8 @@ class ClassesManager(ProductContainerManager):
 
     def starting_soon(self, delta):
         """
-        Return a queryset with classes, that are about to start in `delta` time.
-
-        Delta is a python datetime.timedelta.
+        Return a queryset with classes, whos timeline entries are about
+        to start in `delta` time.
         """
         print(timezone.now() + delta)
 
