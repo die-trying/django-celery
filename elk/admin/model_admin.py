@@ -37,6 +37,20 @@ class ModelAdmin(ImageCroppingMixin, admin.ModelAdmin, AdminHelpersMixin):
         models.ForeignKey: {'widget': ForeignKeyWidget},
     }
 
+    @property
+    def media(self):
+        """
+        Drop bundled django jquery in favour of django-suit's one
+        """
+        media = super().media
+        js = media._js
+        media._js = []
+        for script in js:
+            if 'js/jquery.js' not in script and 'js/jquery.min.js' not in script:
+                media.add_js([script])
+
+        return media
+
     class Media:
         js = [
             '/admin/jsi18n/',  # django-suit forgets to include this script

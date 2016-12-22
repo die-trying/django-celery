@@ -28,7 +28,7 @@ django-nose==1.4.4
 django-picklefield==0.3.2
 django-redis==4.4.4
 django-redis-cache==1.6.5
-django-suit==0.2.21
+django-suit==0.2.23
 django-timezone-field==1.3
 django-user-agents==0.3.0
 django-with-asserts==0.0.1

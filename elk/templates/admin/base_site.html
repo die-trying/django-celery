@@ -7,8 +7,17 @@
 <link rel="stylesheet" href="{% static 'css/admin.css' %}?rev={{ REVISION }}">
 {% endblock %}
 
-{% block extrajs %}
-<script src="{% static 'vendor/select2/dist/js/select2.min.js' %}"></script>
 
+{% block suit_jquery %}
+<!-- Please checkout this version if you've updated django-suit -->
+<script src="{% static 'suit/js/jquery-2.2.4.min.js' %}"></script>
+{% endblock %}
+
+{% block extrajs %}
+<script type="text/javascript">
+    window.jQuery = window.$ = django.jQuery // restore jquery in global namespace
+</script>
+
+<script src="{% static 'vendor/select2/dist/js/select2.min.js' %}"></script>
 <script src="{% static 'js/admin.js' %}?rev={{ REVISION }}"></script>
 {% endblock %}

@@ -159,6 +159,7 @@ SUIT_CONFIG = {
         {'app': 'auth', 'label': 'Authorization', 'icon': 'icon-lock', 'models': ('auth.User', 'auth.Group')},
     ),
 }
+IMAGE_CROPPING_JQUERY_URL = None
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
@@ -185,7 +186,8 @@ SOCIAL_AUTH_PIPELINE = (
 )
 
 DEBUG_TOOLBAR_CONFIG = {
-    'JQUERY_URL': '/static/vendor/jquery/dist/jquery.min.js',
+    # 'JQUERY_URL': '/static/vendor/jquery/dist/jquery.min.js',
+    'JQUERY_URL': None,
 }
 DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.versions.VersionsPanel',
