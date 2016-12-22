@@ -77,6 +77,11 @@ class TestClassManager(TestCase):
             self.assertEquals(self.customer.classes.starting_soon(timedelta(minutes=89)).count(), 0)
             self.assertEquals(self.customer.classes.starting_soon(timedelta(minutes=91)).count(), 1)
 
+    def test_hosted_lessons_starting_soon(self):
+        hosted_lessons_starting_soon = list(self.customer.classes.hosted_lessons_starting_soon())
+        self.assertEqual(len(hosted_lessons_starting_soon), 5)  # there are 5 hosted lessons in the subscription
+        self.assertIn('lesson', hosted_lessons_starting_soon[0]['lesson_type_name'])
+
     def test_nearest_dont_return_past_classes(self):
         """
         Test if clases.nearest_scheduled() does not return classes in the past

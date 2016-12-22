@@ -231,8 +231,6 @@ class ClassesManager(ProductContainerManager):
         Return a queryset with classes, whos timeline entries are about
         to start in `delta` time.
         """
-        print(timezone.now() + delta)
-
         return self.get_queryset() \
             .filter(is_scheduled=True) \
             .filter(timeline__start__range=(timezone.now(), timezone.now() + delta))
@@ -256,6 +254,22 @@ class ClassesManager(ProductContainerManager):
                 sort_order[order] = t
 
         return [sort_order[i] for i in sorted(sort_order.keys())]
+
+    def hosted_lessons_starting_soon(self):
+        """
+        Return a list of hosted lessons that are about to start, sorted by lesson_type.
+
+        There is only one test for ClassesManager.hosted_lessons_starting_soon() because
+        all the logic is in the TimelineEntryManager's same method.
+        """
+        TimelineEntry = apps.get_model('timeline.Entry')
+        for lesson_type in self.purchased_lesson_types():
+            Lesson = lesson_type.model_class()
+
+            yield {
+                'lesson_type_name': Lesson._meta.verbose_name,
+                'lessons': list(TimelineEntry.objects.hosted_lessons_starting_soon(lesson_types=[lesson_type]))
+            }
 
     def find_student_classes(self, lesson_type):
         """

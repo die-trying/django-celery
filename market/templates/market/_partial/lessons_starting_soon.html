@@ -1,0 +1,8 @@
+{% for lesson_type in request.user.crm.classes.hosted_lessons_starting_soon %}
+    {% if lesson_type.lessons %}
+        <h2>{{ lesson_type.lesson_type_name }} lessons starting soon</h2>
+        {% for lesson in lesson_type.lessons %}
+            {{ lesson }}
+        {% endfor %}
+    {% endif %}
+{% endfor %}
