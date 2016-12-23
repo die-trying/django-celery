@@ -138,6 +138,7 @@ class Entry(models.Model):
         })
 
     class Meta:
+        unique_together = ('teacher', 'lesson_type', 'start')
         verbose_name = 'Planned class'
         verbose_name_plural = 'Planned classes'
         permissions = (
