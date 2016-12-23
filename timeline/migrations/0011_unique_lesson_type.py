@@ -18,7 +18,10 @@ def cancel_duplicated_timeline_entries(apps, schema_editor):
     TimelineEntry = apps.get_model('timeline.Entry')
 
     for pk in DUPLICATED_TIMELINE_ENTRIES:
-        TimelineEntry.objects.get(pk=pk).delete()
+        try:
+            TimelineEntry.objects.get(pk=pk).delete()
+        except TimelineEntry.DoesNotExist:
+            pass
 
 
 class Migration(migrations.Migration):
