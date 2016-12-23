@@ -19,7 +19,7 @@ class TestLessonsStartingSoon(TestCase):
             TimelineEntry,
             teacher=self.host,
             lesson=self.lesson,
-            start=self.tzdatetime(2032, 12, 1, 13, 00)
+            start=self.tzdatetime(2032, 12, 5, 13, 00)
         )
 
     def test_starting_soon_for_lesson_type_none(self):
@@ -47,7 +47,7 @@ class TestLessonsStartingSoon(TestCase):
         starting_soon = list(starting_soon)
         self.assertEqual(len(starting_soon), 0)
 
-    @freeze_time('2032-12-05 12:00')
+    @freeze_time('2032-12-10 12:00')
     def test_starting_soon_works_only_with_future_lessons(self):
         """
         Move 5 days forward and check that lesson should disappear
@@ -93,3 +93,9 @@ class TestLessonsStartingSoon(TestCase):
         starting_soon = TimelineEntry.objects.hosted_lessons_starting_soon(lesson_types=[lessons.OrdinaryLesson.get_contenttype()])
         starting_soon = list(starting_soon)
         self.assertEqual(len(starting_soon), 0)  # should not throw anything, silently return []
+
+    def test_starting_soon_planning_delta_traversal(self):
+        starting_soon = TimelineEntry.objects.hosted_lessons_starting_soon(lesson_types=[lessons.MasterClass.get_contenttype()], delta=timedelta(days=100))
+
+        starting_soon = list(starting_soon)
+        self.assertEqual(len(starting_soon), 0)  # should not find anything because the only lesson available will happen 5 days ahead, but the planning delta is 100 days

@@ -31,16 +31,19 @@ class EntryManager(models.Manager):
             .filter(lesson_id=lesson.id) \
             .filter(lesson_type=lesson.get_contenttype())
 
-    def hosted_lessons_starting_soon(self, lesson_types):
+    def hosted_lessons_starting_soon(self, lesson_types, delta=None):
         """
         Lessons that are starting soon, filtered by lesson_types.
 
         Assuming no one will search for non-hosted lessons (all of them are already scheduled one-on-one),
         returns only lessons that have a host.
         """
+        if delta is None:
+            delta = settings.PLANNING_DELTA
+
         entries = self.get_queryset() \
             .filter(lesson_type__in=lesson_types) \
-            .filter(start__gte=timezone.now()) \
+            .filter(start__gte=timezone.now() + delta) \
             .filter(taken_slots__lt=models.F('slots')) \
             .distinct('lesson_type', 'lesson_id')
 
