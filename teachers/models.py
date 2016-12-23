@@ -20,18 +20,14 @@ from market.exceptions import AutoScheduleExpcetion
 from teachers.slot_list import SlotList
 from timeline.exceptions import DoesNotFitWorkingHours
 
-TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
-
-PLANNING_DELTA = datetime.timedelta(hours=18)  # booking lag
-
 
 def _planning_ofsset(start):
     """
     Returns a minimal start time, that is available for planning
     """
 
-    if start < (timezone.now() + PLANNING_DELTA):
-        start = timezone.now() + PLANNING_DELTA
+    if start < (timezone.now() + settings.PLANNING_DELTA):
+        start = timezone.now() + settings.PLANNING_DELTA
 
     if start.minute > 0 and start.minute < 30:
         start = start.replace(minute=30)
@@ -137,7 +133,7 @@ class Teacher(models.Model):
         """
         if not self.pk:
             try:
-                group = Group.objects.get(pk=TEACHER_GROUP_ID)
+                group = Group.objects.get(pk=settings.TEACHER_GROUP_ID)
                 self.user.groups.add(group)
                 self.user.save()
             except Group.DoesNotExist:

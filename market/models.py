@@ -2,6 +2,7 @@ from abc import abstractproperty
 from datetime import timedelta
 
 from django.apps import apps
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -11,7 +12,6 @@ from django.utils import timezone
 from djmoney.models.fields import MoneyField
 
 from market import exceptions, signals
-from teachers.models import PLANNING_DELTA
 
 MARK_CLASSES_AS_USED_AFTER = timedelta(hours=1)
 
@@ -288,7 +288,7 @@ class ClassesManager(ProductContainerManager):
         """
         current = timezone.now()
 
-        if timezone.localtime(current + PLANNING_DELTA).day != timezone.localtime(current).day:
+        if timezone.localtime(current + settings.PLANNING_DELTA).day != timezone.localtime(current).day:
             current += timedelta(days=1)
 
         for i in range(0, 14):

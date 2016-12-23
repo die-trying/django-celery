@@ -141,10 +141,10 @@ class TestClassManager(TestCase):
         # fill free to modify this if you've changed the booking lag
 
     @freeze_time('2032-12-05 02:00')
+    @override_settings(PLANNING_DELTA=timedelta(hours=23))
     def test_dates_for_planning_tomorrow(self):
         timezone.activate('US/Eastern')
 
-        models.PLANNING_DELTA = timedelta(hours=23)
         dates = list(self.customer.classes.dates_for_planning())
 
         self.assertEquals(len(dates), 14)

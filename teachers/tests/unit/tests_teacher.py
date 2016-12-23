@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
+from django.test import override_settings
 from freezegun import freeze_time
 from mixer.backend.django import mixer
 
@@ -11,9 +12,8 @@ from teachers import models
 _planning_ofsset = models._planning_ofsset
 
 
+@override_settings(PLANNING_DELTA=timedelta(hours=2))
 class TestTeacherUnit(TestCase):
-    def setUp(self):
-        models.PLANNING_DELTA = timedelta(hours=2)
 
     def test_timeline_url(self):
         teacher = create_teacher()

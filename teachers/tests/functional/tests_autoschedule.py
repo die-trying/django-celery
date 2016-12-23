@@ -9,11 +9,11 @@ from mixer.backend.django import mixer
 from elk.utils.testing import TestCase, create_teacher
 from lessons import models as lessons
 from market.exceptions import AutoScheduleExpcetion
-from teachers import models
 from teachers.models import Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
+@override_settings(PLANNING_DELTA=timedelta(hours=2))
 class TestTeacherManager(TestCase):
     """
     By default, working hours return hours only in future, so your testing
@@ -25,7 +25,6 @@ class TestTeacherManager(TestCase):
 
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
         mixer.blend(WorkingHours, teacher=self.teacher, weekday=1, start='17:00', end='19:00')  # thursday
-        models.PLANNING_DELTA = timedelta(hours=2)
 
     def test_get_free_slots(self):
         """

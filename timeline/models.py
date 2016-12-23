@@ -1,5 +1,5 @@
-from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -15,8 +15,6 @@ from market.auto_schedule import AutoSchedule
 from market.exceptions import AutoScheduleExpcetion
 from timeline import exceptions
 
-CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)
-
 
 class EntryManager(models.Manager):
     def to_be_marked_as_finished(self):
@@ -26,7 +24,7 @@ class EntryManager(models.Manager):
         """
         return self.get_queryset() \
             .filter(is_finished=False) \
-            .filter(end__lte=timezone.now() - CLASS_IS_FINISHED_AFTER)
+            .filter(end__lte=timezone.now() - settings.CLASS_IS_FINISHED_AFTER)
 
     def by_lesson(self, lesson):
         return self.get_queryset() \
@@ -265,7 +263,7 @@ class Entry(models.Model):
         """
         Check, if timeline entry is in past
         """
-        if self.end < (timezone.now() + CLASS_IS_FINISHED_AFTER):
+        if self.end < (timezone.now() + settings.CLASS_IS_FINISHED_AFTER):
             return True
         return False
 

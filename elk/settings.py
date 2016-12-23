@@ -23,6 +23,10 @@ SHORT_DATE_FORMAT = 'D, M d'
 SHORT_DATETIME_FORMAT = 'M d, h:i A'
 TIME_FORMAT = 'h:i a'
 
+TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
+PLANNING_DELTA = timedelta(hours=18)  # booking lag
+CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)  # mark classes as finished after this time
+
 FORMAT_MODULE_PATH = [
     'elk.formats'
 ]

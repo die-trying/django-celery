@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from elk.utils.testing import TestCase, create_teacher
 
 
@@ -11,5 +13,4 @@ class TestTeacherFunctional(TestCase):
         """
         All newly created teachers should be members of 'teacher' permission group
         """
-        from teachers.models import TEACHER_GROUP_ID
-        self.assertEqual(self.teacher.user.groups.first().pk, TEACHER_GROUP_ID)
+        self.assertEqual(self.teacher.user.groups.first().pk, settings.TEACHER_GROUP_ID)
