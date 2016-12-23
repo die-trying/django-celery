@@ -26,8 +26,24 @@ class EntryManager(models.Manager):
             .filter(is_finished=False) \
             .filter(end__lte=timezone.now() - settings.CLASS_IS_FINISHED_AFTER)
 
-    def by_lesson(self, lesson):
+    def available_for_scheduling(self, delta=None):
+        """
+        Filter entries that are not finished → can be scheduled
+        """
+        if delta is None:
+            delta = settings.PLANNING_DELTA
+
         return self.get_queryset() \
+            .filter(taken_slots__lt=models.F('slots')) \
+            .filter(is_finished=False) \
+            .filter(start__gte=timezone.now() + delta) \
+
+
+    def by_lesson(self, lesson):
+        """
+        Find timeline entries for a distinct lesson
+        """
+        return self.available_for_scheduling() \
             .filter(lesson_id=lesson.id) \
             .filter(lesson_type=lesson.get_contenttype())
 
@@ -38,13 +54,8 @@ class EntryManager(models.Manager):
         Assuming no one will search for non-hosted lessons (all of them are already scheduled one-on-one),
         returns only lessons that have a host.
         """
-        if delta is None:
-            delta = settings.PLANNING_DELTA
-
-        entries = self.get_queryset() \
+        entries = self.available_for_scheduling(delta=delta) \
             .filter(lesson_type__in=lesson_types) \
-            .filter(start__gte=timezone.now() + delta) \
-            .filter(taken_slots__lt=models.F('slots')) \
             .distinct('lesson_type', 'lesson_id')
 
         for entry in entries:

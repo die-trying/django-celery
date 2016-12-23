@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -162,6 +163,10 @@ class HostedLesson(Lesson):
         """
         if self.photo:
             return cropped_thumbnail(context={}, instance=self, ratiofieldname='photo_cropping')
+
+    def get_timeline_entries(self):
+        TimelineEntry = apps.get_model('timeline.Entry')
+        return TimelineEntry.objects.by_lesson(self)
 
     class Meta:
         abstract = True

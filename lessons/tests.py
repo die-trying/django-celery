@@ -2,6 +2,7 @@ import json
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
+from freezegun import freeze_time
 from mixer.backend.django import mixer
 
 import lessons.models as lessons
@@ -9,6 +10,7 @@ from elk.utils.testing import ClientTestCase, TestCase, create_teacher
 from lessons.api.serializers import factory as lessons_serializer_factory
 
 
+@freeze_time('2032-12-01 15:45')
 class TestLessonsUnit(TestCase):
     def test_planning_unaccaptable_lesson(self):
         lazy_teacher = create_teacher(accepts_all_lessons=False)  # teacher2 does not accept any lesson, so cannot be planned
@@ -44,6 +46,19 @@ class TestLessonsUnit(TestCase):
         """
         l = mixer.blend(lessons.TrialLesson)
         self.assertIn('First', l.long_name_plural())
+
+    def test_get_timeline_entries(self):
+        teacher = create_teacher()
+        lesson = mixer.blend(lessons.MasterClass, host=teacher)
+        entry = mixer.blend(
+            'timeline.Entry',
+            teacher=teacher,
+            lesson=lesson,
+            start=self.tzdatetime(2032, 12, 10, 12, 0)
+        )
+        found = lesson.get_timeline_entries()
+        self.assertEqual(len(found), 1)
+        self.assertEqual(found[0], entry)
 
 
 class TestLessonSerializers(TestCase):
