@@ -8,7 +8,9 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand elk-logo" href="/"><img src="{% static 'i/logo.svg' %}" alt="ELK Dashboard"></a>
+            <a class="navbar-brand elk-logo" href="/">
+                {% include 'elk/_partial/logo.svg' %}
+            </a>
         </div>
 
         <div class="collapse navbar-collapse" id="navbar">
