@@ -268,6 +268,7 @@ class ClassesManager(ProductContainerManager):
 
             yield {
                 'lesson_type_name': Lesson._meta.verbose_name,
+                'lesson_type': Lesson.get_contenttype(),
                 'lessons': list(TimelineEntry.objects.hosted_lessons_starting_soon(lesson_types=[lesson_type]))
             }
 

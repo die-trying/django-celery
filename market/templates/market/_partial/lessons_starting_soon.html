@@ -1,8 +1,21 @@
 {% for lesson_type in request.user.crm.classes.hosted_lessons_starting_soon %}
     {% if lesson_type.lessons %}
         <h2>{{ lesson_type.lesson_type_name }} lessons starting soon</h2>
+        <div class="lessons-starting-soon">
         {% for lesson in lesson_type.lessons %}
-            {{ lesson }}
+            <div class="lesson-starting-soon">
+                <img src="{{ lesson.get_photo }}" />
+                <p class="lesson-starting-soon__title">{{ lesson.name }}</p>
+                <p class="lesson-starting-soon__author">{{ lesson.host.user.crm.full_name }}</p>
+                <div class="lesson-starting-soon-timeslots">
+                {% for timeline_entry in lesson.get_timeline_entries %}
+                    <a href="#" class="lesson-starting-soon-entry" data-lesson-type="{{ lesson_type.lesson_type.pk }}" data-date="{{ timeline_entry.start | date:"Y-m-d" }}" data-time="{{ timeline_entry.start | date:"H:i" }}">
+                        {{ timeline_entry.start | date:"SHORT_DATETIME_FORMAT" }}
+                    </a>
+                {% endfor %}
+                </div>
+            </div>
         {% endfor %}
+        </div>
     {% endif %}
 {% endfor %}
