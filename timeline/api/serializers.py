@@ -12,3 +12,21 @@ class TimelineEntrySerializer(serializers.ModelSerializer):
 
     def get_title(self, obj):
         return str(obj)
+
+
+class TimelineEntryCustomerSerializer(serializers.ModelSerializer):
+    title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TimelineEntry
+        fields = [
+            'id',
+            'title',
+            'teacher',
+            'start',
+            'taken_slots',
+            'slots'
+        ]
+
+    def get_title(self, obj):
+        return str(obj.event_title())

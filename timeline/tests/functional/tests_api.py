@@ -3,9 +3,11 @@ from datetime import timedelta
 
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from freezegun import freeze_time
 from mixer.backend.django import mixer
 
 from elk.utils.testing import APITestCase, create_customer, create_teacher
+from lessons import models as lessons
 
 
 class EntryAPITest(APITestCase):
@@ -70,3 +72,26 @@ class EntryAPITest(APITestCase):
         response = self.c.get('/api/timeline/')
 
         self.assertEqual(response.status_code, 403)
+
+
+@freeze_time('2032-12-01 12:00')
+class EntryScheduleCheckAPITest(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.teacher = create_teacher()
+        cls.lesson = mixer.blend(lessons.MasterClass, host=cls.teacher, slots=5)
+        cls.entry = mixer.blend(
+            'timeline.Entry',
+            teacher=cls.teacher,
+            lesson=cls.lesson,
+            start=cls.tzdatetime(2032, 12, 5, 12, 0)
+        )
+
+    def test_non_staff_can_access_the_endpoint(self):
+        someone = create_customer(password='123')
+
+        self.c.logout()
+        self.c.login(username=someone.user.username, password='123')
+        response = self.c.get('/api/timeline/%d/schedule_check/' % self.entry.pk)
+
+        self.assertEqual(response.status_code, 200)
