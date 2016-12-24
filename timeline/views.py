@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -9,18 +10,16 @@ from django.utils.dateparse import parse_datetime
 from django.utils.decorators import method_decorator
 from django.views.generic.edit import CreateView, UpdateView
 
-from crm.models import Customer
 from elk.views import DeleteWithoutConfirmationView
 from market.auto_schedule import AutoSchedule
-from market.models import Class
 from market.sortinghat import SortingHat
-from teachers.models import Teacher
 from timeline.forms import EntryForm as TimelineEntryForm
 from timeline.models import Entry as TimelineEntry
 
 
 @staff_member_required
 def calendar(request, username):
+    Teacher = apps.get_model('teachers.Teacher')
     return render(request, 'timeline/calendar.html', context={
         'object': get_object_or_404(Teacher, user__username=username),
         'others': Teacher.objects.exclude(user__username=username).order_by('user__last_name'),
@@ -34,6 +33,8 @@ class TimelineEntryBaseView():
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        Teacher = apps.get_model('teachers.Teacher')
         context['teacher'] = get_object_or_404(Teacher, user__username=self.kwargs['username'])
         return context
 
@@ -63,6 +64,7 @@ class EntryDelete(TimelineEntryBaseView, DeleteWithoutConfirmationView):
 @staff_member_required
 def entry_card(request, username, pk):
     entry = get_object_or_404(TimelineEntry, teacher__user__username=username, pk=pk)
+    Class = apps.get_model('market.Class')
     return render(request, 'timeline/entry/card.html', context={
         'object': entry,
         'students_for_adding': Class.objects.find_student_classes(lesson_type=entry.lesson_type).exclude(customer__pk__in=entry.classes.distinct('customer__pk'))
@@ -71,6 +73,7 @@ def entry_card(request, username, pk):
 
 @staff_member_required
 def delete_customer(request, username, pk, customer):
+    Class = apps.get_model('market.Class')
     c = get_object_or_404(Class, timeline__id=pk, timeline__teacher__user__username=username, customer__pk=customer)
     entry = c.timeline
     c.delete()
@@ -97,6 +100,8 @@ def add_customer(request, username, pk, customer):
 
     start = timezone.localtime(entry.start)
 
+    Customer = apps.get_model('crm.Customer')
+
     hat = SortingHat(
         customer=get_object_or_404(Customer, pk=customer),
         lesson_type=entry.lesson_type.pk,
@@ -115,10 +120,15 @@ def add_customer(request, username, pk, customer):
 @staff_member_required
 def check_entry(request, username, start, end):
     """
+    Check timeline entry for validity.
+
+    Typicaly used when creating a timeline entry by-hand at /timeline/
     TODO: move it to the API
     """
     start = timezone.make_aware(parse_datetime(start))
     end = timezone.make_aware(parse_datetime(end))
+
+    Teacher = apps.get_model('teachers.Teacher')
 
     s = AutoSchedule(
         teacher=get_object_or_404(Teacher, user__username=username)
@@ -131,3 +141,24 @@ def check_entry(request, username, start, end):
         return JsonResponse({'result': e.__class__.__name__})
 
     return JsonResponse({'result': 'ok'})
+
+
+def find_entry(request, lesson_type, lesson_id, teacher, start):
+    """
+    Find a timeline entry by lesson, teacher and start time.lesson_type
+
+    Redirect to entry details page on success.lesson_type
+    TODO: move it to the API
+    """
+    Teacher = apps.get_model('teachers.Teacher')
+    teacher = get_object_or_404(Teacher, user__username=teacher)
+
+    entry = get_object_or_404(
+        TimelineEntry,
+        teacher=teacher,
+        lesson_type=lesson_type,
+        lesson_id=lesson_id,
+        start=parse_datetime(start),
+    )
+
+    return redirect('api:entry-schedule-check', pk=entry.pk)

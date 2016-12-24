@@ -2,6 +2,7 @@ import json
 from datetime import timedelta
 
 from django.utils import timezone
+from django.utils.dateformat import format
 from django.utils.dateparse import parse_datetime
 from freezegun import freeze_time
 from mixer.backend.django import mixer
@@ -95,3 +96,15 @@ class EntryScheduleCheckAPITest(APITestCase):
         response = self.c.get('/api/timeline/%d/schedule_check/' % self.entry.pk)
 
         self.assertEqual(response.status_code, 200)
+
+    def test_find_entry(self):
+        search_url = '/timeline/find_entry/{teacher}/{lesson_type}/{lesson_id}/{start}/'.format(
+            teacher=self.teacher.user.username,
+            lesson_type=self.lesson.get_contenttype().pk,
+            lesson_id=self.lesson.pk,
+            start=format(self.entry.start, 'c')
+        )
+
+        response = self.c.get(search_url)
+
+        self.assertRedirectsPartial(response, '%d/schedule_check' % self.entry.pk)  # should redirect to the schedule_check url

@@ -34,5 +34,11 @@ urlpatterns = [
         name='check_entry',
         ),
 
+
+    url(regex=r'find_entry/(?P<teacher>.+)/(?P<lesson_type>\d+)/(?P<lesson_id>\d+)/(?P<start>.+)/',
+        view=views.find_entry,
+        name='find_entry',
+        ),
+
     url(r'(?P<username>.+)/$', views.calendar, name='timeline'),
 ]
