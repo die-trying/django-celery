@@ -21,15 +21,6 @@ class EntryCardTest(ClientTestCase):
                                  start=self.tzdatetime(2032, 12, 1, 15, 0),
                                  )
 
-    def test_404_for_wrong_teacher(self):
-        other_teacher = create_teacher()
-        wrong_url = reverse('timeline:entry_card', kwargs={
-            'username': other_teacher.user.username,
-            'pk': self.entry.pk
-        })
-        response = self.c.get(wrong_url)
-        self.assertEquals(response.status_code, 404)
-
     def test_template_context(self):
         c = Class(
             customer=self.customer,

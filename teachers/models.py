@@ -126,6 +126,7 @@ class Teacher(models.Model):
 
     class Meta:
         verbose_name = 'Teacher profile'
+        ordering = ['user__last_name']
 
     def save(self, *args, **kwargs):
         """

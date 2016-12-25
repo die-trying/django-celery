@@ -3,27 +3,30 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.http import Http404, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.utils.dateformat import format
 from django.utils.dateparse import parse_datetime
 from django.utils.decorators import method_decorator
 from django.views.generic.edit import CreateView, UpdateView
 
-from elk.views import DeleteWithoutConfirmationView
+from elk.views import DeleteWithoutConfirmationView, StaffRequiredDetailView, StaffRequiredTemplateView
 from market.auto_schedule import AutoSchedule
 from market.sortinghat import SortingHat
 from timeline.forms import EntryForm as TimelineEntryForm
 from timeline.models import Entry as TimelineEntry
 
 
-@staff_member_required
-def calendar(request, username):
-    Teacher = apps.get_model('teachers.Teacher')
-    return render(request, 'timeline/calendar.html', context={
-        'object': get_object_or_404(Teacher, user__username=username),
-        'others': Teacher.objects.exclude(user__username=username).order_by('user__last_name'),
-    })
+class TeacherCalendar(StaffRequiredTemplateView):
+    template_name = 'timeline/calendar.html'
+
+    def get_context_data(self, **kwargs):
+        Teacher = apps.get_model('teachers.Teacher')
+        teacher_username = kwargs['username']
+        return {
+            'object': get_object_or_404(Teacher, user__username=teacher_username),
+            'others': Teacher.objects.exclude(user__username=teacher_username)
+        }
 
 
 class TimelineEntryBaseView():
@@ -61,14 +64,22 @@ class EntryDelete(TimelineEntryBaseView, DeleteWithoutConfirmationView):
     pass
 
 
-@staff_member_required
-def entry_card(request, username, pk):
-    entry = get_object_or_404(TimelineEntry, teacher__user__username=username, pk=pk)
-    Class = apps.get_model('market.Class')
-    return render(request, 'timeline/entry/card.html', context={
-        'object': entry,
-        'students_for_adding': Class.objects.find_student_classes(lesson_type=entry.lesson_type).exclude(customer__pk__in=entry.classes.distinct('customer__pk'))
-    })
+class TimelineEntryCardView(StaffRequiredDetailView):
+    """
+    Get timeline entry card by pk.
+    """
+    template_name = 'timeline/entry/card.html'
+    model = TimelineEntry
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        Class = apps.get_model('market.Class')
+        ctx['students_for_adding'] = Class.objects \
+            .find_student_classes(lesson_type=self.object.lesson_type) \
+            .exclude(customer__pk__in=self.object.classes.distinct('customer__pk'))
+
+        return ctx
 
 
 @staff_member_required
