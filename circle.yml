@@ -32,7 +32,11 @@ test:
     - cp elk/.env.circle elk/.env
     - flake8 --config=.flake8 --exclude=static,migrations
 
+  override:
+    - ./manage.py test --with-xunit
+
   post:
+    - cp nosetests.xml $CIRCLE_TEST_REPORTS/
     - bash <(curl -s https://codecov.io/bash) -t 8ce25f6b-eaf8-442a-aab4-fb6218384b6e
     - ./build/strip-for-production.sh
     - rm elk/.env
