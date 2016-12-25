@@ -5,11 +5,12 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
 from elk.logging import logger
-from elk.views import LoginRequiredTemplateView
+from elk.views import LoginRequiredDetailView, LoginRequiredTemplateView
 from lessons.api.serializers import factory as lesson_serializer_factory
 from market.sortinghat import SortingHat
 from teachers.api.serializers import TeacherSerializer, TimeSlotSerializer
 from teachers.models import Teacher
+from timeline.models import Entry as TimelineEntry
 
 
 class CustomerLessons(LoginRequiredTemplateView):
@@ -20,6 +21,11 @@ class CustomerLessons(LoginRequiredTemplateView):
 
         ctx['object_list'] = self.request.user.crm.classes.passed_or_scheduled()
         return ctx
+
+
+class TimelineEntryPopup(LoginRequiredDetailView):
+    template_name = 'market/timeline_entry_popup/timeline_entry_popup.html'
+    model = TimelineEntry
 
 
 @login_required

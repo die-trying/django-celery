@@ -177,4 +177,4 @@ def find_entry(request, lesson_type, lesson_id, teacher, start):
     if entry is None:
         raise Http404('entry is not found')
 
-    return redirect('api:entry-schedule-check', pk=entry.pk)
+    return redirect('market:timeline_entry_popup', pk=entry.pk)

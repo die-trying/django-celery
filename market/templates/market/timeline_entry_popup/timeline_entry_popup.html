@@ -1,0 +1,20 @@
+<div class="modal-dialog modal-lg timeline-entry-popup">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            <h3 class="timeline-entry-popup__lesson-title modal-title">{{ object.event_title }}</h3>
+        </div>
+        <div class="modal-body">
+            <img class="lesson timeline-entry-popup__lesson-photo" src="{{ object.lesson.get_photo }}" />
+            <p class="timeline-entry-popup__author">{{ object.lesson.host.user.crm.full_name }}</p>
+            <p class="timeline-entry-popup__start">{{ object.start | date:"SHORT_DATETIME_FORMAT" }}</p>
+            <div class="timeline-entry-popup__lesson-description">
+                {{ object.lesson.description }}
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default btn-primary schedule-popup__submit" rv-disabled='c.submit' rv-data-step2-url='c.step2_url'>Schedule</button>
+        </div>
+    </div>
+</div>
