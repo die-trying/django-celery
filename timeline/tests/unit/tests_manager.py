@@ -99,3 +99,45 @@ class TestLessonsStartingSoon(TestCase):
 
         starting_soon = list(starting_soon)
         self.assertEqual(len(starting_soon), 0)  # should not find anything because the only lesson available will happen 5 days ahead, but the planning delta is 100 days
+
+
+@freeze_time('2032-12-01 12:05')
+class TestFindTimelineEntryByStart(TestCase):
+    def setUp(self):
+        self.host = create_teacher(works_24x7=True)
+
+        self.lesson = mixer.blend(lessons.MasterClass, host=self.host, photo=mixer.RANDOM)
+
+        self.entry = mixer.blend(
+            TimelineEntry,
+            teacher=self.host,
+            lesson=self.lesson,
+            start=self.tzdatetime(2032, 12, 5, 13, 00)
+        )
+
+    def test_find_ok(self):
+        entry = TimelineEntry.objects.by_start(teacher=self.host, start=self.entry.start, lesson=self.lesson)
+
+        self.assertEqual(entry, self.entry)
+
+    def test_find_none(self):
+        another_guy = create_teacher()
+        entry = TimelineEntry.objects.by_start(teacher=another_guy, start=self.entry.start, lesson=self.lesson)
+
+        self.assertIsNone(entry)  # should not throw anything
+
+    def test_finds_only_lessons_available_for_scheduling(self):
+        """
+        Reduce the number of available students slots to 0 and check
+        if by_start() does not return a lesson with that timeline
+        entry.
+        """
+        self.lesson.slots = 0
+        self.lesson.save()
+
+        self.entry.slots = 0
+        self.entry.save()
+
+        entry = TimelineEntry.objects.by_start(teacher=self.host, start=self.entry.start, lesson=self.lesson)
+
+        self.assertIsNone(entry)

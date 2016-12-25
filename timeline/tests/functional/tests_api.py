@@ -104,7 +104,6 @@ class EntryScheduleCheckAPITest(APITestCase):
             lesson_id=self.lesson.pk,
             start=format(self.entry.start, 'c')
         )
-
         response = self.c.get(search_url)
 
         self.assertRedirectsPartial(response, '%d/schedule_check' % self.entry.pk)  # should redirect to the schedule_check url

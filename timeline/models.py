@@ -33,6 +33,7 @@ class EntryManager(models.Manager):
         if delta is None:
             delta = settings.PLANNING_DELTA
 
+        print(timezone.now() + delta)
         return self.get_queryset() \
             .filter(taken_slots__lt=models.F('slots')) \
             .filter(is_finished=False) \
@@ -46,6 +47,20 @@ class EntryManager(models.Manager):
         return self.available_for_scheduling() \
             .filter(lesson_id=lesson.id) \
             .filter(lesson_type=lesson.get_contenttype())
+
+    def by_start(self, lesson, teacher, start):
+        """
+        Find timeline entries by teacher and start.
+
+        Usefull when you know lesson parameters, but don't know particular
+        timeline entry PK.
+        """
+        try:
+            return self.by_lesson(lesson) \
+                .filter(teacher=teacher) \
+                .get(start=start)
+        except self.model.DoesNotExist:
+            pass
 
     def hosted_lessons_starting_soon(self, lesson_types, delta=None):
         """
