@@ -1,25 +1,21 @@
 {% if request.user.crm.classes.hosted_lessons_starting_soon %}
-    <h2>Intersting lessons free for booking</h2>
-    <div class="lessons-starting-soon">
-    {% for lesson_type in request.user.crm.classes.hosted_lessons_starting_soon %}
-        {% if lesson_type.lessons %}
-            {% for lesson in lesson_type.lessons %}
-                <div class="lesson-starting-soon">
-                    <img class="lesson" src="{{ lesson.get_photo }}" />
-                    <p class="lesson-starting-soon__title">{{ lesson.name }}</p>
-                    <p class="lesson-starting-soon__author">{{ lesson.host.user.crm.full_name }}</p>
-                    <div class="lesson-starting-soon-timeslots">
-                    <ul class="lesson-starting-soon__slot-list">
-                    {% for timeline_entry in lesson.get_timeline_entries %}
-                        <li><a href="#" class="lesson-starting-soon-entry load-timeline-entry-popup" data-entry-id="{{ timeline_entry.pk }}">
-                            {{ timeline_entry.start | date:"SHORT_DATETIME_FORMAT" }}
-                        </a></li>
-                    {% endfor %}
-                    </ul>
-                    </div>
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endfor %}
+    <div class="row lessons-starting-soon">
+    <div class="col-md-12">
+        <h2>Interesting lessons free for booking</h2>
+        {% for lesson in request.user.crm.classes.hosted_lessons_starting_soon %}
+            <div class="lesson-starting-soon">
+                <img class="lesson" src="{{ lesson.get_photo }}" />
+                <p class="lesson-starting-soon__title">{{ lesson.name }}</p>
+                <p class="lesson-starting-soon__author">{{ lesson.host.user.crm.full_name }}</p>
+                <ul class="lesson-starting-soon__timeslots">
+                {% for timeline_entry in lesson.get_timeline_entries %}
+                    <li><a href="#" class="lesson-starting-soon-entry load-timeline-entry-popup" data-entry-id="{{ timeline_entry.pk }}">
+                        {{ timeline_entry.start | date:"SHORT_DATETIME_FORMAT" }}
+                    </a></li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+        </div>
     </div>
 {% endif %}

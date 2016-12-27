@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import override_settings
 from django.utils import timezone
 from freezegun import freeze_time
+from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_customer, create_teacher
 from lessons import models as lessons
@@ -78,9 +79,13 @@ class TestClassManager(TestCase):
             self.assertEquals(self.customer.classes.starting_soon(timedelta(minutes=91)).count(), 1)
 
     def test_hosted_lessons_starting_soon(self):
-        hosted_lessons_starting_soon = list(self.customer.classes.hosted_lessons_starting_soon())
-        self.assertEqual(len(hosted_lessons_starting_soon), 5)  # there are 5 hosted lessons in the subscription
-        self.assertIn('lesson', hosted_lessons_starting_soon[0]['lesson_type_name'])
+        teacher = create_teacher()
+        lesson = mixer.blend(lessons.MasterClass, host=teacher, photo=mixer.RANDOM)
+        mixer.blend('timeline.Entry', lesson=lesson, teacher=teacher, start=self.tzdatetime(2032, 12, 25, 12, 00))
+
+        hosted_lessons_starting_soon = self.customer.classes.hosted_lessons_starting_soon()
+        self.assertEqual(len(hosted_lessons_starting_soon), 1)
+        self.assertEqual(hosted_lessons_starting_soon[0], lesson)
 
     def test_nearest_dont_return_past_classes(self):
         """

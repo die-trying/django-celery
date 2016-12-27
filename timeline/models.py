@@ -195,6 +195,9 @@ class Entry(models.Model):
 
     is_finished = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ['start']
+
     @property
     def is_free(self):
         return self.taken_slots < self.slots
