@@ -1,21 +1,25 @@
-{% for lesson_type in request.user.crm.classes.hosted_lessons_starting_soon %}
-    {% if lesson_type.lessons %}
-        <h2>{{ lesson_type.lesson_type_name }} lessons starting soon</h2>
-        <div class="lessons-starting-soon">
-        {% for lesson in lesson_type.lessons %}
-            <div class="lesson-starting-soon">
-                <img class="lesson" src="{{ lesson.get_photo }}" />
-                <p class="lesson-starting-soon__title">{{ lesson.name }}</p>
-                <p class="lesson-starting-soon__author">{{ lesson.host.user.crm.full_name }}</p>
-                <div class="lesson-starting-soon-timeslots">
-                {% for timeline_entry in lesson.get_timeline_entries %}
-                    <a href="#" class="lesson-starting-soon-entry load-timeline-entry-popup" data-entry-id="{{ timeline_entry.pk }}">
-                        {{ timeline_entry.start | date:"SHORT_DATETIME_FORMAT" }}
-                    </a>
-                {% endfor %}
+{% if request.user.crm.classes.hosted_lessons_starting_soon %}
+    <h2>Intersting lessons free for booking</h2>
+    <div class="lessons-starting-soon">
+    {% for lesson_type in request.user.crm.classes.hosted_lessons_starting_soon %}
+        {% if lesson_type.lessons %}
+            {% for lesson in lesson_type.lessons %}
+                <div class="lesson-starting-soon">
+                    <img class="lesson" src="{{ lesson.get_photo }}" />
+                    <p class="lesson-starting-soon__title">{{ lesson.name }}</p>
+                    <p class="lesson-starting-soon__author">{{ lesson.host.user.crm.full_name }}</p>
+                    <div class="lesson-starting-soon-timeslots">
+                    <ul class="lesson-starting-soon__slot-list">
+                    {% for timeline_entry in lesson.get_timeline_entries %}
+                        <li><a href="#" class="lesson-starting-soon-entry load-timeline-entry-popup" data-entry-id="{{ timeline_entry.pk }}">
+                            {{ timeline_entry.start | date:"SHORT_DATETIME_FORMAT" }}
+                        </a></li>
+                    {% endfor %}
+                    </ul>
+                    </div>
                 </div>
-            </div>
-        {% endfor %}
-        </div>
-    {% endif %}
-{% endfor %}
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+    </div>
+{% endif %}

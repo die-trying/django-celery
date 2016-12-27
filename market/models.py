@@ -262,15 +262,19 @@ class ClassesManager(ProductContainerManager):
         There is only one test for ClassesManager.hosted_lessons_starting_soon() because
         all the logic is in the TimelineEntryManager's same method.
         """
+        print('sdf')
         TimelineEntry = apps.get_model('timeline.Entry')
+        result = []
         for lesson_type in self.purchased_lesson_types():
             Lesson = lesson_type.model_class()
 
-            yield {
+            result.append({
                 'lesson_type_name': Lesson._meta.verbose_name,
                 'lesson_type': Lesson.get_contenttype(),
-                'lessons': list(TimelineEntry.objects.hosted_lessons_starting_soon(lesson_types=[lesson_type]))
-            }
+                'lessons': list(TimelineEntry.objects.hosted_lessons_starting_soon(lesson_types=[lesson_type]))[:3]
+            })
+
+        return result
 
     def find_student_classes(self, lesson_type):
         """
