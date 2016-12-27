@@ -30,7 +30,6 @@ class EntryManager(models.Manager):
         if delta is None:
             delta = settings.PLANNING_DELTA
 
-        print(timezone.now() + delta)
         return self.get_queryset() \
             .filter(taken_slots__lt=models.F('slots')) \
             .filter(is_finished=False) \
@@ -210,11 +209,12 @@ class Entry(models.Model):
         """
         Returns an URL for signing in to the lesson with this timeline entry.
         """
+        start_time = timezone.localtime(self.start)
         return reverse('market:step2', kwargs={
             'teacher': self.teacher.pk,
             'lesson_type': self.lesson_type.pk,
-            'date': format(self.start, 'Y-m-d'),
-            'time': format(self.start, 'H:i')
+            'date': format(start_time, 'Y-m-d'),
+            'time': format(start_time, 'H:i')
         })
 
     class Meta:

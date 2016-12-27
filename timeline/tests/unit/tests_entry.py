@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 import icalendar
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.test import override_settings
 from freezegun import freeze_time
 from mixer.backend.django import mixer
 
@@ -154,6 +155,20 @@ class EntryTestCase(TestCase):
         step2_url = entry.get_step2_url()
 
         self.assertIn('/{}/{}/2016-12-15/11:32/'.format(self.teacher1.pk, lesson.get_contenttype().pk), step2_url)
+
+    @override_settings(TIME_ZONE='Europe/Moscow')
+    def test_step2_url_localizes_time(self):
+        """
+        Check if Entry.get_step2_url() returns time in local format for user
+        """
+        entry = mixer.blend(
+            TimelineEntry,
+            teacher=self.teacher1,
+            lesson=mixer.blend(lessons.MasterClass, host=self.teacher1, duration='01:00:00'),
+            start=self.tzdatetime('UTC', 2016, 12, 15, 20, 32)
+        )
+        step2_url = entry.get_step2_url()
+        self.assertIn('2016-12-15/15:32', step2_url)
 
 
 class TestEntryTitle(ClassIntegrationTestCase):
