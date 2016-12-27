@@ -59,3 +59,10 @@ class CustomerTestCase(TestCase):
         c.skype = ''
         c.save()
         self.assertTrue(c.profile_needs_updating())
+
+    def test_get_absolute_url(self):
+        c = create_customer()
+
+        url = c.get_absolute_url()
+        self.assertIn(str(c.pk), url)
+        self.assertIn('/admin/', url)
