@@ -37,7 +37,7 @@ class EntryCardTest(ClientTestCase):
         with self.assertHTML(response, '.page-header>h1') as (title,):
             self.assertEquals(title.text, str(self.entry))
 
-        with self.assertHTML(response, 'td.timeline-student-list__student') as (student,):
+        with self.assertHTML(response, 'td.timeline-student-list__student>a') as (student, staff):
             self.assertIn(self.customer.full_name, student.text)
 
         with self.assertHTML(response, 'a.timeline-student-list__actions') as (a,):

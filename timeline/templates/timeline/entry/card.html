@@ -37,7 +37,7 @@
                 {% for c in object.classes.all %}
                     <tr>
                         <td class="timeline-student-list__cnt">{{ forloop.counter }})</td>
-                        <td class="timeline-student-list__student"><a href = "{{ c.customer.get_absolute_url }}">{{ c.customer.full_name }}</a>
+                        <td class="timeline-student-list__student"><a href="{{ c.customer.get_absolute_url }}">{{ c.customer.full_name }}</a>
                             {% if not object.has_finished %}
                                 {% if object.lesson.timeline_entry_required or object.lesson.slots > 1 %}
                                     <a class="timeline-student-list__actions" href="{% url 'timeline:delete_customer' username=object.teacher.user.username pk=object.pk customer=c.customer.pk %}" class="text-danger" title="{% trans 'Remove a student' %}" aria-hidden="true"><i class="fa fa-user-times"></i></a>
