@@ -36,6 +36,25 @@ class ModelAdmin(ImageCroppingMixin, admin.ModelAdmin, AdminHelpersMixin):
         models.DateTimeField: {'widget': SuitSplitDateTimeWidget},
         models.ForeignKey: {'widget': ForeignKeyWidget},
     }
+    exclude_stock_js = [
+        'js/jquery.js',
+        'js/jquery.min.js',
+        'js/jquery.init.js',
+    ]
+
+    @property
+    def media(self):
+        """
+        Drop bundled django jquery in favour of django-suit's one
+        """
+        media = super().media
+        scripts = [script for script in media._js if not any(excluded_script in script for excluded_script in self.exclude_stock_js)]
+
+        media._js = []
+        media.add_js(scripts)
+        print(scripts)
+
+        return media
 
     class Media:
         js = [
