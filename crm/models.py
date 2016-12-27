@@ -5,6 +5,7 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.shortcuts import resolve_url
 from django_countries.fields import CountryField
 from image_cropping import ImageRatioField
 from image_cropping.templatetags.cropping import cropped_thumbnail
@@ -99,6 +100,9 @@ class Customer(models.Model):
     twitter = models.CharField('Twitter username', max_length=140, blank=True)
     instagram = models.CharField('Instagram username', max_length=140, blank=True)
     linkedin = models.CharField('Linkedin username', max_length=140, blank=True)
+
+    def get_absolute_url(self):
+        return resolve_url('admin:crm_customer_change', self.pk)
 
     @property
     def full_name(self):
