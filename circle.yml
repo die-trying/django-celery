@@ -4,7 +4,7 @@ machine:
     version: 3.4.3
 
   node:
-    version: 4.2.6
+    version: 6.1.0
 
   services:
     - redis
