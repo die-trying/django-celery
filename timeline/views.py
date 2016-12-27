@@ -152,29 +152,3 @@ def check_entry(request, username, start, end):
         return JsonResponse({'result': e.__class__.__name__})
 
     return JsonResponse({'result': 'ok'})
-
-
-def find_entry(request, lesson_type, lesson_id, teacher, start):
-    """
-    Find a timeline entry by lesson, teacher and start time.lesson_type
-
-    Redirect to entry details page on success.lesson_type
-    TODO: move it to the API
-    """
-    Teacher = apps.get_model('teachers.Teacher')
-    teacher = get_object_or_404(Teacher, user__username=teacher)
-
-    ContentType = apps.get_model('contenttypes.ContentType')
-    Lesson = get_object_or_404(ContentType, app_label='lessons', pk=lesson_type).model_class()
-    lesson = get_object_or_404(Lesson, pk=lesson_id)
-
-    entry = TimelineEntry.objects.by_start(
-        lesson=lesson,
-        teacher=teacher,
-        start=parse_datetime(start)
-    )
-
-    if entry is None:
-        raise Http404('entry is not found')
-
-    return redirect('market:timeline_entry_popup', pk=entry.pk)
