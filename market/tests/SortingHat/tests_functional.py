@@ -97,7 +97,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
             just_checking=True,
             date='2032-05-05',  # wednesday
             time='17:00',
-            type_id=lessons.OrdinaryLesson.get_contenttype().pk,
+            lesson_type=lessons.OrdinaryLesson.get_contenttype().pk,
         )
         self.assertFalse(response['result'])
 
@@ -113,7 +113,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
             just_checking=True,
             date='2032-05-03',
             time='14:00',
-            type_id=master_class.get_contenttype().pk
+            lesson_type=master_class.get_contenttype().pk
         )
         self.assertFalse(response['result'])
         self.assertEquals(response['error'], 'E_CLASS_NOT_FOUND')
@@ -130,7 +130,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
             just_checking=True,
             date='2032-05-05',  # wednesday
             time='17:00',
-            type_id=ordinary_lesson_type,
+            lesson_type=ordinary_lesson_type,
         )
         self.assertFalse(response['result'])
         self.assertEquals(response['error'], 'DoesNotFitWorkingHours')
@@ -147,7 +147,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         self._step2(
             date='2032-05-03',  # monday
             time='14:00',
-            type_id=ordinary_lesson_type,
+            lesson_type=ordinary_lesson_type,
         )
         c = Class.objects.get(pk=c.pk)
         self.assertTrue(c.is_scheduled)
@@ -170,7 +170,7 @@ class TestSchedulingPopupAPI(SchedulingPopupTestCaseBase):
         self._step2(
             date='2032-05-03',
             time='14:00',
-            type_id=master_class.get_contenttype().pk,
+            lesson_type=master_class.get_contenttype().pk,
         )
 
         c = Class.objects.get(pk=c.pk)

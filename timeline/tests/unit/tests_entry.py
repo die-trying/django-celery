@@ -143,6 +143,18 @@ class EntryTestCase(TestCase):
             entry.save()
             self.assertEqual(TimelineEntry.objects.to_be_marked_as_finished().count(), 0)
 
+    def test_get_step2_url(self):
+        lesson = mixer.blend(lessons.MasterClass, host=self.teacher1, duration='01:00:00')
+        entry = mixer.blend(
+            TimelineEntry,
+            teacher=self.teacher1,
+            lesson=lesson,
+            start=self.tzdatetime(2016, 12, 15, 11, 32)
+        )
+        step2_url = entry.get_step2_url()
+
+        self.assertIn('/{}/{}/2016-12-15/11:32/'.format(self.teacher1.pk, lesson.get_contenttype().pk), step2_url)
+
 
 class TestEntryTitle(ClassIntegrationTestCase):
     def test_customer_single_lesson(self):

@@ -74,11 +74,11 @@ def step1(request):
 
 
 @login_required
-def step2(request, teacher, type_id, date, time):
+def step2(request, teacher, lesson_type, date, time):
     hat = SortingHat(
         customer=request.user.crm,
         teacher=get_object_or_404(Teacher, pk=teacher),
-        lesson_type=type_id,
+        lesson_type=lesson_type,  # numeric
         date=date,
         time=time,
     )

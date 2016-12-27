@@ -12,7 +12,7 @@ urlpatterns = [
         name='timeline_entry_popup',
         ),
 
-    url(regex=r'schedule/step2/teacher/(?P<teacher>\d+)/(?P<type_id>\d+)/(?P<date>[\d-]+)/(?P<time>[\d:]{5})/',
+    url(regex=r'schedule/step2/teacher/(?P<teacher>\d+)/(?P<lesson_type>\d+)/(?P<date>[\d-]+)/(?P<time>[\d:]{5})/',
         view=views.step2,
         name='step2'
         ),

@@ -1,18 +1,15 @@
-
+from django.apps import apps
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.defaultfilters import capfirst
 from django.utils import timezone
+from django.utils.dateformat import format
 from django.utils.translation import ugettext as _
 
-from accounting.models import Event as AccEvent
 from mailer.ical import Ical
 from market.auto_schedule import AutoSchedule
-from market.exceptions import AutoScheduleExpcetion
 from timeline import exceptions
 
 
@@ -86,7 +83,7 @@ class EntryManager(models.Manager):
             if entry.is_free:
                 try:
                     entry.clean()
-                except (AutoScheduleExpcetion, exceptions.DoesNotFitWorkingHours):
+                except (exceptions.AutoScheduleExpcetion, exceptions.DoesNotFitWorkingHours):
                     continue
                 yield entry.start
 
@@ -190,7 +187,7 @@ class Entry(models.Model):
 
     allow_besides_working_hours = models.BooleanField(default=True)
 
-    lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
+    lesson_type = models.ForeignKey('contenttypes.ContentType', on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
     lesson_id = models.PositiveIntegerField(null=True, blank=True)
     lesson = GenericForeignKey('lesson_type', 'lesson_id')
 
@@ -207,6 +204,17 @@ class Entry(models.Model):
         return reverse('timeline:entry_card', kwargs={
             'username': self.teacher.user.username,
             'pk': self.pk
+        })
+
+    def get_step2_url(self):
+        """
+        Returns an URL for signing in to the lesson with this timeline entry.
+        """
+        return reverse('market:step2', kwargs={
+            'teacher': self.teacher.pk,
+            'lesson_type': self.lesson_type.pk,
+            'date': format(self.start, 'Y-m-d'),
+            'time': format(self.start, 'H:i')
         })
 
     class Meta:
@@ -246,7 +254,7 @@ class Entry(models.Model):
         teacher = self.teacher.user.crm.first_name
 
         if hasattr(self.lesson, 'host'):
-            return "«{lesson_name}» with {teacher}".format(
+            return "{lesson_name} with {teacher}".format(
                 lesson_name=self.lesson.name,
                 teacher=teacher,
             )
@@ -272,10 +280,14 @@ class Entry(models.Model):
         """
         Unschedule all attached classes before deletion. Unscheduling a class
         sets it free — user can plan a new lesson on it.
+
+        This is the main method for class cancelation.
         """
         for c in self.classes.all():
             c.cancel(src)
             c.save()
+
+        AccEvent = apps.get_model('accounting.Event')
 
         for event in AccEvent.objects.by_originator(self):
             event.delete()
@@ -375,7 +387,7 @@ class Entry(models.Model):
 
         if hasattr(self.lesson, 'host') and self.lesson.host is not None:
             if self.teacher != self.lesson.host:
-                raise ValidationError('Trying to assign a timeline entry of %s to %s' % (self.teacher, self.lesson.host))
+                raise exceptions.ValidationError('Trying to assign a timeline entry of %s to %s' % (self.teacher, self.lesson.host))
 
     def __update_slots(self):
         """
@@ -389,7 +401,7 @@ class Entry(models.Model):
         self.taken_slots = self.classes.count()
 
         if self.taken_slots > self.slots:
-            raise ValidationError('Trying to assign a class to event without free slots')
+            raise exceptions.ValidationError('Trying to assign a class to event without free slots')
 
     def __notify_class_that_it_has_been_finished(self, *args, **kwargs):
         """
