@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 from django.contrib.admin.models import LogEntry
 
-from elk.utils.testing import TestCase, create_customer, create_teacher, create_user
+from elk.utils.testing import TestCase, create_customer, create_teacher
 from lessons import models as lessons
 from market import signals
 from market.models import Class, Subscription
@@ -19,7 +19,7 @@ class TestSubscriptionSignals(TestCase):
             product=Product1.objects.get(pk=1),
             buy_price=150,
         )
-        self.deactivator = create_user()
+        self.deactivator = create_customer().user
 
     def test_deactivation_signal_is_beeing_sent(self):
         handler = MagicMock()

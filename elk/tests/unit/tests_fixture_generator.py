@@ -1,18 +1,12 @@
 from django.apps import apps
 
-from elk.utils.testing import TestCase, create_customer, create_teacher, create_user
+from elk.utils.testing import TestCase, create_customer, create_teacher
 
 
 class TestFixtures(TestCase):
     """
     Test if my fixtures helper generates fixtures with correct relations
     """
-    def test_create_user(self):
-        User = apps.get_model('auth.user')
-        user = create_user()
-        self.assertEquals(User.objects.get(username=user.username), user)
-        self.assertIsNotNone(user.crm)
-
     def test_create_customer(self):
         Customer = apps.get_model('crm.customer')
         customer = create_customer()

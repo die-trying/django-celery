@@ -3,7 +3,7 @@ from history.models import PaymentEvent
 
 
 class TestEvent(TestCase):
-    fixtures = ('crm', 'products', 'lessons')
+    fixtures = ('products', 'lessons')
     TEST_PRODUCT_ID = 1
 
     def test_storing_request(self):

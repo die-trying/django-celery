@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from mixer.backend.django import mixer
 
 from crm.models import Customer
 from elk.utils.testing import TestCase, create_customer
@@ -7,18 +8,24 @@ from market.models import Class
 
 
 class CustomerTestCase(TestCase):
-    fixtures = ('crm',)
+    # fixtures = ('crm',)
 
-    def test_username(self):
+    def test_user_model(self):
         """
         Customer objects with assigned django user should take user data from
         the django table.
         """
-        customer_with_user = Customer.objects.get(pk=1)
-        self.assertEqual(customer_with_user.full_name, 'Fedor Borshev')
-        self.assertEqual(customer_with_user.first_name, 'Fedor')
-        self.assertEqual(customer_with_user.last_name, 'Borshev')
-        self.assertEqual(customer_with_user.email, 'f@f213.in')
+        customer = create_customer()
+
+        customer.user.first_name = 'Fedor'
+        customer.user.last_name = 'Borshev'
+        customer.user.email = 'f@f213.in'
+        customer.user.save()
+
+        self.assertEqual(customer.full_name, 'Fedor Borshev')
+        self.assertEqual(customer.first_name, 'Fedor')
+        self.assertEqual(customer.last_name, 'Borshev')
+        self.assertEqual(customer.email, 'f@f213.in')
 
     def test_can_cancel_classes(self):
         customer = create_customer()
@@ -66,3 +73,7 @@ class CustomerTestCase(TestCase):
         url = c.get_absolute_url()
         self.assertIn(str(c.pk), url)
         self.assertIn('/admin/', url)
+
+    def test_customer_profile_automaticaly_emerges_when_creating_stock_django_user(self):
+        u = mixer.blend('auth.User')
+        self.assertIsNotNone(u.crm)

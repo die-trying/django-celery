@@ -2,7 +2,7 @@ from django.apps import apps
 from django.contrib.admin.models import LogEntry
 
 from elk.logging import write_admin_log_entry
-from elk.utils.testing import TestCase, create_customer, create_user
+from elk.utils.testing import TestCase, create_customer
 from lessons import models as lessons
 
 
@@ -19,7 +19,7 @@ class TestBundledAdminLogging(TestCase):
             lesson_type=lessons.OrdinaryLesson.get_contenttype()
         )
 
-        user = create_user()
+        user = create_customer().user
         write_admin_log_entry(user, c, msg='Testing')
 
         log_entry = LogEntry.objects.first()

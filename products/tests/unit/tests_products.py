@@ -5,7 +5,7 @@ from products.models import Product1
 
 
 class TestSubscriptionDisplayTestCase(TestCase):
-    fixtures = ('crm', 'lessons', 'products')
+    fixtures = ('lessons', 'products')
 
     def setUp(self):
         self.product = Product1.objects.get(pk=1)
