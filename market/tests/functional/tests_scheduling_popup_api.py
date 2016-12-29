@@ -118,7 +118,6 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
         self.assertEquals(response.status_code, 200)
 
         records = json.loads(response.content.decode('utf-8'))
-        print(records)
 
         self.assertEquals(len(records), 2)
         self.assertEquals(len(records[0]['slots']), 5)  # this first teacher works till 15:30

@@ -10,11 +10,13 @@ from timeline.models import Entry as TimelineEntry
 
 
 class EntryCardTest(ClientTestCase):
-    def setUp(self):
-        self.teacher = create_teacher(works_24x7=True)
-        self.customer = create_customer()
-        self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher, duration=timedelta(minutes=33), slots=8)
+    @classmethod
+    def setUpTestData(cls):
+        cls.teacher = create_teacher(works_24x7=True)
+        cls.customer = create_customer()
+        cls.lesson = mixer.blend(lessons.MasterClass, host=cls.teacher, duration=timedelta(minutes=33), slots=8)
 
+    def setUp(self):
         self.entry = mixer.blend(TimelineEntry,
                                  teacher=self.teacher,
                                  lesson=self.lesson,
@@ -102,7 +104,7 @@ class EntryCardTest(ClientTestCase):
             'pk': self.entry.pk,
             'customer': self.customer.pk,
         })
-        print(url)
+
         response = self.c.get(url)
         self.assertEqual(response.status_code, 302)
 

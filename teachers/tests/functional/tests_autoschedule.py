@@ -13,18 +13,19 @@ from teachers.models import Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry
 
 
-@override_settings(PLANNING_DELTA=timedelta(hours=2))
 class TestTeacherManager(TestCase):
     """
     By default, working hours return hours only in future, so your testing
     dates should be in remote future, see http://www.timeanddate.com/calendar/?year=2032&country=1
 
     """
-    def setUp(self):
-        self.teacher = create_teacher()
+    @classmethod
+    @override_settings(PLANNING_DELTA=timedelta(hours=2))
+    def setUpTestData(cls):
+        cls.teacher = create_teacher()
 
-        mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
-        mixer.blend(WorkingHours, teacher=self.teacher, weekday=1, start='17:00', end='19:00')  # thursday
+        mixer.blend(WorkingHours, teacher=cls.teacher, weekday=0, start='13:00', end='15:00')  # monday
+        mixer.blend(WorkingHours, teacher=cls.teacher, weekday=1, start='17:00', end='19:00')  # thursday
 
     def test_get_free_slots(self):
         """
@@ -200,7 +201,6 @@ class TestTeacherManager(TestCase):
         ordinary_lesson_type = lessons.OrdinaryLesson.get_contenttype()
         teachers = list(Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 3), lesson_type=ordinary_lesson_type.pk))
         self.assertEquals(len(teachers), 1)
-        print(teachers[0].free_slots)
         self.assertEquals(len(teachers[0].free_slots), 4)  # should find all timeline entries because ordinary lesson does not require a timeline entry
 
     def test_find_lessons_return_nothing(self):

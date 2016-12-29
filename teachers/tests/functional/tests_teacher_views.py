@@ -6,9 +6,10 @@ from teachers.slot_list import SlotList
 
 @freeze_time('2001-01-01 12:00')
 class TestTeacherViews(ClientTestCase):
-    def setUp(self):
-        self.teacher = create_teacher(works_24x7=True)
-        self.other_teachers = [create_teacher() for i in range(1, 10)]
+    @classmethod
+    def setUpTestData(cls):
+        cls.teacher = create_teacher(works_24x7=True)
+        cls.other_teachers = [create_teacher() for i in range(1, 10)]
 
     def test_list_loading(self):
         """
@@ -39,5 +40,4 @@ class TestTeacherViews(ClientTestCase):
 
         first_day = response.context['timeslots'][0]
         self.assertIsInstance(first_day['slots'], SlotList)
-        print(first_day['slots'])
         self.assertGreaterEqual(len(first_day['slots']), 10)
