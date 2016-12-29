@@ -197,6 +197,12 @@ class Entry(models.Model):
 
     class Meta:
         ordering = ['start']
+        unique_together = ['teacher', 'lesson_type', 'start']
+        verbose_name = 'Planned class'
+        verbose_name_plural = 'Planned classes'
+        permissions = (
+            ('other_entries', "Can work with other's timeleine entries"),
+        )
 
     @property
     def is_free(self):
@@ -219,14 +225,6 @@ class Entry(models.Model):
             'date': format(start_time, 'Y-m-d'),
             'time': format(start_time, 'H:i')
         })
-
-    class Meta:
-        unique_together = ('teacher', 'lesson_type', 'start')
-        verbose_name = 'Planned class'
-        verbose_name_plural = 'Planned classes'
-        permissions = (
-            ('other_entries', "Can work with other's timeleine entries"),
-        )
 
     def __str__(self):
         """
