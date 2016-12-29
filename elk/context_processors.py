@@ -1,5 +1,3 @@
-import os
-
 from django.apps import apps
 from django.conf import settings
 
@@ -35,12 +33,4 @@ def greeting(request):
 
 
 def revision(request):
-    try:
-        f = open(os.path.join(settings.STATIC_ROOT, 'revision.txt'))
-        return {
-            'REVISION': f.readline().strip()
-        }
-    except:
-        return {
-            'REVISION': 'unknown'
-        }
+    return {'REVISION': settings.VERSION}

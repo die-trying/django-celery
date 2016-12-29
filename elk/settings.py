@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 
 import environ
@@ -52,6 +53,20 @@ ADMINS = [
 DATABASES = {
     'default': env.db(),    # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
 }
+
+
+def get_git_revision():
+    """
+    static/revision.txt is generated during CI process, see build/build/store-build-information.sh
+    """
+    try:
+        f = open(os.path.join(env('STATIC_ROOT'), 'revision.txt'))
+        return f.readline().strip()
+    except:
+        return 'dev'
+
+VERSION = get_git_revision()
+
 
 INSTALLED_APPS = [
     'elk',
@@ -224,9 +239,11 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 
+
 if not DEBUG:
     RAVEN_CONFIG = {
         'dsn': env('SENTRY_DSN'),
+        'release': VERSION[:7]
     }
 
     LOGGING = {
