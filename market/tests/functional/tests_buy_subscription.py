@@ -6,7 +6,7 @@ from products import models as products
 
 
 class BuySubscriptionTestCase(TestCase):
-    fixtures = ('crm', 'lessons', 'products')
+    fixtures = ('lessons', 'products')
     TEST_PRODUCT_ID = 1
 
     def setUp(self):

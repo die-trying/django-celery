@@ -42,33 +42,21 @@ def __add_working_hours_24x7(teacher):
         )
 
 
-def create_user(**kwargs):
-    """
-    Generate a simple user object.
-
-    You can pass `mixer<https://github.com/klen/mixer>` keyword arguments for :model:`crm.Customer`
-    or 'password' argument if you want to log in with this user
-    """
-    user = mixer.blend('auth.user')
-
-    if kwargs.get('password'):
-        user.set_password(kwargs.pop('password'))
-        user.save()
-
-    user.crm = create_customer(user=user, **kwargs)
-
-    return user
-
-
-def create_customer(user=None, **kwargs):
+def create_customer(password=None, **kwargs):
     """
     Generate a simple customer object.
     """
-    if user is None:
-        user = create_user(**kwargs)
-    else:
-        kwargs['timezone'] = kwargs.get('timezone', 'Europe/Moscow')  # the timezone value here deffers from default one in settings.py for early timezone error detection
-        mixer.blend('crm.customer', user=user, **kwargs)
+    user = mixer.blend('auth.user')
+
+    if password is not None:
+        user.set_password(password)
+        user.save()
+
+    if(kwargs):
+        for attr, value in kwargs.items():
+            setattr(user.crm, attr, value)
+
+        user.crm.save()
 
     return user.crm
 
@@ -167,7 +155,6 @@ class SuperUserTestCaseMixin():
     @classmethod
     def _generate_superuser(cls):
         cls.superuser = User.objects.create_superuser('root', 'root@wheel.com', 'ohGh7jai4Cee')
-        create_customer(user=cls.superuser)
         cls.superuser_login = 'root'
         cls.superuser_password = 'ohGh7jai4Cee'  # store, if children will need it
 

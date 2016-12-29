@@ -16,8 +16,6 @@ from timeline.models import Entry as TimelineEntry
 
 @freeze_time('2005-05-03 12:41')
 class EntryTestCase(TestCase):
-    fixtures = ('crm',)
-
     def setUp(self):
         self.teacher1 = create_teacher(works_24x7=True)
         self.teacher2 = create_teacher(works_24x7=True)

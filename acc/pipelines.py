@@ -27,11 +27,6 @@ class SaveSocialProfile(metaclass=ABCMeta):
         self.backend = kwargs['backend']
 
     def run(self):
-        customer = Customer()
-        customer.save()
-
-        self.user.crm = customer
-
         self.save_social_source()
 
         self.fetch_picture()
