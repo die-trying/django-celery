@@ -6,8 +6,16 @@
         </div>
         <div class="modal-body">
             <img class="lesson timeline-entry-popup__lesson-photo" src="{{ object.lesson.get_photo }}" />
-            <p class="timeline-entry-popup__author">{{ object.lesson.host.user.crm.full_name }}</p>
-            <p class="timeline-entry-popup__start">{{ object.start | date:"SHORT_DATETIME_FORMAT" }}</p>
+            <div class="timeline-entry-popup__head">
+                <div class="timeline-entry-popup__author">
+                    <img class="teacher-avatar" src="{{ object.lesson.host.get_teacher_avatar }}">
+                    <p>{{ object.lesson.host.user.crm.full_name }}</p>
+                </div>
+                <p class="timeline-entry-popup__start">{{ object.start | date:"SHORT_DATETIME_FORMAT" }}</p>
+                {% if object.taken_slots %}
+                    <p class="timeline-entry-popup__students">Students: {{ object.taken_slots }}/{{ object.slots }} </p>
+                {% endif %}
+            </div>
             <div class="timeline-entry-popup__lesson-description">
                 {{ object.lesson.description }}
             </div>
