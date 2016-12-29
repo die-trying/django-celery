@@ -16,7 +16,8 @@
     "microevent.js": "f213/microevent.js",
     "js-cookie": "^2.1.3",
     "font-awesome": "^4.7.0",
-    "select2": "^4.0.3"
+    "select2": "^4.0.3",
+    "raven-js": "^3.9.1"
   },
   "private": "true",
   "resolutions": {

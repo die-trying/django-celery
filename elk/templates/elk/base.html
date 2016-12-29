@@ -1,5 +1,6 @@
 {% extends 'elk/boilerplate.html' %}
 {% load staticfiles %}
+{% load raven %}
 
 {% block css %}
 {% endblock %}
@@ -29,6 +30,7 @@
 {% block basejs %}
 <script type="text/javascript">
     Project.helpers.stripe_pk = function(){ return "{{ STRIPE_PK }}";}
+    Project.helpers.raven_dsn = function(){ return "{% sentry_public_dsn %}"; }
 </script>
 {% endblock %}
 
