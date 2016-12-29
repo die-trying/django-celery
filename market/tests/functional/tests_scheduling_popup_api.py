@@ -20,14 +20,22 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
     popup. Popup queries free slots as lessons (for hosted lessons
     i.e. master classes) and as teachers.
     """
-    def setUp(self):
-        self.first_teacher = create_teacher()
-        mixer.blend(WorkingHours, teacher=self.first_teacher, weekday=0, start='13:00', end='15:30')  # monday
-        mixer.blend(WorkingHours, teacher=self.first_teacher, weekday=1, start='17:00', end='19:00')  # thursday
+    @classmethod
+    def setUpTestData(cls):
+        """
+        Create two teachers with different working hours
+        """
+        cls.first_teacher = create_teacher()
+        cls.first_teacher.user.last_name = 'A_first'  # for correct ordering
+        cls.first_teacher.user.save()
+        mixer.blend(WorkingHours, teacher=cls.first_teacher, weekday=0, start='13:00', end='15:30')  # monday
+        mixer.blend(WorkingHours, teacher=cls.first_teacher, weekday=1, start='17:00', end='19:00')  # thursday
 
-        self.second_teacher = create_teacher()
-        mixer.blend(WorkingHours, teacher=self.second_teacher, weekday=0, start='13:00', end='15:00')  # monday
-        mixer.blend(WorkingHours, teacher=self.second_teacher, weekday=4, start='17:00', end='19:00')  # thursday
+        cls.second_teacher = create_teacher()
+        cls.second_teacher.user.last_name = 'B_second'  # for correct ordering
+        cls.second_teacher.user.save()
+        mixer.blend(WorkingHours, teacher=cls.second_teacher, weekday=0, start='13:00', end='15:00')  # monday
+        mixer.blend(WorkingHours, teacher=cls.second_teacher, weekday=4, start='17:00', end='19:00')  # thursday
 
     def _buy_a_lesson(self, lesson):
             c = Class(
@@ -74,7 +82,6 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
         self.assertIsTime(records[0]['slots'][0]['server'])  # assert that returned slots carry some time (we dont care about timezones here)
         self.assertIsTime(records[1]['slots'][0]['server'])
 
-        print(records[0])
         self.assertEquals(records[0]['name'], first_master_class.name)
         self.assertEquals(records[1]['name'], second_master_class.name)
 
@@ -111,6 +118,7 @@ class SchdulingPopupSlotsTestCase(ClientTestCase):
         self.assertEquals(response.status_code, 200)
 
         records = json.loads(response.content.decode('utf-8'))
+        print(records)
 
         self.assertEquals(len(records), 2)
         self.assertEquals(len(records[0]['slots']), 5)  # this first teacher works till 15:30
