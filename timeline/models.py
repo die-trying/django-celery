@@ -67,7 +67,8 @@ class EntryManager(models.Manager):
         """
         entries = self.available_for_scheduling(delta=delta) \
             .filter(lesson_type__in=lesson_types) \
-            .distinct('lesson_type', 'lesson_id')
+            .distinct('lesson_type', 'lesson_id') \
+            .order_by('lesson_type')
 
         for entry in entries:
             if entry.lesson.get_photo() is not None:
@@ -95,7 +96,8 @@ class EntryManager(models.Manager):
         entries = self.get_queryset() \
             .filter(start__range=(start, end)) \
             .filter(**kwargs) \
-            .distinct('lesson_type', 'lesson_id')
+            .distinct('lesson_type', 'lesson_id') \
+            .order_by('lesson_type')
 
         for entry in entries:
             yield entry.lesson
