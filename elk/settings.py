@@ -1,5 +1,5 @@
-import os
 from datetime import timedelta
+import os
 
 import environ
 from easy_thumbnails.conf import Settings as thumbnail_settings
@@ -252,7 +252,7 @@ if not DEBUG:
         'handlers': {
             'sentry': {
                 'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
-                'release': revision(None),
+                'release': VERSION[:7],
             },
         },
         'loggers': {
