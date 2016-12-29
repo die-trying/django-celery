@@ -9,7 +9,6 @@ from mixer.backend.django import mixer
 from elk.utils.testing import TestCase, create_teacher
 from lessons import models as lessons
 from market.exceptions import AutoScheduleExpcetion
-from teachers import models
 from teachers.models import Teacher, WorkingHours
 from timeline.models import Entry as TimelineEntry
 
@@ -20,12 +19,13 @@ class TestTeacherManager(TestCase):
     dates should be in remote future, see http://www.timeanddate.com/calendar/?year=2032&country=1
 
     """
-    def setUp(self):
-        self.teacher = create_teacher()
+    @classmethod
+    @override_settings(PLANNING_DELTA=timedelta(hours=2))
+    def setUpTestData(cls):
+        cls.teacher = create_teacher()
 
-        mixer.blend(WorkingHours, teacher=self.teacher, weekday=0, start='13:00', end='15:00')  # monday
-        mixer.blend(WorkingHours, teacher=self.teacher, weekday=1, start='17:00', end='19:00')  # thursday
-        models.PLANNING_DELTA = timedelta(hours=2)
+        mixer.blend(WorkingHours, teacher=cls.teacher, weekday=0, start='13:00', end='15:00')  # monday
+        mixer.blend(WorkingHours, teacher=cls.teacher, weekday=1, start='17:00', end='19:00')  # thursday
 
     def test_get_free_slots(self):
         """
@@ -201,11 +201,10 @@ class TestTeacherManager(TestCase):
         ordinary_lesson_type = lessons.OrdinaryLesson.get_contenttype()
         teachers = list(Teacher.objects.find_free(date=self.tzdatetime(2032, 5, 3), lesson_type=ordinary_lesson_type.pk))
         self.assertEquals(len(teachers), 1)
-        print(teachers[0].free_slots)
         self.assertEquals(len(teachers[0].free_slots), 4)  # should find all timeline entries because ordinary lesson does not require a timeline entry
 
     def test_find_lessons_return_nothing(self):
-        res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3))
+        res = list(Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3)))
         self.assertEqual(len(res), 0)  # should not throw anything
 
     @freeze_time('2032-05-02')
@@ -217,7 +216,7 @@ class TestTeacherManager(TestCase):
             lesson=master_class,
             start=self.tzdatetime(2032, 5, 3, 15, 30),
         )
-        res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3))
+        res = list(Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3)))
         self.assertEqual(len(res), 1)
 
     @freeze_time('2032-05-03 15:31')
@@ -230,7 +229,7 @@ class TestTeacherManager(TestCase):
             lesson=master_class,
             start=self.tzdatetime(2032, 5, 3, 15, 30),
         )
-        res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3))
+        res = list(Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3)))
         self.assertEqual(len(res), 0)
 
     @freeze_time('2032-05-02')
@@ -250,10 +249,10 @@ class TestTeacherManager(TestCase):
             start=self.tzdatetime(2032, 5, 3, 16, 30),
         )
 
-        res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3))
+        res = list(Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3)))
         self.assertEqual(len(res), 2)
 
-        res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3), lesson_type=master_class.get_contenttype())
+        res = list(Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3), lesson_type=master_class.get_contenttype()))
         self.assertEqual(len(res), 1)
 
     @freeze_time('2032-05-02')
@@ -271,7 +270,7 @@ class TestTeacherManager(TestCase):
             slots=5,
             taken_slots=5,
         )
-        res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3))
+        res = list(Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3)))
         self.assertEqual(len(res), 0)
 
     @freeze_time('2032-05-02')
@@ -293,7 +292,7 @@ class TestTeacherManager(TestCase):
         with patch('timeline.models.Entry.clean') as clean:
             clean.side_effect = AutoScheduleExpcetion(message='testing')
 
-            res = Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3))
+            res = list(Teacher.objects.find_lessons(date=self.tzdatetime(2032, 5, 3)))
             self.assertEqual(len(res), 0)
 
     def test_can_finish_classes(self):

@@ -1,3 +1,4 @@
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages.views import SuccessMessageMixin
 from django.utils.decorators import method_decorator
@@ -16,6 +17,12 @@ class _LoginRequiredViewMixin():
         return super().dispatch(*args, **kwargs)
 
 
+class _StaffRequiredViewMixin():
+    @method_decorator(staff_member_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+
 class LoginRequiredListView(_LoginRequiredViewMixin, ListView):
     pass
 
@@ -24,7 +31,15 @@ class LoginRequiredDetailView(_LoginRequiredViewMixin, DetailView):
     pass
 
 
+class StaffRequiredDetailView(_StaffRequiredViewMixin, DetailView):
+    pass
+
+
 class LoginRequiredTemplateView(_LoginRequiredViewMixin, TemplateView):
+    pass
+
+
+class StaffRequiredTemplateView(_StaffRequiredViewMixin, TemplateView):
     pass
 
 

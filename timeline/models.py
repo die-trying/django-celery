@@ -1,36 +1,106 @@
-from datetime import timedelta
-
+from django.apps import apps
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.defaultfilters import capfirst
 from django.utils import timezone
+from django.utils.dateformat import format
 from django.utils.translation import ugettext as _
 
-from accounting.models import Event as AccEvent
 from mailer.ical import Ical
 from market.auto_schedule import AutoSchedule
 from timeline import exceptions
-
-CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)
 
 
 class EntryManager(models.Manager):
     def to_be_marked_as_finished(self):
         """
-        Queryset for entries, that are unfinished, and should be automaticaly
+        Queryset for entries, non-finished timeline entries that should be
         marked as finished.
         """
         return self.get_queryset() \
             .filter(is_finished=False) \
-            .filter(end__lte=timezone.now() - CLASS_IS_FINISHED_AFTER)
+            .filter(end__lte=timezone.now() - settings.CLASS_IS_FINISHED_AFTER)
+
+    def available_for_scheduling(self, delta=None):
+        """
+        Filter entries that are not finished → can be scheduled
+        """
+        if delta is None:
+            delta = settings.PLANNING_DELTA
+
+        return self.get_queryset() \
+            .filter(taken_slots__lt=models.F('slots')) \
+            .filter(is_finished=False) \
+            .filter(start__gte=timezone.now() + delta) \
+
 
     def by_lesson(self, lesson):
-        return self.get_queryset() \
+        """
+        Find timeline entries for a distinct lesson
+        """
+        return self.available_for_scheduling() \
             .filter(lesson_id=lesson.id) \
             .filter(lesson_type=lesson.get_contenttype())
+
+    def by_start(self, lesson, teacher, start):
+        """
+        Find timeline entries by teacher and start.
+
+        Usefull when you know lesson parameters, but don't know particular
+        timeline entry PK.
+        """
+        try:
+            return self.by_lesson(lesson) \
+                .filter(teacher=teacher) \
+                .get(start=start)
+        except self.model.DoesNotExist:
+            pass
+
+    def hosted_lessons_starting_soon(self, lesson_types, delta=None):
+        """
+        Lessons that are starting soon, filtered by lesson_types.
+
+        Assuming no one will search for non-hosted lessons (all of them are already scheduled one-on-one),
+        returns only lessons that have a host.
+        """
+        entries = self.available_for_scheduling(delta=delta) \
+            .filter(lesson_type__in=lesson_types) \
+            .distinct('lesson_type', 'lesson_id') \
+            .order_by('lesson_type')
+
+        for entry in entries:
+            if entry.lesson.get_photo() is not None:
+                if entry.lesson.host is not None:
+                    yield entry.lesson
+
+    def timeslots_by_lesson(self, lesson, start, end):
+        """
+        Generate timeslots for lesson
+        """
+        for entry in self.by_lesson(lesson).filter(start__range=(start, end)):
+            if entry.is_free:
+                try:
+                    entry.clean()
+                except (exceptions.AutoScheduleExpcetion, exceptions.DoesNotFitWorkingHours):
+                    continue
+                yield entry.start
+
+    def lessons_for_date(self, start, end, **kwargs):
+        """
+        Get all lessons, that have timeline entries for the requested period.
+
+        Ignores timeslot availability
+        """
+        entries = self.get_queryset() \
+            .filter(start__range=(start, end)) \
+            .filter(**kwargs) \
+            .distinct('lesson_type', 'lesson_id') \
+            .order_by('lesson_type')
+
+        for entry in entries:
+            yield entry.lesson
 
 
 class Entry(models.Model):
@@ -118,7 +188,7 @@ class Entry(models.Model):
 
     allow_besides_working_hours = models.BooleanField(default=True)
 
-    lesson_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
+    lesson_type = models.ForeignKey('contenttypes.ContentType', on_delete=models.CASCADE, limit_choices_to={'app_label': 'lessons'})
     lesson_id = models.PositiveIntegerField(null=True, blank=True)
     lesson = GenericForeignKey('lesson_type', 'lesson_id')
 
@@ -126,6 +196,15 @@ class Entry(models.Model):
     taken_slots = models.SmallIntegerField('Students', default=0)
 
     is_finished = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['start']
+        unique_together = ['teacher', 'lesson_type', 'start']
+        verbose_name = 'Planned class'
+        verbose_name_plural = 'Planned classes'
+        permissions = (
+            ('other_entries', "Can work with other's timeleine entries"),
+        )
 
     @property
     def is_free(self):
@@ -137,13 +216,17 @@ class Entry(models.Model):
             'pk': self.pk
         })
 
-    class Meta:
-        unique_together = ('teacher', 'lesson_type', 'start')
-        verbose_name = 'Planned class'
-        verbose_name_plural = 'Planned classes'
-        permissions = (
-            ('other_entries', "Can work with other's timeleine entries"),
-        )
+    def get_step2_url(self):
+        """
+        Returns an URL for signing in to the lesson with this timeline entry.
+        """
+        start_time = timezone.localtime(self.start)
+        return reverse('market:step2', kwargs={
+            'teacher': self.teacher.pk,
+            'lesson_type': self.lesson_type.pk,
+            'date': format(start_time, 'Y-m-d'),
+            'time': format(start_time, 'H:i')
+        })
 
     def __str__(self):
         """
@@ -174,7 +257,7 @@ class Entry(models.Model):
         teacher = self.teacher.user.crm.first_name
 
         if hasattr(self.lesson, 'host'):
-            return "«{lesson_name}» with {teacher}".format(
+            return "{lesson_name} with {teacher}".format(
                 lesson_name=self.lesson.name,
                 teacher=teacher,
             )
@@ -200,10 +283,14 @@ class Entry(models.Model):
         """
         Unschedule all attached classes before deletion. Unscheduling a class
         sets it free — user can plan a new lesson on it.
+
+        This is the main method for class cancelation.
         """
         for c in self.classes.all():
             c.cancel(src)
             c.save()
+
+        AccEvent = apps.get_model('accounting.Event')
 
         for event in AccEvent.objects.by_originator(self):
             event.delete()
@@ -221,7 +308,7 @@ class Entry(models.Model):
         """
         Check, if timeline entry is in past
         """
-        if self.end < (timezone.now() + CLASS_IS_FINISHED_AFTER):
+        if self.end < (timezone.now() + settings.CLASS_IS_FINISHED_AFTER):
             return True
         return False
 
@@ -303,7 +390,7 @@ class Entry(models.Model):
 
         if hasattr(self.lesson, 'host') and self.lesson.host is not None:
             if self.teacher != self.lesson.host:
-                raise ValidationError('Trying to assign a timeline entry of %s to %s' % (self.teacher, self.lesson.host))
+                raise exceptions.ValidationError('Trying to assign a timeline entry of %s to %s' % (self.teacher, self.lesson.host))
 
     def __update_slots(self):
         """
@@ -317,7 +404,7 @@ class Entry(models.Model):
         self.taken_slots = self.classes.count()
 
         if self.taken_slots > self.slots:
-            raise ValidationError('Trying to assign a class to event without free slots')
+            raise exceptions.ValidationError('Trying to assign a class to event without free slots')
 
     def __notify_class_that_it_has_been_finished(self, *args, **kwargs):
         """

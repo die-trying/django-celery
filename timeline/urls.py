@@ -3,8 +3,8 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-    url(regex=r'(?P<username>.+)/(?P<pk>\d+)/card/$',
-        view=views.entry_card,
+    url(regex=r'(?P<username>.+)/(?P<pk>\d+)/card/$',  # teacher username is ignored here for URL consistency
+        view=views.TimelineEntryCardView.as_view(),
         name='entry_card',
         ),
     url(regex=r'(?P<username>.+)/(?P<pk>\d+)/delete_customer/(?P<customer>\d+)/$',
@@ -34,5 +34,5 @@ urlpatterns = [
         name='check_entry',
         ),
 
-    url(r'(?P<username>.+)/$', views.calendar, name='timeline'),
+    url(r'(?P<username>.+)/$', views.TeacherCalendar.as_view(), name='timeline'),
 ]

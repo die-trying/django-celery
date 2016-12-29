@@ -10,25 +10,18 @@ from timeline.models import Entry as TimelineEntry
 
 
 class EntryCardTest(ClientTestCase):
-    def setUp(self):
-        self.teacher = create_teacher(works_24x7=True)
-        self.customer = create_customer()
-        self.lesson = mixer.blend(lessons.MasterClass, host=self.teacher, duration=timedelta(minutes=33), slots=8)
+    @classmethod
+    def setUpTestData(cls):
+        cls.teacher = create_teacher(works_24x7=True)
+        cls.customer = create_customer()
+        cls.lesson = mixer.blend(lessons.MasterClass, host=cls.teacher, duration=timedelta(minutes=33), slots=8)
 
+    def setUp(self):
         self.entry = mixer.blend(TimelineEntry,
                                  teacher=self.teacher,
                                  lesson=self.lesson,
                                  start=self.tzdatetime(2032, 12, 1, 15, 0),
                                  )
-
-    def test_404_for_wrong_teacher(self):
-        other_teacher = create_teacher()
-        wrong_url = reverse('timeline:entry_card', kwargs={
-            'username': other_teacher.user.username,
-            'pk': self.entry.pk
-        })
-        response = self.c.get(wrong_url)
-        self.assertEquals(response.status_code, 404)
 
     def test_template_context(self):
         c = Class(
@@ -111,7 +104,7 @@ class EntryCardTest(ClientTestCase):
             'pk': self.entry.pk,
             'customer': self.customer.pk,
         })
-        print(url)
+
         response = self.c.get(url)
         self.assertEqual(response.status_code, 302)
 

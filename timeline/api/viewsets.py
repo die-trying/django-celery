@@ -20,4 +20,4 @@ class TimelineViewset(viewsets.ReadOnlyModelViewSet):
     serializer_class = TimelineEntrySerializer
     filter_class = TimelineFilter
 
-    permission_classes = (StaffMemberRequiredPermission,)
+    permission_classes = [StaffMemberRequiredPermission]

@@ -1,0 +1,28 @@
+<div class="modal-dialog modal-lg timeline-entry-popup">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            <h3 class="timeline-entry-popup__lesson-title modal-title">{{ object.event_title }}</h3>
+        </div>
+        <div class="modal-body">
+            <img class="lesson timeline-entry-popup__lesson-photo" src="{{ object.lesson.get_photo }}" />
+            <div class="timeline-entry-popup__head">
+                <div class="timeline-entry-popup__author">
+                    <img class="teacher-avatar" src="{{ object.lesson.host.get_teacher_avatar }}">
+                    <p>{{ object.lesson.host.user.crm.full_name }}</p>
+                </div>
+                <p class="timeline-entry-popup__start">{{ object.start | date:"SHORT_DATETIME_FORMAT" }}</p>
+                {% if object.taken_slots %}
+                    <p class="timeline-entry-popup__students">Students: {{ object.taken_slots }}/{{ object.slots }} </p>
+                {% endif %}
+            </div>
+            <div class="timeline-entry-popup__lesson-description">
+                {{ object.lesson.description }}
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <a class="btn btn-default btn-primary timeline-entry-popup__submit" href="{{ object.get_step2_url }}">Sign up!</a>
+        </div>
+    </div>
+</div>

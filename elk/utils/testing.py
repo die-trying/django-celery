@@ -133,7 +133,8 @@ class TestCase(StockTestCase):
         self.assertIn(response.status_code, [302, 301])
         self.assertIn(expected_url, response.url)
 
-    def tzdatetime(self, *args, **kwargs):
+    @classmethod
+    def tzdatetime(cls, *args, **kwargs):
         """
         Create a timezoned datetime
         """

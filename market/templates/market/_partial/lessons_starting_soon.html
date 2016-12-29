@@ -1,0 +1,21 @@
+{% if request.user.crm.classes.hosted_lessons_starting_soon %}
+    <div class="row lessons-starting-soon">
+    <div class="col-md-12">
+        <h2>Interesting lessons free for booking</h2>
+        {% for lesson in request.user.crm.classes.hosted_lessons_starting_soon %}
+            <div class="lesson-starting-soon">
+                <img class="lesson" src="{{ lesson.get_photo }}" />
+                <p class="lesson-starting-soon__title">{{ lesson.name }}</p>
+                <p class="lesson-starting-soon__author">{{ lesson.host.user.crm.full_name }}</p>
+                <ul class="lesson-starting-soon__timeslots">
+                {% for timeline_entry in lesson.get_timeline_entries %}
+                    <li><a href="#" class="lesson-starting-soon-entry load-timeline-entry-popup" data-entry-id="{{ timeline_entry.pk }}">
+                        {{ timeline_entry.start | date:"SHORT_DATETIME_FORMAT" }}
+                    </a></li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+{% endif %}

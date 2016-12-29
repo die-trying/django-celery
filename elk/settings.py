@@ -23,6 +23,10 @@ SHORT_DATE_FORMAT = 'D, M d'
 SHORT_DATETIME_FORMAT = 'M d, h:i A'
 TIME_FORMAT = 'h:i a'
 
+TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
+PLANNING_DELTA = timedelta(hours=18)  # booking lag
+CLASS_IS_FINISHED_AFTER = timedelta(minutes=60)  # mark classes as finished after this time
+
 FORMAT_MODULE_PATH = [
     'elk.formats'
 ]
@@ -159,6 +163,7 @@ SUIT_CONFIG = {
         {'app': 'auth', 'label': 'Authorization', 'icon': 'icon-lock', 'models': ('auth.User', 'auth.Group')},
     ),
 }
+IMAGE_CROPPING_JQUERY_URL = None
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
@@ -185,7 +190,8 @@ SOCIAL_AUTH_PIPELINE = (
 )
 
 DEBUG_TOOLBAR_CONFIG = {
-    'JQUERY_URL': '/static/vendor/jquery/dist/jquery.min.js',
+    # 'JQUERY_URL': '/static/vendor/jquery/dist/jquery.min.js',
+    'JQUERY_URL': None,
 }
 DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.versions.VersionsPanel',

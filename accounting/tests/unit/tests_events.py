@@ -11,11 +11,13 @@ from timeline.models import Entry as TimelineEntry
 class TestEventOriginatorProperties(TestCase):
     fixtures = ('lessons',)
 
-    def setUp(self):
-        self.host = create_teacher(works_24x7=True)
-        self.customer = create_customer()
-        self.lesson = lessons.OrdinaryLesson.get_default()
+    @classmethod
+    def setUpTestData(cls):
+        cls.host = create_teacher(works_24x7=True)
+        cls.customer = create_customer()
+        cls.lesson = lessons.OrdinaryLesson.get_default()
 
+    def setUp(self):
         self.c = self._buy_a_lesson()
         self.entry = self._create_entry()
         self._schedule()
@@ -54,7 +56,7 @@ class TestEventOriginatorProperties(TestCase):
             time=self.entry.start.strftime('%H:%M'),
         )
         result = hat.do_the_thing()
-        print(hat.err)
+
         self.assertTrue(result, "Cant schedule a lesson!")
         hat.c.save()
 

@@ -20,18 +20,14 @@ from market.exceptions import AutoScheduleExpcetion
 from teachers.slot_list import SlotList
 from timeline.exceptions import DoesNotFitWorkingHours
 
-TEACHER_GROUP_ID = 2  # PK of django.contrib.auth.models.Group with the teacher django-admin permissions
-
-PLANNING_DELTA = datetime.timedelta(hours=18)  # booking lag
-
 
 def _planning_ofsset(start):
     """
     Returns a minimal start time, that is available for planning
     """
 
-    if start < (timezone.now() + PLANNING_DELTA):
-        start = timezone.now() + PLANNING_DELTA
+    if start < (timezone.now() + settings.PLANNING_DELTA):
+        start = timezone.now() + settings.PLANNING_DELTA
 
     if start.minute > 0 and start.minute < 30:
         start = start.replace(minute=30)
@@ -85,36 +81,12 @@ class TeacherManager(models.Manager):
         start = _planning_ofsset(date)
         end = start.replace(hour=23, minute=59)
 
-        lessons = []
-        for lesson in self.__lessons_for_date(start, end, **kwargs):
-            lesson.free_slots = SlotList(self.__timeslots_by_lesson(lesson, start, end))
+        TimelineEntry = apps.get_model('timeline.Entry')
+
+        for lesson in TimelineEntry.objects.lessons_for_date(start, end, **kwargs):
+            lesson.free_slots = SlotList(TimelineEntry.objects.timeslots_by_lesson(lesson, start, end))
             if len(lesson.free_slots):
-                lessons.append(lesson)
-
-        return lessons
-
-    def __lessons_for_date(self, start, end, **kwargs):
-        """
-        Get all lessons, that have timeline entries for the requested period.
-
-        Ignores timeslot availability
-        """
-        TimelineEntry = apps.get_model('timeline.entry')
-        for timeline_entry in TimelineEntry.objects.filter(start__range=(start, end)).filter(**kwargs).distinct('lesson_id'):
-            yield timeline_entry.lesson
-
-    def __timeslots_by_lesson(self, lesson, start, end):
-        """
-        Generate timeslots for lesson
-        """
-        TimelineEntry = apps.get_model('timeline.entry')
-        for entry in TimelineEntry.objects.by_lesson(lesson).filter(start__range=(start, end)):
-            if entry.is_free:
-                try:
-                    entry.clean()
-                except (AutoScheduleExpcetion, DoesNotFitWorkingHours):
-                    continue
-                yield entry.start
+                yield lesson
 
     def can_finish_classes(self):
         """
@@ -154,6 +126,7 @@ class Teacher(models.Model):
 
     class Meta:
         verbose_name = 'Teacher profile'
+        ordering = ['user__last_name']
 
     def save(self, *args, **kwargs):
         """
@@ -161,7 +134,7 @@ class Teacher(models.Model):
         """
         if not self.pk:
             try:
-                group = Group.objects.get(pk=TEACHER_GROUP_ID)
+                group = Group.objects.get(pk=settings.TEACHER_GROUP_ID)
                 self.user.groups.add(group)
                 self.user.save()
             except Group.DoesNotExist:

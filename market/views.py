@@ -5,11 +5,12 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
 from elk.logging import logger
-from elk.views import LoginRequiredTemplateView
+from elk.views import LoginRequiredDetailView, LoginRequiredTemplateView
 from lessons.api.serializers import factory as lesson_serializer_factory
 from market.sortinghat import SortingHat
 from teachers.api.serializers import TeacherSerializer, TimeSlotSerializer
 from teachers.models import Teacher
+from timeline.models import Entry as TimelineEntry
 
 
 class CustomerLessons(LoginRequiredTemplateView):
@@ -20,6 +21,11 @@ class CustomerLessons(LoginRequiredTemplateView):
 
         ctx['object_list'] = self.request.user.crm.classes.passed_or_scheduled()
         return ctx
+
+
+class TimelineEntryPopup(LoginRequiredDetailView):
+    template_name = 'market/timeline_entry_popup/timeline_entry_popup.html'
+    model = TimelineEntry
 
 
 @login_required
@@ -48,7 +54,7 @@ def lessons(request, date, lesson_type):
     Return a JSON of avaialble time slots for distinct date and lesson_type
     """
     date = timezone.make_aware(parse_datetime(date + ' 00:00:00'))
-    lessons = Teacher.objects.find_lessons(date=date, lesson_type=lesson_type)
+    lessons = list(Teacher.objects.find_lessons(date=date, lesson_type=lesson_type))
     if not lessons:
         raise Http404('No lessons found on this date')
 
@@ -68,11 +74,11 @@ def step1(request):
 
 
 @login_required
-def step2(request, teacher, type_id, date, time):
+def step2(request, teacher, lesson_type, date, time):
     hat = SortingHat(
         customer=request.user.crm,
         teacher=get_object_or_404(Teacher, pk=teacher),
-        lesson_type=type_id,
+        lesson_type=lesson_type,  # numeric
         date=date,
         time=time,
     )

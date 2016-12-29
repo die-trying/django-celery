@@ -2,6 +2,7 @@ from abc import abstractproperty
 from datetime import timedelta
 
 from django.apps import apps
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -11,7 +12,6 @@ from django.utils import timezone
 from djmoney.models.fields import MoneyField
 
 from market import exceptions, signals
-from teachers.models import PLANNING_DELTA
 
 MARK_CLASSES_AS_USED_AFTER = timedelta(hours=1)
 
@@ -228,12 +228,9 @@ class ClassesManager(ProductContainerManager):
 
     def starting_soon(self, delta):
         """
-        Return a queryset with classes, that are about to start in `delta` time.
-
-        Delta is a python datetime.timedelta.
+        Return a queryset with classes, whos timeline entries are about
+        to start in `delta` time.
         """
-        print(timezone.now() + delta)
-
         return self.get_queryset() \
             .filter(is_scheduled=True) \
             .filter(timeline__start__range=(timezone.now(), timezone.now() + delta))
@@ -258,6 +255,20 @@ class ClassesManager(ProductContainerManager):
 
         return [sort_order[i] for i in sorted(sort_order.keys())]
 
+    def hosted_lessons_starting_soon(self):
+        """
+        Return a list of hosted lessons that are about to start, sorted by lesson_type.
+
+        There is only one test for ClassesManager.hosted_lessons_starting_soon() because
+        all the logic is in the TimelineEntryManager's same method.
+        """
+        TimelineEntry = apps.get_model('timeline.Entry')
+        result = []
+        for lesson_type in self.purchased_lesson_types():
+            result += list(TimelineEntry.objects.hosted_lessons_starting_soon(lesson_types=[lesson_type]))[:3]
+
+        return result
+
     def find_student_classes(self, lesson_type):
         """
         Find students, that can schedule a lesson_type
@@ -275,7 +286,7 @@ class ClassesManager(ProductContainerManager):
         """
         current = timezone.now()
 
-        if timezone.localtime(current + PLANNING_DELTA).day != timezone.localtime(current).day:
+        if timezone.localtime(current + settings.PLANNING_DELTA).day != timezone.localtime(current).day:
             current += timedelta(days=1)
 
         for i in range(0, 14):

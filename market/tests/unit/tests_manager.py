@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import override_settings
 from django.utils import timezone
 from freezegun import freeze_time
+from mixer.backend.django import mixer
 
 from elk.utils.testing import TestCase, create_customer, create_teacher
 from lessons import models as lessons
@@ -77,6 +78,15 @@ class TestClassManager(TestCase):
             self.assertEquals(self.customer.classes.starting_soon(timedelta(minutes=89)).count(), 0)
             self.assertEquals(self.customer.classes.starting_soon(timedelta(minutes=91)).count(), 1)
 
+    def test_hosted_lessons_starting_soon(self):
+        teacher = create_teacher()
+        lesson = mixer.blend(lessons.MasterClass, host=teacher, photo=mixer.RANDOM)
+        mixer.blend('timeline.Entry', lesson=lesson, teacher=teacher, start=self.tzdatetime(2032, 12, 25, 12, 00))
+
+        hosted_lessons_starting_soon = self.customer.classes.hosted_lessons_starting_soon()
+        self.assertEqual(len(hosted_lessons_starting_soon), 1)
+        self.assertEqual(hosted_lessons_starting_soon[0], lesson)
+
     def test_nearest_dont_return_past_classes(self):
         """
         Test if clases.nearest_scheduled() does not return classes in the past
@@ -136,10 +146,10 @@ class TestClassManager(TestCase):
         # fill free to modify this if you've changed the booking lag
 
     @freeze_time('2032-12-05 02:00')
+    @override_settings(PLANNING_DELTA=timedelta(hours=23))
     def test_dates_for_planning_tomorrow(self):
         timezone.activate('US/Eastern')
 
-        models.PLANNING_DELTA = timedelta(hours=23)
         dates = list(self.customer.classes.dates_for_planning())
 
         self.assertEquals(len(dates), 14)
