@@ -4,6 +4,7 @@
 #
 #
 
+rm .elk/.env
 
 rm -Rf .git
 

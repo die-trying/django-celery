@@ -11,9 +11,8 @@ machine:
 
 dependencies:
   pre:
-    - pip install --upgrade pip
     - pip install flake8 mccabe pycodestyle pyflakes
-    - chmod +x ./build/*.sh
+    - chmod +x ./build/*.sh .deploy/*.sh
 
   post:
     - bower install
@@ -37,8 +36,6 @@ test:
   post:
     - bash <(curl -s https://codecov.io/bash) -t 8ce25f6b-eaf8-442a-aab4-fb6218384b6e
     - ./build/strip-for-production.sh
-    - rm elk/.env
-    - chmod +x .deploy/*.sh
 
 deployment:
   production:
