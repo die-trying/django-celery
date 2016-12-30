@@ -99,6 +99,8 @@ class Subscription(ProductContainer):
 
     duration = models.DurationField(editable=False)  # every subscription cares a duration field, taken from its product
 
+    first_lesson_date = models.DateTimeField('Date of the first lesson', editable=False)
+
     def __str__(self):
         return self.name_for_user
 
@@ -160,6 +162,16 @@ class Subscription(ProductContainer):
             return
         else:
             self.mark_as_fully_used()
+
+    def update_first_lesson_date(self):
+        """
+        Set the first lesson date, if required
+        """
+        if self.first_lesson_date is None:
+            first_class = self.classes.filter(timeline__isnull=False).order_by('timeline__start').first()
+            if first_class:
+                self.first_lesson_date = first_class.timeline.start
+                self.save()
 
     def class_status(self):
         """
@@ -361,10 +373,13 @@ class Class(ProductContainer):
 
     def mark_as_fully_used(self):
         """
-        Notify a parent subscription, that it might be fully used
+        The only method you should use to mark a class as finished.
+            - Set, if required, the first lesson date of the parent subscription
+            — Notify a parent subscription, that it might be fully used
         """
         super().mark_as_fully_used()
         if self.subscription:
+            self.subscription.update_first_lesson_date()
             self.subscription.check_is_fully_finished()
 
     def _save_scheduled(self, *args, **kwargs):
