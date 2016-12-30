@@ -52,16 +52,12 @@ class ModelAdmin(ImageCroppingMixin, admin.ModelAdmin, AdminHelpersMixin):
 
         media._js = []
         media.add_js(scripts)
-        print(scripts)
 
         return media
 
     class Media:
         js = [
             '/admin/jsi18n/',  # django-suit forgets to include this script
-
-            'admin/js/calendar.js',
-            'admin/js/admin/DateTimeShortcuts.js',  # let calendar js work on all pages, not only on details
         ]
 
 
