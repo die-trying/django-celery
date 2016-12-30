@@ -10,7 +10,7 @@ from products.models import Product1
 
 
 @freeze_time('2032-12-01 12:00')
-class TestSUbscriptionUnit(TestCase):
+class TestSubscriptionUnit(TestCase):
     fixtures = ('products', 'lessons')
 
     @classmethod
@@ -40,8 +40,18 @@ class TestSUbscriptionUnit(TestCase):
         c.save()
 
     def test_is_due(self):
+        self.s.first_lesson_date = self.tzdatetime(2032, 12, 2, 12, 0)
+        self.s.save()
         self.assertFalse(self.s.is_due())
-        with freeze_time('2032-12-07 12:00'):  # move 6 days forward
+        with freeze_time('2032-12-10 12:00'):  # move 9 days forward
+            self.assertTrue(self.s.is_due())
+
+    def test_is_due_for_subscription_without_any_completed_class(self):
+        """
+        For subscription without classes is_due should be based on their buy_date
+        """
+        self.assertFalse(self.s.is_due())
+        with freeze_time('2032-12-10 12:00'):  # move 9 days forward
             self.assertTrue(self.s.is_due())
 
     def test_update_first_lesson_date(self):

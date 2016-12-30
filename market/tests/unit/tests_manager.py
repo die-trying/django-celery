@@ -17,10 +17,13 @@ class TestClassManager(TestCase):
     fixtures = ('lessons', 'products')
     TEST_PRODUCT_ID = 1
 
+    @classmethod
+    def setUpTestData(cls):
+        cls.customer = create_customer()
+        cls.product = products.Product1.objects.get(pk=cls.TEST_PRODUCT_ID)
+        cls.product.duration = timedelta(days=5)
+
     def setUp(self):
-        self.customer = create_customer()
-        self.product = products.Product1.objects.get(pk=self.TEST_PRODUCT_ID)
-        self.product.duration = timedelta(days=5)
         self.subscription = models.Subscription(
             customer=self.customer,
             product=self.product,
@@ -174,8 +177,24 @@ class TestClassManager(TestCase):
         self.assertFalse(c.is_fully_used)
         self.assertIsNone(c.timeline)
 
-    def test_due_queryset(self):
+    def test_due_queryset_based_on_buy_date(self):
         self.assertEqual(models.Subscription.objects.due().count(), 0)
 
         with freeze_time('2032-12-20'):
             self.assertEqual(models.Subscription.objects.due().count(), 1)
+
+    def test_due_queryset_based_on_first_lesson_date(self):
+        self.assertEqual(models.Subscription.objects.due().count(), 0)
+
+        self.subscription.first_lesson_date = self.tzdatetime(2011, 12, 1, 12, 0)  # set first lesson date to far-far ago
+        self.subscription.save()
+
+        self.assertEqual(models.Subscription.objects.due().count(), 1)
+
+    def test_due_queryset_ignores_buy_date_of_lessons_that_have_first_lesson_date(self):
+        self.subscription.buy_date = self.tzdatetime(2011, 12, 1, 12, 0)  # far-far ago
+        self.subscription.first_lesson_date = self.tzdatetime(2032, 10, 29, 12, 0)  # almost yesterday
+
+        self.subscription.save()
+
+        self.assertEqual(models.Subscription.objects.due().count(), 0)

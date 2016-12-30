@@ -7,7 +7,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Q
 from django.utils import timezone
 from djmoney.models.fields import MoneyField
 
@@ -74,9 +74,12 @@ class SubscriptionManager(ProductContainerManager):
 
         Please don't forget to update admin method IsDueFilter, copy-pasted from this queryset, sorry
         """
+        edge_date = timezone.now() - F('duration')
+
         return self.get_queryset().filter(
             is_fully_used=False,
-            buy_date__lte=timezone.now() - F('duration')
+        ).filter(
+            Q(first_lesson_date__lte=edge_date) | Q(first_lesson_date__isnull=True, buy_date__lte=edge_date)
         )
 
 
@@ -202,10 +205,18 @@ class Subscription(ProductContainer):
 
     def is_due(self):
         """
-        Returns true if subscription is due
+        Returns true if subscription is due.lesson_type
+
+        Due subscription is a subscription, which products period has passed till
+        its buy_date or first_lesson_date
         """
-        if self.buy_date + self.duration <= timezone.now():
-            return True
+        if self.first_lesson_date is not None:
+            if self.first_lesson_date + self.duration <= timezone.now():
+                return True
+        else:
+            if self.buy_date + self.duration <= timezone.now():
+                return True
+
         return False
 
 
