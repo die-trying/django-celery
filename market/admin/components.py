@@ -53,8 +53,19 @@ class SubscriptionsInline(TabularInline):
         return False
 
 
-class ClassesInlineBase(TabularInline):
+class ClassesInline(TabularInline):
     model = Class
+    verbose_name = 'Purchased lesson'
+    verbose_name_plural = 'Purchased lessons'
+    readonly_fields = ['lesson_type', 'teacher', 'scheduled_time']
+    fieldsets = (
+        (None, {
+            'fields': ('lesson_type', 'teacher', 'scheduled_time')
+        }),
+    )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).order_by('timeline__start')
 
     def has_add_permission(self, request):
         """
@@ -66,59 +77,14 @@ class ClassesInlineBase(TabularInline):
     def has_delete_permission(self, request, instance):
         return False
 
-    def buy_time(self, instance):
-        return self._datetime(instance.buy_date)
-
-
-class ClassesLeftInline(ClassesInlineBase):
-    verbose_name = 'Purchased lesson'
-    verbose_name_plural = 'Purchased lessons left'
-    readonly_fields = ('lesson_type', 'source', 'buy_time')
-    fieldsets = (
-        (None, {
-            'fields': ('lesson_type', 'source', 'buy_time')
-        }),
-    )
-
-    def source(self, instance):
-        if not instance.subscription:
+    def scheduled_time(self, instance):
+        if instance.timeline is not None:
+            return self._datetime(instance.timeline.start)
+        else:
             return '—'
-        else:
-            return str(instance.subscription.product)
-
-    def buy_time(self, instance):
-        if not instance.subscription:
-            return super().buy_time(instance)
-        return '—'
-
-    def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-        return queryset.exclude(is_fully_used=True)
-
-
-class ClassesPassedInline(ClassesInlineBase):
-    verbose_name = 'Lesson'
-    verbose_name_plural = 'Passed classes'
-
-    def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-        return queryset.filter(timeline__start__lt=timezone.now())  # TODO: replace it with .is_full_used property
-
-    readonly_fields = ('lesson', 'teacher')
-    fieldsets = (
-        (None, {
-            'fields': ('lesson', 'teacher')
-        }),
-    )
-
-    def lesson(self, instance):
-        """
-        Display actual lesson name for hosted lessons
-        """
-        if not hasattr(instance.timeline.lesson, 'host'):
-            return instance.lesson
-        else:
-            return instance.timeline.lesson.name
 
     def teacher(self, instance):
-        return instance.timeline.teacher.user.crm.full_name
+        if instance.timeline is not None:
+            return str(instance.timeline.teacher)
+        else:
+            return '—'

@@ -8,7 +8,7 @@ from crm.models import Customer, CustomerNote
 from elk.admin import ModelAdmin, StackedInline
 from elk.admin.filters import BooleanFilter
 from elk.templatetags.skype import skype_chat
-from market.admin.components import ClassesLeftInline, ClassesPassedInline, SubscriptionsInline
+from market.admin.components import ClassesInline, SubscriptionsInline
 
 
 class HasClassesFilter(BooleanFilter):
@@ -115,7 +115,7 @@ class CustomerAdmin(ModelAdmin):
         'associated_account'
     ]
     search_fields = ('user__first_name', 'user__last_name', 'user__email')
-    inlines = (CustomerNotesInline, SubscriptionsInline, ClassesLeftInline, ClassesPassedInline)
+    inlines = (CustomerNotesInline, SubscriptionsInline, ClassesInline)
     fieldsets = (
         (None, {
             'fields': (
