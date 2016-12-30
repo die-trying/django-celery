@@ -6,8 +6,9 @@ from timeline.models import Entry as TimelineEntry
 
 
 class TestEventManager(TestCase):
-    def setUp(self):
-        self.teacher = create_teacher()
+    @classmethod
+    def setUpTestData(cls):
+        cls.teacher = create_teacher()
 
     def test_find_events_by_originator_ok(self):
         originator = mixer.blend(TimelineEntry, teacher=self.teacher)

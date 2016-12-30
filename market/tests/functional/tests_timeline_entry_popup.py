@@ -8,16 +8,17 @@ from timeline.models import Entry as TimelineEntry
 
 @freeze_time('2032-12-01 12:00')
 class TimelineEntryPopupTestCase(ClientTestCase):
-    def setUp(self):
-        self.host = create_teacher(works_24x7=True)
+    @classmethod
+    def setUpTestData(cls):
+        cls.host = create_teacher(works_24x7=True)
 
-        self.lesson = mixer.blend(lessons.MasterClass, host=self.host, photo=mixer.RANDOM)
+        cls.lesson = mixer.blend(lessons.MasterClass, host=cls.host, photo=mixer.RANDOM)
 
-        self.entry = mixer.blend(
+        cls.entry = mixer.blend(
             TimelineEntry,
-            teacher=self.host,
-            lesson=self.lesson,
-            start=self.tzdatetime(2032, 12, 5, 13, 00)
+            teacher=cls.host,
+            lesson=cls.lesson,
+            start=cls.tzdatetime(2032, 12, 5, 13, 00)
         )
 
     def test_popup_loading_fail(self):

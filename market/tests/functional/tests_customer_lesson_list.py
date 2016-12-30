@@ -7,13 +7,11 @@ from lessons import models as lessons
 
 @override_settings(TIME_ZONE='UTC')
 class TestCustomerLessonList(ClassIntegrationTestCase):
+
     def setUp(self):
         super().setUp()
 
-        self.customer = create_customer(timezone='UTC')  # avoid timezone issues during re-login
-        self.customer.user.set_password('hidooZohLu0e')
-        self.customer.user.save()
-
+        self.customer = create_customer(timezone='UTC', password='hidooZohLu0e')  # avoid timezone issues during re-login
         self.c.logout()
         self.c.login(username=self.customer.user.username, password='hidooZohLu0e')
 

@@ -9,13 +9,14 @@ from market.auto_schedule import AutoSchedule, BusyPeriods
 
 
 class TestBusyPeriods(TestCase):
-    def setUp(self):
-        self.teacher = create_teacher()
+    @classmethod
+    def setUpTestData(cls):
+        cls.teacher = create_teacher()
         mixer.blend(
             'extevents.ExternalEvent',
-            teacher=self.teacher,
-            start=self.tzdatetime(2032, 12, 5, 13, 30),
-            end=self.tzdatetime(2032, 12, 5, 14, 30),
+            teacher=cls.teacher,
+            start=cls.tzdatetime(2032, 12, 5, 13, 30),
+            end=cls.tzdatetime(2032, 12, 5, 14, 30),
         )
 
     def test_from_queryset(self):
@@ -91,8 +92,9 @@ class TestBusyPeriods(TestCase):
 
 
 class TestAutoschedule(TestCase):
-    def setUp(self):
-        self.teacher = create_teacher()
+    @classmethod
+    def setUpTestData(cls):
+        cls.teacher = create_teacher()
 
     def test_init_extevents(self):
         for i in range(0, 10):

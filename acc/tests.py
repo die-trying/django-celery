@@ -21,7 +21,6 @@ class TestSaveSocialProfile(SaveSocialProfile):
 
 
 class TestSocialPipeline(TestCase):
-
     def setUp(self):
         responses.add(responses.GET,
                       'http://testing.test/testpic.jpg',
@@ -70,10 +69,8 @@ class TestSocialPipeline(TestCase):
 
 
 class TestLoginPage(ClientTestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.c.logout()
+    def setUp(self):
+        self.c.logout()
 
     def test_login_page_redirect(self):
         response = self.c.get('/')

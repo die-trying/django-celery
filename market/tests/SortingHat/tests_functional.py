@@ -14,10 +14,11 @@ from timeline.models import Entry as TimelineEntry
 class SchedulingPopupTestCaseBase(ClientTestCase):
     fixtures = ('lessons',)
 
-    def setUp(self):
-        self.customer = create_customer()
-        self.host = create_teacher()
-        mixer.blend(WorkingHours, teacher=self.host, weekday=0, start='13:00', end='15:00')  # monday
+    @classmethod
+    def setUpTestData(cls):
+        cls.customer = create_customer()
+        cls.host = create_teacher()
+        mixer.blend(WorkingHours, teacher=cls.host, weekday=0, start='13:00', end='15:00')  # monday
 
     def _buy_a_lesson(self, lesson):
         c = Class(
@@ -49,7 +50,6 @@ class SchedulingPopupTestCaseBase(ClientTestCase):
 
 
 class TestSchedulingPopupHTML(SchedulingPopupTestCaseBase):
-
     def test_lesson_categories(self):
         """
         Buy two lessons of different type and assure that filter of two types

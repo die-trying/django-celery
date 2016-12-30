@@ -10,10 +10,11 @@ from market.models import Class
 
 
 class UserCancellationTestCase(ClientTestCase):
-    def setUp(self):
-        self.customer = create_customer()
-        self.teacher = create_teacher(works_24x7=True)
-        self.lesson = mixer.blend(lessons.OrdinaryLesson, customer=self.customer)
+    @classmethod
+    def setUpTestData(cls):
+        cls.customer = create_customer()
+        cls.teacher = create_teacher(works_24x7=True)
+        cls.lesson = mixer.blend(lessons.OrdinaryLesson, customer=cls.customer)
 
     def _buy_a_lesson(self):
         c = Class(

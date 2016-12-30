@@ -4,10 +4,11 @@ from elk.utils.testing import ClientTestCase, create_customer
 
 
 class TestMailchimpExport(ClientTestCase):
-    def setUp(self):
-        self.customers = []
+    @classmethod
+    def setUpTestData(cls):
+        cls.customers = []
         for i in range(0, 10):
-            self.customers.append(create_customer())
+            cls.customers.append(create_customer())
 
     def test_csv_export(self):
         ids = ','.join([str(customer.pk) for customer in self.customers])

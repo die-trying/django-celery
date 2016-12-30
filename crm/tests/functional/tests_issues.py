@@ -4,11 +4,13 @@ from elk.utils.testing import ClientTestCase, create_customer
 
 
 class TestIssueCreation(ClientTestCase):
-    def setUp(self):
-        self.customer = create_customer()
-        self.customer.user.set_password('Vae7peeVafi8')
-        self.customer.user.save()
+    @classmethod
+    def setUpTestData(cls):
+        cls.customer = create_customer()
+        cls.customer.user.set_password('Vae7peeVafi8')
+        cls.customer.user.save()
 
+    def setUp(self):
         self.c.logout()
         self.c.login(username=self.customer.user.username, password='Vae7peeVafi8')
 

@@ -7,16 +7,17 @@ from products.models import Product1
 class TestSubscriptionStatus(TestCase):
     fixtures = ('products', 'lessons')
 
-    def setUp(self):
-        self.customer = create_customer()
-        self.teacher = create_teacher(works_24x7=True)
-        self.subscription = Subscription(
-            customer=self.customer,
+    @classmethod
+    def setUpTestData(cls):
+        cls.customer = create_customer()
+        cls.teacher = create_teacher(works_24x7=True)
+        cls.subscription = Subscription(
+            customer=cls.customer,
             product=Product1.objects.get(pk=1),
             buy_price=150,
         )
 
-        self.subscription.save()
+        cls.subscription.save()
 
     def _schedule(self, c, date=None):
         if date is None:
