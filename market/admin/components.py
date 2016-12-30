@@ -1,5 +1,3 @@
-from django.utils import timezone
-
 from elk.admin import ModelAdmin, TabularInline
 from elk.admin.filters import BooleanFilter
 from market.models import Class, Subscription
