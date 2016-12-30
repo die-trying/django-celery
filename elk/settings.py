@@ -131,7 +131,8 @@ MIDDLEWARE_CLASSES = [
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = [
-    '--nologcapture'
+    '--nologcapture',
+    '--with-yanc'
 ]
 
 ROOT_URLCONF = 'elk.urls'
