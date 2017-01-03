@@ -102,7 +102,7 @@ class Subscription(ProductContainer):
 
     duration = models.DurationField(editable=False)  # every subscription cares a duration field, taken from its product
 
-    first_lesson_date = models.DateTimeField('Date of the first lesson', editable=False)
+    first_lesson_date = models.DateTimeField('Date of the first lesson', editable=False, null=True)
 
     def __str__(self):
         return self.name_for_user
