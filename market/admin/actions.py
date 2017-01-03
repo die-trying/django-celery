@@ -1,10 +1,9 @@
 from django import forms
 from django.contrib import admin
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import redirect
 
 from elk.admin.forms import ActionFormWithParams
 from elk.logging import write_admin_log_entry
-from manual_class_logging.signals import class_marked_as_used, class_renewed
 from teachers.models import Teacher
 
 
@@ -30,8 +29,6 @@ def mark_as_used(modeladmin, request, queryset):
     if pk == -1:  # when no teacher is specified
         pk = request.user.teacher_data.pk
 
-    teacher = get_object_or_404(Teacher, pk=pk)
-
     for c in queryset.all():
         if not c.is_fully_used:
             c.mark_as_fully_used()
@@ -40,7 +37,6 @@ def mark_as_used(modeladmin, request, queryset):
                 object=c,
                 msg='Marked as used',
             )
-            class_marked_as_used.send(sender=mark_as_used, instance=c, teacher=teacher)
 
 
 def renew(modeladmin, request, queryset):
@@ -53,8 +49,6 @@ def renew(modeladmin, request, queryset):
     if pk == -1:  # when no teacher is specified
         pk = request.user.teacher_data.pk
 
-    teacher = get_object_or_404(Teacher, pk=pk)
-
     for c in queryset.all():
         if c.is_fully_used:
             c.renew()
@@ -63,7 +57,6 @@ def renew(modeladmin, request, queryset):
                 object=c,
                 msg='Renewed',
             )
-            class_renewed.send(sender=renew, instance=c, teacher=teacher)
 
 
 def export_emails(modeladmin, request, queryset):

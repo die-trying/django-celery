@@ -12,7 +12,7 @@ def mark_double_scheduled_classes(apps, schema_editor):
     For details of the fix, see the rest of the commit
     """
     Class = apps.get_model('market.Class')
-    for c in Class.objects.filter(manualy_completed_classes__isnull=False, timeline__isnull=False):
+    for c in Class.objects.filter(timeline__isnull=False):
         print("Got double-marked class for", c.customer.user.first_name, c.customer.user.last_name)
         print(" → Double marked class id", c.pk)
         print(" → Findind the actual class to mark as used")

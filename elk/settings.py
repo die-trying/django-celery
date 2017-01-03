@@ -78,7 +78,6 @@ INSTALLED_APPS = [
     'history',  # an app for future data mining — all significant user actions are recorded here
     'mailer',
     'extevents',  # integrations with external calendars, like Google's one
-    'manual_class_logging',  # temporary app to log classes completed outside the system. Should be deleted in 2016
     'accounting',  # teacher accounting — passed classes, customer inspired cancellation etc
     'payments',  # students payment processing
 
