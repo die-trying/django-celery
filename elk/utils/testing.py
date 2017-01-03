@@ -9,7 +9,7 @@ TODO: move create_* functions to separate factory class
 """
 import random
 from datetime import datetime
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, patch
 
 import pytz
 from django.conf import settings
@@ -26,6 +26,16 @@ from lessons import models as lessons
 from market.models import Class
 from market.sortinghat import SortingHat
 from timeline.models import Entry as TimelineEntry
+
+__all__ = [
+    'TestCase',
+    'ClientTestCase',
+    'create_teacher',
+    'create_customer',
+    'mixer',
+    'MagicMock',
+    'patch',
+]
 
 
 def __add_all_lessons(teacher):
@@ -84,7 +94,7 @@ def mock_request(customer=None):
     Mock a request object, typicaly used for tests when buying a class
     """
 
-    request = Mock()
+    request = MagicMock()
     request.user_agent.is_mobile = bool(random.getrandbits(1))
     request.user_agent.is_tablet = bool(random.getrandbits(1))
     request.user_agent.is_pc = bool(random.getrandbits(1))
