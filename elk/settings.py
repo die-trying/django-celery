@@ -75,7 +75,6 @@ INSTALLED_APPS = [
     'timeline',  # teachers curricullom
     'teachers',  # teachers database
     'acc',   # acc — loggin in and out, homepage
-    'history',  # an app for future data mining — all significant user actions are recorded here
     'mailer',
     'extevents',  # integrations with external calendars, like Google's one
     'accounting',  # teacher accounting — passed classes, customer inspired cancellation etc

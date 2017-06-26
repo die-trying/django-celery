@@ -12,7 +12,6 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('history', '0003_auto_20161014_1628'),
         ('crm', '0021_issue'),
         ('contenttypes', '0002_remove_content_type_name'),
     ]

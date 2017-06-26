@@ -14,7 +14,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ('contenttypes', '0002_remove_content_type_name'),
         ('crm', '0021_issue'),
-        ('history', '0006_auto_20161018_1229'),
         ('payments', '0001_initial'),
     ]
 
