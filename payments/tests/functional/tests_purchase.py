@@ -38,18 +38,6 @@ class TestPayments(TestCase):
 
         self.assertIsNotNone(self.customer.subscriptions.first())  # chage() should have shipped the subscription
 
-    def test_history_event_creation(self):
-        p = StripePayment(
-            customer=self.customer,
-            product=self.product,
-            cost=Money(300, RUB)
-        )
-
-        patch_stripe(p, success=True)
-        p.charge(request=mock_request())
-
-        self.assertIsNotNone(self.customer.payment_events.by_payment(p).first())
-
     def test_charge_result(self):
         """
         Charge() should return a boolean result of stripe communication

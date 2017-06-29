@@ -52,17 +52,6 @@ class Payment(models.Model):
         """
         self.product.ship(self.customer)
 
-    def _log_payment_event(self, request):
-        PaymentEvent = apps.get_model('history.PaymentEvent')
-        ev = PaymentEvent(
-            customer=self.customer,
-            product=self.product,
-            price=self.cost,
-            payment=self,
-        )
-        ev.request = request
-        ev.save()
-
 
 class StripePayment(Payment):
     def __init__(self, *args, **kwargs):
@@ -78,7 +67,6 @@ class StripePayment(Payment):
         result = self._charge_by_stripe()
         if result:
             self.save()
-            self._log_payment_event(request)
             self.ship()
 
         return result
