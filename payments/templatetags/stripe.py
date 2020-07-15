@@ -1,7 +1,6 @@
 from django import template
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.template import Context
 from django.template.loader import get_template
 
 from payments.stripe import stripe_amount, stripe_currency
@@ -19,13 +18,13 @@ def stripe_form(context, caption, classes, *args, **kwargs):
     ctx['caption'] = caption
     ctx['classes'] = classes
 
-    return tpl.render(Context(ctx))
+    return tpl.render(ctx)
 
 
 @register.simple_tag
 def stripe_processing_popup():
     tpl = get_template('payments/_partial/processing-popup.html')
-    return tpl.render(Context({}))
+    return tpl.render()
 
 
 def _ctx(product, cost, crm):

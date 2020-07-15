@@ -58,6 +58,7 @@ class EntryAPITest(APITestCase):
             'teacher': self.teacher.pk,
             'start_0': '2013-01-01',
             'start_1': '2016-01-03',
+
         })
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(len(data), 3)

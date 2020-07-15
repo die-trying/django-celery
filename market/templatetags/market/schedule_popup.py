@@ -1,4 +1,5 @@
 from django import template
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
 register = template.Library()
@@ -36,7 +37,7 @@ def lesson_type_filter(types):
             query_type=query_type,  # what popup should query — available teachers (for regular lessons), or avaialbe slots (for lesson_types)
             name=lesson_type.model_class()._meta.verbose_name
         )
-    return result
+    return mark_safe(result)
 
 
 @register.simple_tag
