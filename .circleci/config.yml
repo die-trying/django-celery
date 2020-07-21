@@ -1,0 +1,59 @@
+version: 2.1
+
+defaults: &defaults
+  docker:
+    - image: circleci/python:3.7-stretch
+      environment:
+        - DATABASE_URL=postgres://root:passw0rd@postgres:5432/circle_test
+        - CELERY_BACKEND=redis://redis:6379
+
+    - image: circleci/redis:4.0.14-alpine3.10
+      name: redis
+    - image: circleci/postgres:11.8-ram
+      name: postgres
+      environment:
+        - POSTGRES_USER: root
+        - POSTGRES_PASSWORD: passw0rd
+        - POSTGRES_DB: circle_test
+
+jobs:
+  build:
+    <<: *defaults
+
+    steps:
+      - checkout
+      - restore_cache:
+          key: deps-v1-{{ checksum "requirements.txt" }}
+      - run:
+          name: Install deps
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+
+      - save_cache:
+          key: deps-v1-{{ checksum "requirements.txt" }}
+          paths:
+            - "venv"
+
+      - run:
+          name: Restore default environment variables
+          command: mv elk/.env.circle elk/.env
+
+      - run:
+          name: Run linters
+          command: |
+            . venv/bin/activate
+            flake8
+
+      - run:
+          name: Run tests
+          command: |
+            . venv/bin/activate
+            ./manage.py test -x
+
+workflows:
+  version: 2
+  continuous-delivery:
+    jobs:
+      - build

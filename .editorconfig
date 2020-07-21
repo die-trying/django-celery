@@ -3,5 +3,5 @@
     indent_style = space
 [*.coffee]
     indent_size = 2
-[*.yaml]
+[*.yml]
     indent_size = 2

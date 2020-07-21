@@ -1,5 +1,3 @@
-from unittest.mock import MagicMock, patch
-
 from mixer.backend.django import Mixer, mixer
 
 from extevents.models import ExternalEvent
@@ -71,4 +69,3 @@ class TestEventSourceSafety(GoogleCalendarTestCase):
             )
 
         self.assertFalse(self.src._ExternalEventSource__is_safe())
-
