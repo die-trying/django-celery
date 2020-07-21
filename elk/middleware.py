@@ -29,7 +29,7 @@ class GuessCountryMiddleWare():
             ip = request.META.get('REMOTE_ADDR')
             try:
                 g = GeoIP(ip)
-            except:
+            except BaseException:
                 return
 
             request.session['country'] = g.country

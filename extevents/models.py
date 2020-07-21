@@ -203,7 +203,7 @@ class IcalEventSource(ExternalEventSource):
                 continue
 
             if (i - timezone.now()) > datetime.timedelta(weeks=self.EXTERNAL_EVENT_WEEK_COUNT):
-                raise StopIteration
+                return
 
             event = deepcopy(basic_event)
             event.start = i

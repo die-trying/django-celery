@@ -1,4 +1,5 @@
 from django import template
+from django.utils.html import format_html
 
 register = template.Library()
 
@@ -20,4 +21,4 @@ def skype_call(crm):
 
 
 def _skype_link(skype_username, action='chat'):
-    return '<a class="skype skype-%s" href="skype:%s?%s">%s</a>' % (action, skype_username, action, skype_username)
+    return format_html('<a class="skype skype-{}" href="skype:{}?{}">{}</a>', action, skype_username, action, skype_username)

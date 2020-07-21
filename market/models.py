@@ -29,7 +29,7 @@ class ProductContainer(models.Model):
     """
 
     buy_date = models.DateTimeField(auto_now_add=True)
-    buy_price = MoneyField(max_digits=10, decimal_places=2, default_currency='USD')
+    buy_price = MoneyField(max_digits=10, decimal_places=2, default_currency='USD', default=0)
     is_fully_used = models.BooleanField(default=False, db_index=True)
 
     @abstractproperty

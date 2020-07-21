@@ -72,20 +72,3 @@ class TestEventSourceSafety(GoogleCalendarTestCase):
 
         self.assertFalse(self.src._ExternalEventSource__is_safe())
 
-
-class TestEventSourceSafetySig(GoogleCalendarTestCase):
-    """
-    Tests the signal, that is emitted when unsafe calendar update is performed.
-
-    Moved to separate test suit to avoid accidental mocking
-    of :model:`extevents.ExternalEventSource`.__is_safe() method.
-    """
-    def test_signal_emission(self):
-        self.src._ExternalEventSource__is_safe = MagicMock(return_value=False)
-
-        with patch('extevents.models.logger') as logger:
-            logger.warning = MagicMock()
-
-            self.src.update()
-
-            self.assertTrue(logger.warning.called)  # previous call should emit the unsafety signal

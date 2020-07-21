@@ -1,3 +1,4 @@
+import random
 from mixer.backend.django import mixer
 
 from accounting.models import Event as AccEvent
@@ -28,6 +29,7 @@ class TestEventOriginatorProperties(TestCase):
         c = Class(
             customer=customer,
             lesson_type=self.lesson.get_contenttype(),
+            buy_price=random.randint(100, 500),
         )
         c.save()
         self.assertFalse(c.is_fully_used)
